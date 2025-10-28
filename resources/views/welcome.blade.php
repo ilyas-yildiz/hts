@@ -4,569 +4,641 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hedef Takip Sistemi</title>
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Inter font ailesini ve temel stilleri ayarla */
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        /* Temel stiller */
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #111827; /* Tailwind bg-gray-900 */
+            background-color: #1f2937; /* Koyu Gri (gray-800) */
+            color: #f3f4f6; /* Açık Gri (gray-100) */
         }
-        /* Özel kaydırma çubuğu (isteğe bağlı, estetik için) */
+        /* Scrollbar stilleri */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
         ::-webkit-scrollbar-track {
-            background: #1f2937; /* bg-gray-800 */
+            background: #374151; /* gray-700 */
+            border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb {
-            background: #4b5563; /* bg-gray-600 */
-            border-radius: 4px;
+            background: #6b7280; /* gray-500 */
+            border-radius: 10px;
         }
         ::-webkit-scrollbar-thumb:hover {
-            background: #6b7280; /* bg-gray-500 */
+            background: #9ca3af; /* gray-400 */
         }
-        /* Kolonların yatayda kaymasını ve minimum genişliğini sağlar */
-        .column {
-            min-width: 280px; /* Her kolon için minimum genişlik */
-            flex-shrink: 0; /* Kolonların büzülmesini engeller */
+        /* Özel seçili öğe stili */
+        .list-item.selected {
+            background-color: #3b82f6; /* Mavi (blue-500) */
+            color: white;
+            font-weight: 500;
+        }
+        /* Görev tamamlandı stili */
+        .task-item.completed {
+            text-decoration: line-through;
+            color: #6b7280; /* gray-500 */
+        }
+        /* Sütunların varsayılan olarak gizlenmesi için */
+        .column.hidden {
+            display: none;
         }
     </style>
 </head>
-<body class="h-full text-gray-200 overflow-hidden">
-    <!-- Ana Konteyner -->
-    <div class="flex flex-col h-screen">
-        
-        <!-- Header / Başlık -->
-        <header class="flex-shrink-0 bg-gray-900 border-b border-gray-700">
-            <div class="max-w-full mx-auto px-6 py-4 flex justify-between items-center">
-                <h1 class="text-xl font-semibold text-white">
-                    <span class="text-blue-500 font-bold">HTS</span> / Hedef Takip Sistemi
-                </h1>
+<body class="h-full flex flex-col">
+
+    <!-- Header -->
+    <header class="flex-shrink-0 bg-gray-900 shadow-md">
+        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo/Başlık -->
+                <div class="flex items-center">
+                    <svg class="w-8 h-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h12M3.75 3h16.5M3.75 3v16.5M19.5 3c.621 0 1.125.504 1.125 1.125v14.625c0 .621-.504 1.125-1.125 1.125H9.75a1.125 1.125 0 0 1-1.125-1.125V17.25m8.625-14.625H6a2.25 2.25 0 0 0-2.25 2.25v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V3.375c0-.209-.056-.412-.16-.587l-.092-.148Z" />
+                    </svg>
+                    <span class="ml-3 text-2xl font-semibold text-white">Hedef Takip Sistemi</span>
+                </div>
+                <!-- Sağ Menü -->
                 <div class="flex items-center space-x-4">
-                    <span class="text-sm">İlyas Yıldız</span>
-                    <button class="text-gray-400 hover:text-white transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H3" />
+                    <span class="text-gray-300">İlyas Yıldız</span>
+                    <button class="p-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
                         </svg>
+                    </button>
+                    <button class="p-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
+                        </svg>
+                        <span class="sr-only">Logout</span>
                     </button>
                 </div>
             </div>
-        </header>
+        </div>
+    </header>
 
-        <!-- Kolonların olduğu ana içerik alanı -->
-        <main class="flex-1 flex overflow-x-auto p-4 space-x-4 bg-gray-900" id="main-container">
-            
-            <!-- JavaScript tarafından dinamik olarak doldurulacak kolonlar için şablon -->
+    <!-- Ana İçerik Alanı -->
+    <main class="flex-1 flex min-h-0">
+        <!-- Kolonlar -->
+        <div class="flex-1 grid grid-cols-6 min-h-0 min-w-0 max-w-screen-2xl mx-auto">
             
             <!-- Kolon 1: 5 Yıllık Hedef Kategorileri -->
-            <div class="column bg-gray-800 rounded-lg shadow-md h-full flex flex-col">
-                <h2 class="text-lg font-semibold p-4 border-b border-gray-700">5 Yıllık Hedefler</h2>
-                <ul class="flex-1 overflow-y-auto p-2 space-y-2" id="col-five-year">
-                    <!-- JS ile doldurulacak -->
-                </ul>
-            </div>
-
-            <!-- Kolon 2: Yıllar (2026-2030) -->
-            <div class="column bg-gray-800 rounded-lg shadow-md h-full flex flex-col hidden" id="col-annual-wrapper">
-                <h2 class="text-lg font-semibold p-4 border-b border-gray-700" id="col-annual-title">Yıllar</h2>
-                <ul class="flex-1 overflow-y-auto p-2 space-y-2" id="col-annual">
-                    <!-- JS ile doldurulacak -->
-                </ul>
-            </div>
-
-            <!-- Kolon 3: Aylar (Sadece 1. Yıl için) -->
-            <div class="column bg-gray-800 rounded-lg shadow-md h-full flex flex-col hidden" id="col-monthly-wrapper">
-                <h2 class="text-lg font-semibold p-4 border-b border-gray-700" id="col-monthly-title">Aylar - 1. Yıl</h2>
-                <ul class="flex-1 overflow-y-auto p-2 space-y-2" id="col-monthly">
-                    <!-- JS ile doldurulacak -->
-                </ul>
-            </div>
-            
-            <!-- Kolon 4: Haftalar (Sadece 1. Ay için) -->
-            <div class="column bg-gray-800 rounded-lg shadow-md h-full flex flex-col hidden" id="col-weekly-wrapper">
-                <h2 class="text-lg font-semibold p-4 border-b border-gray-700" id="col-weekly-title">Haftalar</h2>
-                <ul class="flex-1 overflow-y-auto p-2 space-y-2" id="col-weekly">
-                    <!-- JS ile doldurulacak -->
-                </ul>
-            </div>
-
-            <!-- Kolon 5: Günler (Sadece 1. Hafta için) -->
-            <div class="column bg-gray-800 rounded-lg shadow-md h-full flex flex-col hidden" id="col-daily-wrapper">
-                <h2 class="text-lg font-semibold p-4 border-b border-gray-700" id="col-daily-title">Günler</h2>
-                <ul class="flex-1 overflow-y-auto p-2 space-y-2" id="col-daily">
-                    <!-- JS ile doldurulacak -->
-                </ul>
-            </div>
-
-            <!-- Kolon 6: Görevler / Saatler -->
-            <div class="column bg-gray-800 rounded-lg shadow-md h-full flex flex-col hidden" id="col-tasks-wrapper">
-                <h2 class="text-lg font-semibold p-4 border-b border-gray-700" id="col-tasks-title">Saatler</h2>
-                <div class="flex-1 overflow-y-auto p-2 space-y-3" id="col-tasks">
-                    <!-- JS ile doldurulacak -->
+            <div id="col-1" class="column flex flex-col border-r border-gray-700">
+                <div class="flex-shrink-0 p-4 border-b border-gray-700">
+                    <h2 class="text-lg font-semibold text-white">5 Yıllık Hedefler</h2>
+                    <p class="text-sm text-gray-400">Ana Kategoriler</p>
                 </div>
-                <div class="p-4 border-t border-gray-700">
-                    <button class
-="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
+                <div id="list-col-1" class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <!-- Veri JavaScript ile buraya yüklenecek -->
+                    <div class="p-4 text-center text-gray-500">Yükleniyor...</div>
+                </div>
+            </div>
+
+            <!-- Kolon 2: Yıllar -->
+            <div id="col-2" class="column flex flex-col border-r border-gray-700">
+                <div class="flex-shrink-0 p-4 border-b border-gray-700">
+                    <h2 id="title-col-2" class="text-lg font-semibold text-white truncate">Yıllar</h2>
+                    <p class="text-sm text-gray-400">Yıllık Hedef Dağılımı</p>
+                </div>
+                <div id="list-col-2" class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <!-- Veri JavaScript ile buraya yüklenecek -->
+                </div>
+            </div>
+
+            <!-- Kolon 3: Aylar -->
+            <div id="col-3" class="column flex flex-col border-r border-gray-700">
+                <div class="flex-shrink-0 p-4 border-b border-gray-700">
+                    <h2 id="title-col-3" class="text-lg font-semibold text-white truncate">Aylar</h2>
+                    <p class="text-sm text-gray-400">Aylık Hedefler (1. Yıl)</p>
+                </div>
+                <div id="list-col-3" class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <!-- Veri JavaScript ile buraya yüklenecek -->
+                </div>
+            </div>
+
+            <!-- Kolon 4: Haftalar -->
+            <div id="col-4" class="column flex flex-col border-r border-gray-700">
+                <div class="flex-shrink-0 p-4 border-b border-gray-700">
+                    <h2 id="title-col-4" class="text-lg font-semibold text-white truncate">Haftalar</h2>
+                    <p class="text-sm text-gray-400">Haftalık Hedefler (1. Ay)</p>
+                </div>
+                <div id="list-col-4" class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <!-- Veri JavaScript ile buraya yüklenecek -->
+                </div>
+            </div>
+
+            <!-- Kolon 5: Günler -->
+            <div id="col-5" class="column flex flex-col border-r border-gray-700">
+                <div class="flex-shrink-0 p-4 border-b border-gray-700">
+                    <h2 id="title-col-5" class="text-lg font-semibold text-white truncate">Günler</h2>
+                    <p class="text-sm text-gray-400">Günlük Hedefler (1. Hafta)</p>
+                </div>
+                <div id="list-col-5" class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <!-- Veri JavaScript ile buraya yüklenecek -->
+                </div>
+            </div>
+
+            <!-- Kolon 6: Saatler / Görevler -->
+            <div id="col-6" class="column flex flex-col">
+                <div class="flex-shrink-0 p-4 border-b border-gray-700">
+                    <h2 id="title-col-6" class="text-lg font-semibold text-white truncate">Görevler</h2>
+                    <p class="text-sm text-gray-400">Günlük Plan</p>
+                </div>
+                <div id="list-col-6" class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <!-- Veri JavaScript ile buraya yüklenecek -->
+                </div>
+                <div class="p-2 border-t border-gray-700">
+                    <button id="open-task-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
                         + Yeni Görev Ekle
                     </button>
                 </div>
             </div>
 
-        </main>
+        </div>
+    </main>
+
+    <!-- Yeni Görev Ekleme Modalı -->
+    <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
+            <h3 class="text-xl font-semibold mb-4 text-white">Yeni Görev Ekle</h3>
+            <form id="task-form">
+                <div class="space-y-4">
+                    <div>
+                        <label for="task-time" class="block text-sm font-medium text-gray-300">Zaman Aralığı</label>
+                        <input type="text" id="task-time" placeholder="Örn: 09:00 - 10:00" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label for="task-desc" class="block text-sm font-medium text-gray-300">Görev Açıklaması</label>
+                        <textarea id="task-desc" rows="3" placeholder="Örn: Proje planı revize edilecek" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end space-x-3">
+                    <button type="button" id="close-task-modal-btn" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                        İptal
+                    </button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">
+                        Kaydet
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        // --- ÖRNEK VERİ YAPISI ---
-        // Gerçekte bu veriler Laravel API'nizden gelecek.
-        const db = {
-            // 5 Yıllık Ana Hedef Kategorileri
-            fiveYearGoals: [
-                { id: 'g1', name: 'Kişisel Gelişim' },
-                { id: 'g2', name: 'Finansal Özgürlük' },
-                { id: 'g3', name: 'Yazılım (Kariyer)' },
-                { id: 'g4', name: 'İnşaat (Girişimcilik)' },
-                { id: 'g5', name: 'Aile İlişkileri' },
-            ],
-
-            // Yıllık Hedefler (Ana kategoriye bağlı)
-            // Not: Sizin mantığınıza göre, her kategori için 5 yıllık döküm olacak.
-            annualGoals: {
-                'g1': [ // Kişisel Gelişim
-                    { id: 'y1-g1', year: 1, period: 'Eylül 2026 Sonu', title: 'Yılda 50 kitap okuma hedefi' },
-                    { id: 'y2-g1', year: 2, period: 'Eylül 2027 Sonu', title: 'Yeni bir dil (İspanyolca) B1 seviyesi' },
-                    { id: 'y3-g1', year: 3, period: 'Eylül 2028 Sonu', title: 'Topluluk önünde konuşma korkusunu yenme' },
-                    { id: 'y4-g1', year: 4, period: 'Eylül 2029 Sonu', title: 'Maraton koşmak (Fiziksel hedef)' },
-                    { id: 'y5-g1', year: 5, period: 'Eylül 2030 Sonu', title: 'Alanında uzman olarak 2 konferans verme' },
-                ],
-                'g2': [ // Finansal Özgürlük
-                    { id: 'y1-g2', year: 1, period: 'Eylül 2026 Sonu', title: 'Acil durum fonu (6 aylık) tamamlama' },
-                    { id: 'y2-g2', year: 2, period: 'Eylül 2027 Sonu', title: 'Aylık 10.000 TL pasif gelir' },
-                    { id: 'y3-g2', year: 3, period: 'Eylül 2028 Sonu', title: 'Borsa portföyü 1M TL' },
-                    { id: 'y4-g2', year: 4, period: 'Eylül 2029 Sonu', title: 'İlk yatırım amaçlı gayrimenkul alımı' },
-                    { id: 'y5-g2', year: 5, period: 'Eylül 2030 Sonu', title: 'Finansal özgürlük (Hedef X TL)' },
-                ],
-                // Diğer kategoriler (g3, g4, g5) için de benzer dökümler olmalı...
-                'g3': [
-                    { id: 'y1-g3', year: 1, period: 'Eylül 2026 Sonu', title: 'Laravel\'de uzmanlaşma (Senior seviye)' },
-                    { id: 'y2-g3', year: 2, period: 'Eylül 2027 Sonu', title: 'Vue.js veya React\'ta proje geliştirme' },
-                    { id: 'y3-g3', year: 3, period: 'Eylül 2028 Sonu', title: 'Mikroservis mimarisi ile 1 proje' },
-                    { id: 'y4-g3', year: 4, period: 'Eylül 2029 Sonu', title: 'Mobil uygulama geliştirme (Flutter/React Native)' },
-                    { id: 'y5-g3', year: 5, period: 'Eylül 2030 Sonu', title: 'Kendi SaaS projemi başlatma' },
-                ], 
-                'g4': [
-                    { id: 'y1-g4', year: 1, period: 'Eylül 2026 Sonu', title: 'Müteahhitlik belgesi ve süreçleri tamamlama' },
-                    { id: 'y2-g4', year: 2, period: 'Eylül 2027 Sonu', title: 'İlk küçük ölçekli (tadilat/yenileme) proje' },
-                    { id: 'y3-g4', year: 3, period: 'Eylül 2028 Sonu', title: 'İlk arsa alımı ve projelendirme' },
-                    { id: 'y4-g4', year: 4, period: 'Eylül 2029 Sonu', title: 'İlk konut inşaatına başlama' },
-                    { id: 'y5-g4', year: 5, period: 'Eylül 2030 Sonu', title: 'İlk projeyi (2-4 daire) tamamlama ve satma' },
-                ], 
-                'g5': [],
-            },
-
-            // Aylık Hedefler (Sadece 1. YIL için)
-            // Key: 'y1-{goalId}' (örn: 'y1-g1' - Yıl 1, Kişisel Gelişim)
-            monthlyGoals: {
-                'y1-g1': [ // 1. Yıl, Kişisel Gelişim (50 kitap hedefi)
-                    { id: 'm1-y1g1', month: 'Ekim 2025', title: '4 kitap bitir' },
-                    { id: 'm2-y1g1', month: 'Kasım 2025', title: '4 kitap bitir (1 tanesi kurgu dışı)' },
-                    { id: 'm3-y1g1', month: 'Aralık 2025', title: '5 kitap bitir' },
-                    // ... 12 ay ...
-                ],
-                'y1-g2': [ // 1. Yıl, Finansal (Acil durum fonu)
-                    { id: 'm1-y1g2', month: 'Ekim 2025', title: 'Gelirin %15\'ini fona ayır' },
-                    { id: 'm2-y1g2', month: 'Kasım 2025', title: 'Ek işten gelen 2000 TL\'yi fona aktar' },
-                    { id: 'm3-y1g2', month: 'Aralık 2025', title: 'Harcamaları %10 azalt, farkı fona aktar' },
-                    // ... 12 ay ...
-                ],
-                'y1-g3': [ // 1. Yıl, Yazılım (Laravel Uzmanlaşma)
-                    { id: 'm1-y1g3', month: 'Ekim 2025', title: 'Laravel 12 Yenilikleri ve Eloquent ORM derinlemesine' },
-                    { id: 'm2-y1g3', month: 'Kasım 2025', title: 'Test Driven Development (TDD) öğrenme ve uygulama' },
-                    { id: 'm3-y1g3', month: 'Aralık 2025', title: 'Queue, Jobs ve Horizon konularına hakim olma' },
-                    // ... 12 ay ...
-                ],
-            },
-
-            // Haftalık Hedefler (Sadece 1. AY için)
-            // Key: 'm1-{annualGoalId}' (örn: 'm1-y1g1' - 1. Ay, Yıl 1, Kişisel Gelişim)
-            weeklyGoals: {
-                'm1-y1g1': [ // 1. Ay (Ekim 2025), Yıl 1, Kişisel Gelişim (4 kitap)
-                    { id: 'w1-m1y1g1', week: '1. Hafta (1-7 Ekim)', title: '1. Kitaba başla (200 sayfa oku)' },
-                    { id: 'w2-m1y1g1', week: '2. Hafta (8-14 Ekim)', title: '1. Kitabı bitir, 2. Kitaba başla' },
-                    { id: 'w3-m1y1g1', week: '3. Hafta (15-21 Ekim)', title: '2. Kitabı bitir, 3. Kitaba başla' },
-                    { id: 'w4-m1y1g1', week: '4. Hafta (22-31 Ekim)', title: '3. ve 4. Kitabı bitir' },
-                ],
-                'm1-y1g2': [ // 1. Ay (Ekim 2025), Yıl 1, Finansal (Gelirin %15'i)
-                    { id: 'w1-m1y1g2', week: '1. Hafta (1-7 Ekim)', title: 'Harcama dökümünü çıkar' },
-                    { id: 'w2-m1y1g2', week: '2. Hafta (8-14 Ekim)', title: 'Otomatik fon transfer talimatı ver' },
-                    { id: 'w3-m1y1g2', week: '3. Hafta (15-21 Ekim)', title: 'Gereksiz abonelikleri iptal et' },
-                    { id: 'w4-m1y1g2', week: '4. Hafta (22-31 Ekim)', title: 'Haftalık bütçe takibini yap' },
-                ],
-                'm1-y1g3': [ // 1. Ay (Ekim 2025), Yıl 1, Yazılım (Eloquent)
-                    { id: 'w1-m1y1g3', week: '1. Hafta (1-7 Ekim)', title: 'Eloquent Relationships (Tüm ilişki tipleri) çalışma' },
-                    { id: 'w2-m1y1g3', week: '2. Hafta (8-14 Ekim)', title: 'Eloquent Scopes (Global/Local) ve Accessors/Mutators' },
-                    { id: 'w3-m1y1g3', week: '3. Hafta (15-21 Ekim)', title: 'Eloquent Collections ve API Resources' },
-                    { id: 'w4-m1y1g3', week: '4. Hafta (22-31 Ekim)', title: 'N+1 problemi tespiti ve çözümü (Eager Loading)' },
-                ]
-            },
-
-            // Günlük Hedefler (Sadece 1. HAFTA için)
-            // Key: 'w1-{monthlyGoalId}' (örn: 'w1-m1y1g1' - 1. Hafta, 1. Ay, Yıl 1, Kişisel Gelişim)
-            dailyGoals: {
-                'w1-m1y1g1': [ // 1. Hafta, 1. Ay, Yıl 1, Kişisel Gelişim (1. Kitap 200 sayfa)
-                    { id: 'd1-w1m1y1g1', day: 'Pazartesi', title: '30 sayfa oku' },
-                    { id: 'd2-w1m1y1g1', day: 'Salı', title: '30 sayfa oku' },
-                    { id: 'd3-w1m1y1g1', day: 'Çarşamba', title: '30 sayfa oku' },
-                    { id: 'd4-w1m1y1g1', day: 'Perşembe', title: '30 sayfa oku' },
-                    { id: 'd5-w1m1y1g1', day: 'Cuma', title: '30 sayfa oku' },
-                    { id: 'd6-w1m1y1g1', day: 'Cumartesi', title: '50 sayfa oku' },
-                    { id: 'd7-w1m1y1g1', day: 'Pazar', title: 'Haftalık değerlendirme' },
-                ],
-                'w1-m1y1g3': [ // 1. Hafta, 1. Ay, Yıl 1, Yazılım (Eloquent Relationships)
-                    { id: 'd1-w1m1y1g3', day: 'Pazartesi', title: 'One to One & One to Many çalışma' },
-                    { id: 'd2-w1m1y1g3', day: 'Salı', title: 'Many to Many çalışma' },
-                    { id: 'd3-w1m1y1g3', day: 'Çarşamba', title: 'Polymorphic Relationships çalışma' },
-                    { id: 'd4-w1m1y1g3', day: 'Perşembe', title: 'Mini-proje (Blog) ilişki kurulumu' },
-                    { id: 'd5-w1m1y1g3', day: 'Cuma', title: 'Has Many Through & Polymorphic Many-to-Many' },
-                    { id: 'd6-w1m1y1g3', day: 'Cumartesi', title: 'Tüm ilişki tipleriyle pratik yapma' },
-                    { id: 'd7-w1m1y1g3', day: 'Pazar', title: 'Haftalık tekrar ve kod incelemesi' },
-                ]
-            },
-
-            // Saatlik Görevler (Güne bağlı)
-            // Key: 'd{dayIndex}-{weeklyGoalId}' (örn: 'd1-w1m1y1g1' - Pazartesi, 1. Hafta, 1. Ay, Yıl 1, Kişisel G.)
-            tasks: {
-                'd1-w1m1y1g1': [ // Pazartesi (30 sayfa oku)
-                    { id: 't1', time: '06:00 - 06:30', task: 'Sabah okuması (15 sayfa)', completed: true },
-                    { id: 't2', time: '12:30 - 13:00', task: 'Öğle arası okuması (15 sayfa)', completed: false },
-                ],
-                'd2-w1m1y1g1': [ // Salı (30 sayfa oku)
-                    { id: 't3', time: '21:00 - 22:00', task: 'Akşam okuması (30 sayfa)', completed: false },
-                ],
-                 'd1-w1m1y1g3': [ // Pazartesi (Eloquent İlişkiler)
-                    { id: 't4', time: '19:00 - 20:00', task: 'One to One (User-Profile) modeli kodla', completed: true },
-                    { id: 't5', time: '20:00 - 21:00', task: 'One to Many (User-Posts) modeli kodla', completed: true },
-                    { id: 't6', time: '21:00 - 21:30', task: 'Dokümantasyon okuma (İlişkileri sorgulama)', completed: false },
-                ],
-            }
+        // --- GLOBAL STATE ---
+        // Seçili olan öğelerin ID'lerini tutmak için bir global nesne.
+        // Bu, hiyerarşiyi ve API isteklerini yönetmemize yardımcı olacak.
+        const state = {
+            selectedCategoryId: null,
+            selectedAnnualId: null,
+            selectedMonthlyId: null,
+            selectedWeeklyId: null,
+            selectedDailyId: null,
         };
 
-        // --- DOM Referansları ---
-        const cols = {
-            fiveYear: document.getElementById('col-five-year'),
-            annual: document.getElementById('col-annual'),
-            monthly: document.getElementById('col-monthly'),
-            weekly: document.getElementById('col-weekly'),
-            daily: document.getElementById('col-daily'),
-            tasks: document.getElementById('col-tasks'),
-        };
+        // --- API HELPERS ---
 
-        const wrappers = {
-            annual: document.getElementById('col-annual-wrapper'),
-            monthly: document.getElementById('col-monthly-wrapper'),
-            weekly: document.getElementById('col-weekly-wrapper'),
-            daily: document.getElementById('col-daily-wrapper'),
-            tasks: document.getElementById('col-tasks-wrapper'),
-        };
-
-        const titles = {
-            annual: document.getElementById('col-annual-title'),
-            monthly: document.getElementById('col-monthly-title'),
-            weekly: document.getElementById('col-weekly-title'),
-            daily: document.getElementById('col-daily-title'),
-            tasks: document.getElementById('col-tasks-title'),
-        };
-        
-        // --- Mevcut Seçim Durumu ---
-        const selection = {
-            fiveYearGoal: null,
-            annualGoal: null,
-            monthlyGoal: null,
-            weeklyGoal: null,
-            dailyGoal: null,
-        };
-
-        // --- Render Fonksiyonları ---
-
-        // Liste elemanı (<li>) oluşturan yardımcı fonksiyon
-        function createListItem(item, type) {
-            const li = document.createElement('li');
-            li.className = 'p-3 bg-gray-700 rounded-lg cursor-pointer hover:bg-gray-600 transition-colors flex justify-between items-center';
-            li.dataset.id = item.id;
-            li.dataset.type = type;
-
-            let content = '';
-            switch (type) {
-                case 'fiveYear':
-                    content = `<span>${item.name}</span>`;
-                    break;
-                case 'annual':
-                    content = `<div class="flex flex-col">
-                                 <span class="font-semibold">${item.period} (Yıl ${item.year})</span>
-                                 <span class="text-sm text-gray-400">${item.title}</span>
-                               </div>`;
-                    break;
-                case 'monthly':
-                    content = `<div class="flex flex-col">
-                                 <span class="font-semibold">${item.month}</span>
-                                 <span class="text-sm text-gray-400">${item.title}</span>
-                               </div>`;
-                    break;
-                case 'weekly':
-                    content = `<div class="flex flex-col">
-                                 <span class="font-semibold">${item.week}</span>
-                                 <span class="text-sm text-gray-400">${item.title}</span>
-                               </div>`;
-                    break;
-                case 'daily':
-                     content = `<div class="flex flex-col">
-                                 <span class="font-semibold">${item.day}</span>
-                                 <span class="text-sm text-gray-400">${item.title || '(Boş gün)'}</span>
-                               </div>`;
-                    break;
-            }
+        /**
+         * API'den veri çekmek için merkezi fonksiyon.
+         * Hataları yakalar ve JSON olarak döndürür.
+         * @param {string} endpoint - /api/ ile başlayan tam yol (örn: /api/goal-categories)
+         * @param {object} [options={}] - fetch() için opsiyonel ayarlar (method, body, headers)
+         */
+        async function fetchData(endpoint, options = {}) {
+            // CSRF token'ı her istek için başlığa ekle
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             
-            li.innerHTML = `${content} <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" /></svg>`;
-            return li;
-        }
+            const defaultHeaders = {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                // Laravel'in POST/PUT/DELETE istekleri için CSRF koruması
+                // Blade'e <meta name="csrf-token" content="{{ csrf_token() }}"> eklenmeli.
+                // Şimdilik GET için gerekmiyor ama POST için (görev ekleme) gerekecek.
+            };
 
-        // Görev elemanı oluşturan yardımcı fonksiyon
-        function createTaskItem(item) {
-            const div = document.createElement('div');
-            div.className = 'p-3 bg-gray-700 rounded-lg flex items-center space-x-3';
-            div.dataset.id = item.id;
-            
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.checked = item.completed;
-            // Tailwind'in form stillerini CDN'den alabilmesi için class eklemesi
-            checkbox.className = 'form-checkbox h-5 w-5 bg-gray-800 border-gray-600 rounded text-blue-500 focus:ring-blue-500';
-            
-            checkbox.addEventListener('change', () => {
-                item.completed = checkbox.checked;
-                div.classList.toggle('opacity-50', item.completed);
-                // Burada API'ye güncelleme gönderilebilir.
-                console.log(`Task ${item.id} completed status: ${item.completed}`);
-            });
-
-            if (item.completed) {
-                div.classList.add('opacity-50');
+            // Blade'de CSRF meta tag'ı varsa X-CSRF-TOKEN başlığını ekle
+            // Şu an HTML'de bu meta tag yok, eklenince çalışacak.
+            // POST/PUT/DELETE işlemleri için bu şart.
+            if (csrfToken) {
+                defaultHeaders['X-CSRF-TOKEN'] = csrfToken;
             }
 
-            const content = document.createElement('div');
-            content.className = 'flex flex-col';
-            content.innerHTML = `<span class="font-medium ${item.completed ? 'line-through' : ''}">${item.task}</span>
-                                 <span class="text-sm text-gray-400">${item.time}</span>`;
-            
-            div.appendChild(checkbox);
-            div.appendChild(content);
-            return div;
-        }
+            // URL'leri birleştirirken çift // olmasını engelle
+            // ÖNEMLİ: 'split' hatasını düzelten kısım burası.
+            // '/api/goal-categories' gibi tam yolu bekliyoruz.
+            // '/api' base URL'i artık burada birleştirilmiyor, doğrudan kullanılıyor.
+            const url = endpoint; // Örn: /api/goal-categories
 
-        // Bir kolondaki seçimi temizle/ayarla
-        function highlightSelection(columnUl, selectedId) {
-            Array.from(columnUl.children).forEach(li => {
-                li.classList.toggle('bg-blue-600', li.dataset.id === selectedId);
-                li.classList.toggle('hover:bg-blue-700', li.dataset.id === selectedId);
-                li.classList.toggle('bg-gray-700', li.dataset.id !== selectedId);
-                li.classList.toggle('hover:bg-gray-600', li.dataset.id !== selectedId);
-            });
-        }
-
-        // Sonraki tüm kolonları temizle ve gizle
-        function clearNextColumns(level) {
-            if (level <= 1) {
-                wrappers.annual.classList.add('hidden');
-                cols.annual.innerHTML = '';
-                selection.annualGoal = null;
-            }
-            if (level <= 2) {
-                wrappers.monthly.classList.add('hidden');
-                cols.monthly.innerHTML = '';
-                selection.monthlyGoal = null;
-            }
-            if (level <= 3) {
-                wrappers.weekly.classList.add('hidden');
-                cols.weekly.innerHTML = '';
-                selection.weeklyGoal = null;
-            }
-            if (level <= 4) {
-                wrappers.daily.classList.add('hidden');
-        
-        cols.daily.innerHTML = '';
-                selection.dailyGoal = null;
-            }
-            if (level <= 5) {
-                wrappers.tasks.classList.add('hidden');
-                cols.tasks.innerHTML = '';
-            }
-        }
-
-        // Kolon 1: 5 Yıllık Hedefler
-        function renderFiveYearGoals() {
-            cols.fiveYear.innerHTML = '';
-            db.fiveYearGoals.forEach(goal => {
-                cols.fiveYear.appendChild(createListItem(goal, 'fiveYear'));
-            });
-        }
-
-        // Kolon 2: Yıllık Hedefler
-        function renderAnnualGoals(goalId) {
-            clearNextColumns(1);
-            selection.fiveYearGoal = db.fiveYearGoals.find(g => g.id === goalId);
-            if (!selection.fiveYearGoal) return;
-
-            highlightSelection(cols.fiveYear, goalId);
-            
-            const data = db.annualGoals[goalId] || [];
-            if (data.length > 0) {
-                data.forEach(goal => {
-                    cols.annual.appendChild(createListItem(goal, 'annual'));
+            try {
+                const response = await fetch(url, {
+                    ...options,
+                    headers: {
+                        ...defaultHeaders,
+                        ...options.headers,
+                    },
                 });
-                titles.annual.textContent = `Yıllar (${selection.fiveYearGoal.name})`;
-                wrappers.annual.classList.remove('hidden');
-            }
-        }
 
-        // Kolon 3: Aylık Hedefler
-        function renderMonthlyGoals(annualGoalId) {
-            clearNextColumns(2);
-            // Önceki seçimden 5 yıllık hedef ID'sini al
-            if (!selection.fiveYearGoal) return;
-            const goalId = selection.fiveYearGoal.id;
-            
-            selection.annualGoal = (db.annualGoals[goalId] || []).find(g => g.id === annualGoalId);
-            if (!selection.annualGoal) return;
-
-            highlightSelection(cols.annual, annualGoalId);
-
-            // Sadece 1. Yıl için aylık döküm var (KURAL)
-            if (selection.annualGoal.year === 1) {
-                const dataKey = `y1-${goalId}`; // örn: 'y1-g1'
-                const data = db.monthlyGoals[dataKey] || [];
-                
-                if (data.length > 0) {
-                    data.forEach(goal => {
-                        cols.monthly.appendChild(createListItem(goal, 'monthly'));
-                    });
-                    titles.monthly.textContent = `Aylar (Yıl 1 - ${selection.fiveYearGoal.name})`;
-                    wrappers.monthly.classList.remove('hidden');
+                if (!response.ok) {
+                    // API 4xx veya 5xx bir hata döndürürse
+                    const errorData = await response.json();
+                    console.error(`API Hatası (${response.status}): ${response.statusText}`, errorData);
+                    throw new Error(`API Hatası: ${response.statusText}`);
                 }
-            }
-        }
+                
+                // response.json() bir Promise döndürür, bu yüzden await kullanılmalı
+                return await response.json(); 
 
-        // Kolon 4: Haftalık Hedefler
-        function renderWeeklyGoals(monthlyGoalId) {
-            clearNextColumns(3);
-            if (!selection.fiveYearGoal || !selection.annualGoal) return;
-            
-            const goalId = selection.fiveYearGoal.id;
-            const dataKey = `y1-${goalId}`; // Aylık hedeflerin key'i (örn: 'y1-g1')
-            
-            selection.monthlyGoal = (db.monthlyGoals[dataKey] || []).find(g => g.id === monthlyGoalId);
-            if (!selection.monthlyGoal) return;
-
-            highlightSelection(cols.monthly, monthlyGoalId);
-            
-            // Sadece 1. Ay için haftalık döküm var (ÖRNEK KURAL)
-            // Bu prototipte, seçilen ayın ID'sini (örn: 'm1-y1g1') haftalık hedeflerin key'i olarak kullanıyoruz.
-            const data = db.weeklyGoals[monthlyGoalId] || [];
-            
-            if (data.length > 0) {
-                data.forEach(goal => {
-                    cols.weekly.appendChild(createListItem(goal, 'weekly'));
-                });
-                titles.weekly.textContent = `Haftalar (${selection.monthlyGoal.month})`;
-                wrappers.weekly.classList.remove('hidden');
+            } catch (error) {
+                // Network hatası veya fetch/json parse hatası
+                console.error('Fetch Hatası:', endpoint, error);
+                showError('Veri alınırken bir hata oluştu. Lütfen konsolu kontrol edin.');
+                return null; // Hata durumunda null döndür
             }
         }
         
-        // Kolon 5: Günlük Hedefler
-        function renderDailyGoals(weeklyGoalId) {
-            clearNextColumns(4);
-            if (!selection.monthlyGoal) return;
+        // --- DATA LOADING FUNCTIONS ---
 
-            const monthlyGoalId = selection.monthlyGoal.id;
-            selection.weeklyGoal = (db.weeklyGoals[monthlyGoalId] || []).find(g => g.id === weeklyGoalId);
-            if (!selection.weeklyGoal) return;
-
-            highlightSelection(cols.weekly, weeklyGoalId);
-
-            // Prototipte, seçilen haftanın ID'sini (örn: 'w1-m1y1g1') günlük hedeflerin key'i olarak kullanıyoruz.
-            const data = db.dailyGoals[weeklyGoalId] || [];
-
-            if (data.length > 0) {
-                 data.forEach(goal => {
-                    cols.daily.appendChild(createListItem(goal, 'daily'));
-                });
-                titles.daily.textContent = `Günler (${selection.weeklyGoal.week})`;
-                wrappers.daily.classList.remove('hidden');
-            }
-        }
-
-        // Kolon 6: Görevler
-        function renderTasks(dailyGoalId) {
-            clearNextColumns(5);
-            if (!selection.weeklyGoal) return;
-            
-            const weeklyGoalId = selection.weeklyGoal.id;
-            selection.dailyGoal = (db.dailyGoals[weeklyGoalId] || []).find(g => g.id === dailyGoalId);
-            if (!selection.dailyGoal) return;
-
-            highlightSelection(cols.daily, dailyGoalId);
-
-            // Prototipte, seçilen günün ID'sini (örn: 'd1-w1m1y1g1') görevlerin key'i olarak kullanıyoruz.
-            const data = db.tasks[dailyGoalId] || [];
-            cols.tasks.innerHTML = ''; // Öncekileri temizle
-
-            if (data.length > 0) {
-                data.forEach(task => {
-                    cols.tasks.appendChild(createTaskItem(task));
+        /**
+         * Kolon 1: Ana kategorileri yükler (Kişisel Gelişim, Finansal vb.)
+         */
+        async function fetchCategories() {
+            console.log('fetchCategories çağrıldı.');
+            const data = await fetchData('/api/goal-categories');
+            if (data) {
+                console.log('Kategoriler yüklendi:', data);
+                renderList('list-col-1', data, (item) => {
+                    // Tıklandığında
+                    state.selectedCategoryId = item.id;
+                    resetColumns(2); // 2. sütundan sonrasını temizle/gizle
+                    fetchAnnualGoals(item.id); // 2. sütunu doldur
+                    document.getElementById('title-col-2').textContent = item.name;
                 });
             } else {
-                cols.tasks.innerHTML = `<div class="p-4 text-gray-500 text-center">Bu gün için görev girilmemiş.</div>`;
+                console.error('Kategoriler yüklenemedi, data null.');
+            }
+        }
+
+        /**
+         * Kolon 2: Yıllık hedefleri yükler (Seçili kategori ID'sine göre)
+         */
+        async function fetchAnnualGoals(categoryId) {
+            console.log(`fetchAnnualGoals çağrıldı (Kategori ID: ${categoryId})`);
+            const data = await fetchData(`/api/annual-goals/${categoryId}`);
+            if (data) {
+                console.log('Yıllık Hedefler yüklendi:', data);
+                renderList('list-col-2', data, (item) => {
+                    // Tıklandığında
+                    state.selectedAnnualId = item.id;
+                    resetColumns(3);
+                    
+                    // Sadece 1. Yıl (year == 1) ise Ayları (Kolon 3) yükle
+                    if (item.year === 1) {
+                        fetchMonthlyGoals(item.id);
+                        document.getElementById('title-col-3').textContent = item.period_label;
+                    } else {
+                        // 2. yıl veya sonrasına tıklandıysa, "Planlama daha sonra" mesajı göster
+                        document.getElementById('list-col-3').innerHTML = 
+                            `<div class="p-4 text-center text-gray-500">
+                                Bu yılın aylık planlaması henüz aktif değil.
+                            </div>`;
+                    }
+                }, 'period_label'); // Görüntülenecek metin alanı: period_label
+                
+                showColumn(2); // Sütunu göster
+            }
+        }
+
+        /**
+         * Kolon 3: Aylık hedefleri yükler (Seçili yıllık hedef ID'sine göre)
+         */
+        async function fetchMonthlyGoals(annualGoalId) {
+            console.log(`fetchMonthlyGoals çağrıldı (Yıllık ID: ${annualGoalId})`);
+            const data = await fetchData(`/api/monthly-goals/${annualGoalId}`);
+            if (data) {
+                console.log('Aylık Hedefler yüklendi:', data);
+                renderList('list-col-3', data, (item) => {
+                    // Tıklandığında
+                    state.selectedMonthlyId = item.id;
+                    resetColumns(4);
+                    // TODO: Sadece ilk ay ise haftaları yükle (backend'den gelen veriye göre)
+                    fetchWeeklyGoals(item.id);
+                    document.getElementById('title-col-4').textContent = item.month_label;
+                }, 'month_label');
+                
+                showColumn(3); // Sütunu göster
+            }
+        }
+
+        /**
+         * Kolon 4: Haftalık hedefleri yükler (Seçili aylık hedef ID'sine göre)
+         */
+        async function fetchWeeklyGoals(monthlyGoalId) {
+            console.log(`fetchWeeklyGoals çağrıldı (Aylık ID: ${monthlyGoalId})`);
+            const data = await fetchData(`/api/weekly-goals/${monthlyGoalId}`);
+            if (data) {
+                console.log('Haftalık Hedefler yüklendi:', data);
+                renderList('list-col-4', data, (item) => {
+                    // Tıklandığında
+                    state.selectedWeeklyId = item.id;
+                    resetColumns(5);
+                    // TODO: Sadece ilk hafta ise günleri yükle
+                    fetchDailyGoals(item.id);
+                    document.getElementById('title-col-5').textContent = item.week_label;
+                }, 'week_label');
+                
+                showColumn(4); // Sütunu göster
+            }
+        }
+
+        /**
+         * Kolon 5: Günlük hedefleri yükler (Seçili haftalık hedef ID'sine göre)
+         */
+        async function fetchDailyGoals(weeklyGoalId) {
+            console.log(`fetchDailyGoals çağrıldı (Haftalık ID: ${weeklyGoalId})`);
+            const data = await fetchData(`/api/daily-goals/${weeklyGoalId}`);
+            if (data) {
+                console.log('Günlük Hedefler yüklendi:', data);
+                renderList('list-col-5', data, (item) => {
+                    // Tıklandığında
+                    state.selectedDailyId = item.id; // Görev eklerken bu ID'yi kullanacağız
+                    resetColumns(6);
+                    fetchTasks(item.id);
+                    document.getElementById('title-col-6').textContent = `Görevler - ${item.day_label}`;
+                }, 'day_label');
+                
+                showColumn(5); // Sütunu göster
+            }
+        }
+
+        /**
+         * Kolon 6: Görevleri (Task) yükler (Seçili günlük hedef ID'sine göre)
+         */
+        async function fetchTasks(dailyGoalId) {
+            console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
+            const data = await fetchData(`/api/tasks/${dailyGoalId}`);
+            const listElement = document.getElementById('list-col-6');
+            
+            if (data && data.length > 0) {
+                console.log('Görevler yüklendi:', data);
+                listElement.innerHTML = ''; // Listeyi temizle
+                data.forEach(task => {
+                    const item = document.createElement('div');
+                    item.className = `task-item flex items-center justify-between p-3 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
+                    item.dataset.id = task.id;
+                    
+                    item.innerHTML = `
+                        <div class="flex-1">
+                            <div class="text-xs font-semibold text-gray-400">${task.time_label}</div>
+                            <div class="text-sm text-white">${task.task_description}</div>
+                        </div>
+                        <input type="checkbox" class="task-checkbox ml-4 h-5 w-5 rounded bg-gray-600 border-gray-500 text-blue-500 focus:ring-blue-500" 
+                               ${task.is_completed ? 'checked' : ''}>
+                    `;
+                    
+                    // Checkbox'a tıklama olayı (Görevi tamamlandı/tamamlanmadı olarak işaretle)
+                    item.querySelector('.task-checkbox').addEventListener('change', async (e) => {
+                        await toggleTaskStatus(task.id, e.target.checked);
+                        // Arayüzü anında güncelle
+                        item.classList.toggle('completed', e.target.checked);
+                    });
+                    
+                    listElement.appendChild(item);
+                });
+            } else {
+                console.log('Bu gün için görev bulunamadı.');
+                listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Bu gün için planlanmış görev yok.</div>`;
             }
             
-            titles.tasks.textContent = `Görevler - ${selection.dailyGoal.day}`;
-            wrappers.tasks.classList.remove('hidden');
+            showColumn(6); // Sütunu göster
+        }
+
+        // --- TASK (GÖREV) ACTIONS ---
+
+        /**
+         * Bir görevin 'is_completed' durumunu API üzerinden günceller (toggle).
+         */
+        async function toggleTaskStatus(taskId, isCompleted) {
+            console.log(`toggleTaskStatus çağrıldı (Task ID: ${taskId}, Durum: ${isCompleted})`);
+            // Not: 'is_completed' verisi şu an API'ye gönderilmiyor, 
+            // TaskController'daki 'toggle' metodu mevcut durumu tersine çeviriyor.
+            // Bu, 'update' metodu için daha uygun olabilir ama 'toggle' için yeterli.
+            await fetchData(`/api/tasks/toggle/${taskId}`, {
+                method: 'PUT'
+            });
+        }
+
+        /**
+         * Yeni bir görev ekler.
+         */
+        async function addNewTask(e) {
+            e.preventDefault(); // Formun sayfayı yenilemesini engelle
+            
+            const time = document.getElementById('task-time').value;
+            const desc = document.getElementById('task-desc').value;
+            
+            if (!desc || !state.selectedDailyId) {
+                showError('Görev açıklaması boş olamaz veya bir gün seçili değil.');
+                return;
+            }
+            
+            const data = {
+                daily_goal_id: state.selectedDailyId,
+                time_label: time || "Zamanlanmamış", // Zaman boşsa varsayılan değer
+                task_description: desc
+            };
+            
+            console.log('Yeni görev gönderiliyor:', data);
+
+            // POST isteği için CSRF token'ı eklememiz GEREKİYOR.
+            // Blade şablonunuzun <head> kısmına bunu ekleyin:
+            // <meta name="csrf-token" content="{{ csrf_token() }}">
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+            if (!csrfToken) {
+                console.warn('CSRF Token meta tag bulunamadı. POST isteği başarısız olabilir.');
+                // Geliştirme aşamasında CSRF'i devre dışı bıraktıysanız (app/Http/Middleware/VerifyCsrfToken.php),
+                // bu bir sorun olmaz. Ama production'da bu şarttır.
+            } else {
+                console.log('CSRF Token bulundu ve isteğe eklenecek.');
+            }
+            
+            const newTask = await fetchData('/api/tasks', {
+                method: 'POST',
+                headers: {
+                    // CSRF token'ı (eğer varsa) 'fetchData' fonksiyonu tarafından
+                    // otomatik eklenmeye çalışılacak. Manuel ekleyelim:
+                    'X-CSRF-TOKEN': csrfToken
+                },
+                body: JSON.stringify(data)
+            });
+            
+            if (newTask) {
+                console.log('Görev eklendi:', newTask);
+                // Görev listesini yeniden yükle
+                fetchTasks(state.selectedDailyId);
+                // Modalı kapat ve formu temizle
+                closeModal();
+            }
         }
 
 
-        // --- Ana Olay Yönlendirici (Event Listener) ---
-        document.getElementById('main-container').addEventListener('click', (e) => {
-            const li = e.target.closest('li[data-id]');
-            if (!li) return; // Liste elemanına tıklanmadı
+        // --- UI (ARAYÜZ) HELPERS ---
 
-            const id = li.dataset.id;
-            const type = li.dataset.type;
+        /**
+         * Verilen bir listeyi (array) DOM'a (HTML listesine) render eder.
+         * @param {string} listId - (list-col-1, list-col-2 vb.)
+         * @param {Array<object>} data - API'den gelen veri dizisi
+         * @param {Function} onClickCallback - Her öğeye tıklanınca çalışacak fonksiyon
+         * @param {string} [textField='name'] - Öğenin metni için kullanılacak alan (örn: 'name', 'period_label')
+         */
+        function renderList(listId, data, onClickCallback, textField = 'name') {
+            const listElement = document.getElementById(listId);
+            listElement.innerHTML = ''; // Önce listeyi temizle
 
-            switch (type) {
-                case 'fiveYear':
-                    renderAnnualGoals(id);
-                    break;
-                case 'annual':
-                    renderMonthlyGoals(id);
-                    break;
-                case 'monthly':
-                    renderWeeklyGoals(id);
-                    break;
-                case 'weekly':
-                    renderDailyGoals(id);
-                    break;
-                case 'daily':
-                    renderTasks(id);
-                    break;
+            if (!data || data.length === 0) {
+                listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Veri bulunamadı.</div>`;
+                return;
             }
-        });
 
-        // --- Başlangıç ---
-        // Sayfa yüklendiğinde DOM'un hazır olduğundan emin ol
-        document.addEventListener('DOMContentLoaded', (event) => {
-            renderFiveYearGoals();
-        });
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'list-item p-3 rounded-md cursor-pointer hover:bg-gray-700 transition-colors duration-150 flex justify-between items-center';
+                div.dataset.id = item.id;
+                
+                // Görüntülenecek metin (textField veya item.title)
+                // (GoalController'dan gelen 'title' alanını da hesaba katıyoruz)
+                div.textContent = item[textField] || item.title || 'İsimsiz';
+
+                // Sağdaki > ikonu
+                const icon = document.createElement('span');
+                icon.className = 'text-gray-500';
+                icon.innerHTML = '&gt;';
+                div.appendChild(icon);
+
+                // Tıklama olayı
+                div.addEventListener('click', (e) => {
+                    // Tüm kardeş öğelerden 'selected' sınıfını kaldır
+                    e.currentTarget.parentElement.querySelectorAll('.list-item').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    // Sadece tıklanan öğeye 'selected' sınıfını ekle
+                    e.currentTarget.classList.add('selected');
+                    
+                    // Verilen callback fonksiyonunu çalıştır
+                    onClickCallback(item);
+                });
+
+                listElement.appendChild(div);
+            });
+        }
+
+        /**
+         * Belirtilen sütun numarasından (dahil) başlayarak tüm sütunları gizler ve temizler.
+         * Örn: resetColumns(3) -> 3, 4, 5, 6. sütunları gizler ve listelerini boşaltır.
+         * @param {number} startColumnIndex - Gizlemeye başlanacak sütun numarası (1-6)
+         */
+        function resetColumns(startColumnIndex) {
+            console.log(`resetColumns çağrıldı (Başlangıç: ${startColumnIndex})`);
+            for (let i = startColumnIndex; i <= 6; i++) {
+                document.getElementById(`col-${i}`).classList.add('hidden');
+                document.getElementById(`list-col-${i}`).innerHTML = '';
+                document.getElementById(`title-col-${i}`).textContent = document.getElementById(`title-col-${i}`).parentElement.querySelector('p').textContent.split('(')[0].trim(); // Başlığı sıfırla
+            }
+        }
+        
+        /**
+         * Belirtilen sütunu görünür yapar.
+         * @param {number} colIndex - Gösterilecek sütun numarası (1-6)
+         */
+        function showColumn(colIndex) {
+            document.getElementById(`col-${colIndex}`).classList.remove('hidden');
+        }
+
+        /**
+         * "Yeni Görev Ekle" modalını yönetir.
+         */
+        function setupModal() {
+            console.log('setupModal çağrıldı.');
+            const modal = document.getElementById('task-modal');
+            const openBtn = document.getElementById('open-task-modal-btn');
+            const closeBtn = document.getElementById('close-task-modal-btn');
+            const form = document.getElementById('task-form');
+
+            if (modal && openBtn && closeBtn && form) {
+                openBtn.addEventListener('click', () => {
+                    if (!state.selectedDailyId) {
+                        showError("Lütfen önce bir gün seçin.");
+                        return;
+                    }
+                    modal.classList.remove('hidden');
+                });
+                
+                closeBtn.addEventListener('click', closeModal);
+                form.addEventListener('submit', addNewTask);
+                
+                // Modala tıklayınca değil, dışına tıklayınca kapat
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+
+            } else {
+                console.error('Modal elementleri (butonlar, form veya modalın kendisi) DOM\'da bulunamadı.');
+            }
+        }
+
+        /**
+         * Modalı kapatır ve formu temizler
+         */
+        function closeModal() {
+            document.getElementById('task-modal').classList.add('hidden');
+            document.getElementById('task-form').reset();
+        }
+
+        /**
+         * Hata mesajı göster (Geçici, daha iyi bir UI ile değiştirilebilir)
+         */
+        function showError(message) {
+            // alert() kullanmak yerine konsola ve geçici bir UI elemanına yaz
+            console.error('UYGULAMA HATASI:', message);
+            // İleride buraya şık bir "toast" bildirimi eklenebilir.
+        }
+
+        /**
+         * Uygulamayı başlatan ana fonksiyon.
+         */
+        async function initApp() {
+            console.log('Uygulama başlıyor (initApp)...');
+            
+            // "Boş Sütunlar" hatasını çözmek için:
+            // Önce sütunları gizle ve veriyi yükle, modal ayarlarını sonra yap.
+            
+            // 1. Başlangıçta 2. sütundan sonrasını gizle
+            resetColumns(2); 
+            
+            // 2. İlk kolonun verisini (Kategoriler) API'dan çek
+            // Not: await kullanmak, initApp'in bu adımdan önce bitmemesini sağlar.
+            await fetchCategories();
+            
+            // 3. Modal butonları ve form için event listener'ları ayarla
+            setupModal();
+            
+            console.log('Uygulama başarıyla yüklendi.');
+        }
+
+        // --- DOM HAZIR OLDUĞUNDA UYGULAMAYI BAŞLAT ---
+        document.addEventListener('DOMContentLoaded', initApp);
 
     </script>
 </body>
 </html>
+
+
