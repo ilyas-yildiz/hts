@@ -11,8 +11,7 @@ class AnnualGoal extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['goal_category_id', 'year', 'period_label', 'title'];
-
+protected $fillable = ['goal_category_id', 'year', 'period_label', 'title', 'is_completed'];
     /**
      * Bu yıllık hedefin ait olduğu ana kategori.
      */

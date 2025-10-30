@@ -11,8 +11,7 @@ class WeeklyGoal extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['monthly_goal_id', 'week_label', 'title'];
-
+protected $fillable = ['monthly_goal_id', 'week_label', 'title', 'is_completed'];
     /**
      * Bu haftalık hedefin ait olduğu aylık hedef.
      */

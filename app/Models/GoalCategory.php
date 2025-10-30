@@ -11,7 +11,7 @@ class GoalCategory extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'name'];
+    protected $fillable = ['user_id', 'name', 'is_completed'];
 
     /**
      * Bu kategorinin ait olduğu kullanıcı.

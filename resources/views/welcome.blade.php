@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
+   <style>
         /* Temel stiller */
         body {
             font-family: 'Inter', sans-serif;
@@ -23,27 +23,74 @@
         ::-webkit-scrollbar-track { background: #374151; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        
         /* Özel seçili öğe stili */
         .list-item.selected {
             background-color: #3b82f6; /* Mavi (blue-500) */
             color: white;
             font-weight: 500;
         }
-        /* Görev tamamlandı stili */
-        .task-item.completed .task-desc { /* Sadece metni etkile */
-            text-decoration: line-through;
-            color: #6b7280; /* gray-500 */
-        }
+        
         /* Sütunların varsayılan olarak gizlenmesi için */
         .column.hidden {
             display: none;
         }
+
+       .task-item.completed .item-text,
+        .task-item.completed .task-desc {
+            text-decoration: line-through;
+            color: #6b7280; /* gray-500 */
+        }
+        /*
+         * ÜZERİNE GELME (HOVER) EFEKTİ
+         */
+        .item-actions {
+            opacity: 0;
+            transition: opacity 0.15s ease-in-out;
+            flex-shrink: 0; /* Butonların büzülmesini engelle */
+            margin-left: 8px; /* Metinle arasında boşluk */
+        }
+        .list-item:hover .item-actions,
+        .task-item:hover .item-actions {
+            opacity: 1;
+        }
+        .action-checkbox {
+            height: 1.1rem;
+            width: 1.1rem;
+            margin-right: 8px;
+            cursor: pointer;
+            accent-color: #3b82f6;
+            border-radius: 4px;
+        }
+        .action-delete {
+            background: none;
+            border: none;
+            color: #ef4444; /* red-500 */
+            cursor: pointer;
+            padding: 2px;
+        }
+        .action-delete:hover {
+            color: #f87171; /* red-400 */
+        }
+
+        
+        /* --- DÜZELTME (Metin Kaydırma) --- */
+        /* * Hatalı '.item-content' kuralı kaldırıldı.
+         * Kural artık Sütun 1-5'in metin sınıfı (.item-text) ve 
+         * Sütun 6'nın metin sınıfı (.task-desc) için geçerli.
+        */
+        .item-text,
+        .task-desc {
+            word-break: break-word; /* Uzun kelimeleri satır sonunda kır */
+            white-space: normal; /* Metnin alt satıra kaymasına izin ver */
+        }
+        /* --- DÜZELTME SONU --- */
     </style>
 </head>
 <body class="h-full flex flex-col">
 
     <header class="flex-shrink-0 bg-gray-900 shadow-md">
-        <div class="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <div class="flex items-center">
                     <svg class="w-8 h-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -70,7 +117,7 @@
     </header>
 
     <main class="flex-1 flex min-h-0">
-        <div class="flex-1 grid grid-cols-6 min-h-0 min-w-0 max-w-screen-2xl mx-auto">
+        <div class="flex-1 grid grid-cols-6 min-h-0 min-w-0 px-4 sm:px-6 lg:px-8">
             
             <div id="col-1" class="column flex flex-col border-r border-gray-700">
                 <div class="flex-shrink-0 p-4 border-b border-gray-700">
@@ -82,7 +129,7 @@
                 </div>
                 <div class="p-2 border-t border-gray-700">
                     <button id="open-category-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                        + Yeni Kategori Ekle
+                        + 5 Yıllık Hedef Ekle
                     </button>
                 </div>
             </div>
@@ -96,7 +143,7 @@
                 
                 <div class="p-2 border-t border-gray-700">
                     <button id="open-annual-goal-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                        + Yeni Yıllık Hedef Ekle
+                        + Yıllık Hedef Ekle
                     </button>
                 </div>
             </div>
@@ -110,7 +157,7 @@
                 
                 <div class="p-2 border-t border-gray-700">
                     <button id="open-monthly-goal-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                        + Yeni Aylık Hedef Ekle
+                        + Aylık Hedef Ekle
                     </button>
                 </div>
             </div>
@@ -124,7 +171,7 @@
 
                 <div class="p-2 border-t border-gray-700">
                     <button id="open-weekly-goal-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                        + Yeni Haftalık Hedef Ekle
+                        + Haftalık Hedef Ekle
                     </button>
                 </div>
             </div>
@@ -138,7 +185,7 @@
 
                 <div class="p-2 border-t border-gray-700">
                     <button id="open-daily-goal-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                        + Yeni Günlük Hedef Ekle
+                        + Günlük Hedef Ekle
                     </button>
                 </div>
             </div>
@@ -312,17 +359,35 @@
         </div>
     </div>
 
+    <!-- YENİ MODAL (Silme Onayı) -->
+    <div id="delete-confirm-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+        <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm">
+            <h3 class="text-xl font-semibold mb-2 text-white">Silme Onayı</h3>
+            <p class="text-gray-300 mb-6">Bu öğeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.</p>
+            <div class="mt-6 flex justify-end space-x-3">
+                <button type="button" id="cancel-delete-btn" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">
+                    İptal
+                </button>
+                <!-- DİKKAT: Bu buton kırmızı (tehlike) renginde -->
+                <button type="button" id="confirm-delete-btn" class="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700">
+                    Evet, Sil
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- ... (Tüm HTML kodunuz bittikten sonra) ... -->
 
 <script>
     // --- GLOBAL STATE ---
     const state = {
-        selectedCategoryId: null,
-        selectedAnnualId: null,
-        selectedMonthlyId: null,
-        selectedWeeklyId: null,
-        selectedDailyId: null,
-    };
+            selectedCategoryId: null,
+            selectedAnnualId: null,
+            selectedMonthlyId: null,
+            selectedWeeklyId: null,
+            selectedDailyId: null,
+            itemToDelete: null // YENİ EKLENDİ (Silinecek öğeyi (type, id, element) tutar)
+        };
 
     // --- API HELPERS ---
     async function fetchData(endpoint, options = {}) {
@@ -451,40 +516,64 @@
         }
     }
 
-    async function fetchTasks(dailyGoalId) {
-        console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
-        const data = await fetchData(`/api/tasks/${dailyGoalId}`);
-        const listElement = document.getElementById('list-col-6');
-        
-        if (data && data.length > 0) {
-            listElement.innerHTML = '';
-            data.forEach(task => {
-                const item = document.createElement('div');
-                item.className = `task-item flex items-center justify-between p-3 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
-                item.dataset.id = task.id;
-                
-                item.innerHTML = `
-                    <div class="flex-1">
-                        <div class="text-xs font-semibold text-gray-400">${task.time_label || ''}</div>
-                        <div class="text-sm text-white task-desc">${task.task_description}</div>
-                    </div>
-                    <input type="checkbox" class="task-checkbox ml-4 h-5 w-5 rounded bg-gray-600 border-gray-500 text-blue-500 focus:ring-blue-500" 
-                           ${task.is_completed ? 'checked' : ''}>
-                `;
-                
-                item.querySelector('.task-checkbox').addEventListener('change', async (e) => {
-                    await toggleTaskStatus(task.id, e.target.checked);
-                    item.classList.toggle('completed', e.target.checked);
+// --- BU FONKSİYONU GÜNCELLE (min-w-0 Düzeltmesi) ---
+        async function fetchTasks(dailyGoalId) {
+            console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
+            const data = await fetchData(`/api/tasks/${dailyGoalId}`);
+            const listElement = document.getElementById('list-col-6');
+            
+            if (data && data.length > 0) {
+                listElement.innerHTML = '';
+                data.forEach(task => {
+                    const item = document.createElement('div');
+                    item.className = `task-item flex items-center justify-between p-3 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
+                    item.dataset.id = task.id;
+                    
+                    // --- DÜZEN GÜNCELLEMESİ BURADA ---
+                    // "min-w-0" sınıfı eklendi
+                    item.innerHTML = `
+                        <div class="item-content flex-1 flex items-center min-w-0">
+                            <input type="checkbox" class="action-checkbox" 
+                                   title="Tamamlandı olarak işaretle"
+                                   ${task.is_completed ? 'checked' : ''}>
+                            <div class="ml-2">
+                                <div class="text-xs font-semibold text-gray-400">${task.time_label || ''}</div>
+                                <div class="text-sm text-white task-desc">${task.task_description}</div>
+                            </div>
+                        </div>
+                        <div class="item-actions">
+                            <button class="action-delete" title="Sil">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    // --- GÜNCELLEME SONU ---
+                    
+                    const checkbox = item.querySelector('.action-checkbox');
+                    const deleteBtn = item.querySelector('.action-delete');
+
+                    checkbox.addEventListener('change', async (e) => {
+                        const isCompleted = e.target.checked;
+                        await toggleTaskStatus(task.id, isCompleted);
+                        item.classList.toggle('completed', isCompleted);
+                    });
+                    
+                    deleteBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        handleDelete('task', task.id, item);
+                    });
+                    
+                    listElement.appendChild(item);
                 });
-                
-                listElement.appendChild(item);
-            });
-        } else {
-            listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Bu gün için planlanmış görev yok.</div>`;
+            } else {
+                listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Bu gün için planlanmış görev yok.</div>`;
+            }
+            
+            showColumn(6);
         }
-        
-        showColumn(6);
-    }
 
     // --- TASK (GÖREV) ACTIONS ---
     async function toggleTaskStatus(taskId, isCompleted) {
@@ -736,54 +825,213 @@
             }
         }
 
-    // --- UI (ARAYÜZ) HELPERS ---
-    
-    // --- renderList (DÜZELTİLMİŞ FORMATLI HALİ) ---
-    function renderList(listId, data, onClickCallback, textField = 'name') {
-        const listElement = document.getElementById(listId);
-        listElement.innerHTML = ''; 
+        // --- BU İKİ YENİ FONKSİYONU EKLEYİN ---
 
-        if (!data || data.length === 0) {
-            listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Veri bulunamadı.</div>`;
-            return;
-        }
-
-        data.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'list-item p-3 rounded-md cursor-pointer hover:bg-gray-700 transition-colors duration-150 flex justify-between items-center';
-            div.dataset.id = item.id;
-            
-            let displayText = item[textField] || item.title || 'İsimsiz';
-            
-            // Sütunlara göre özel formatlama
-            if (listId === 'list-col-2' && item.year && item.title) {
-                displayText = `Yıl ${item.year}: ${item.title}`;
-            } else if (listId === 'list-col-3' && item.month_label && item.title) {
-                displayText = `${item.month_label}: ${item.title}`;
-            } else if (listId === 'list-col-4' && item.week_label && item.title) {
-                displayText = `${item.week_label}: ${item.title}`;
-            } else if (listId === 'list-col-5' && item.day_label) {
-                displayText = item.title ? `${item.day_label}: ${item.title}` : item.day_label;
+        /**
+         * YENİ: Sütun 1-5 için 'is_completed' durumunu API üzerinden günceller (toggle).
+         */
+        async function handleToggleGoal(type, id, isCompleted) {
+            // 'type' (örn: 'col-1') -> 'goal-categories' (API endpoint)
+            let endpoint = '';
+            switch (type) {
+                case '1': endpoint = 'goal-categories'; break;
+                case '2': endpoint = 'annual-goals'; break;
+                case '3': endpoint = 'monthly-goals'; break;
+                case '4': endpoint = 'weekly-goals'; break;
+                case '5': endpoint = 'daily-goals'; break;
+                default:
+                    console.error('Bilinmeyen toggle tipi:', type);
+                    return;
             }
 
-            div.textContent = displayText;
+            console.log(`handleToggleGoal çağrıldı (Tip: ${type}, ID: ${id}, Durum: ${isCompleted})`);
+            
+            await fetchData(`/api/${endpoint}/toggle/${id}`, {
+                method: 'PUT',
+                body: JSON.stringify({ is_completed: isCompleted })
+            });
+            // Hata kontrolü eklenebilir, ancak şimdilik iyimser (optimistic) güncelleme yapıyoruz.
+        }
 
-            const icon = document.createElement('span');
-            icon.className = 'text-gray-500';
-            icon.innerHTML = '&gt;';
-            div.appendChild(icon);
+        /**
+         * YENİ: Bir öğeyi silmek için kullanılır (Tüm Sütunlar).
+         * (Şimdilik backend'i hazır olmadığı için SADECE BİR UYARI GÖSTERECEK)
+         */
+        async function handleDelete(type, id, itemElement) {
+            console.log(`handleDelete çağrıldı (Tip: ${type}, ID: ${id})`);
+            
+            // 1. Silinecek öğenin bilgilerini state'e kaydet
+            state.itemToDelete = { type, id, itemElement };
 
-            div.addEventListener('click', (e) => {
-                e.currentTarget.parentElement.querySelectorAll('.list-item').forEach(el => {
-                    el.classList.remove('selected');
-                });
-                e.currentTarget.classList.add('selected');
-                onClickCallback(item);
+            // 2. Silme onay modalını aç
+            document.getElementById('delete-confirm-modal').classList.remove('hidden');
+        }
+
+// --- BU YENİ FONKSİYONU EKLEYİN ---
+        /**
+         * YENİ: Silme onay modalındaki "Evet, Sil" butonuna tıklandığında çalışır.
+         */
+        async function confirmDelete() {
+            if (!state.itemToDelete) return; // Silinecek bir şey seçilmemişse çık
+
+            const { type, id, itemElement } = state.itemToDelete;
+            
+            console.log(`confirmDelete çağrıldı (Tip: ${type}, ID: ${id})`);
+
+            // 1. Endpoint'i (API Adresini) belirle
+            let endpoint = '';
+            switch (type) {
+                case '1': endpoint = 'goal-categories'; break; // Sütun 1
+                case '2': endpoint = 'annual-goals'; break; // Sütun 2
+                case '3': endpoint = 'monthly-goals'; break; // Sütun 3
+                case '4': endpoint = 'weekly-goals'; break; // Sütun 4
+                case '5': endpoint = 'daily-goals'; break; // Sütun 5
+                case 'task': endpoint = 'tasks'; break; // Sütun 6
+                default:
+                    console.error('Bilinmeyen silme tipi:', type);
+                    state.itemToDelete = null; // State'i temizle
+                    closeModal('delete-confirm-modal');
+                    return;
+            }
+            
+            // 2. Butonu "Siliniyor..." yap
+            const btn = document.getElementById('confirm-delete-btn');
+            btn.disabled = true;
+            btn.textContent = 'Siliniyor...';
+
+            // 3. API'ye DELETE isteği at
+            await fetchData(`/api/${endpoint}/${id}`, {
+                method: 'DELETE'
             });
 
-            listElement.appendChild(div);
-        });
-    }
+            // 4. Arayüzden öğeyi kaldır
+            itemElement.remove();
+
+            // 5. Butonu eski haline getir ve modalı kapat
+            btn.disabled = false;
+            btn.textContent = 'Evet, Sil';
+            closeModal('delete-confirm-modal');
+            state.itemToDelete = null; // State'i temizle
+        }
+
+    // --- UI (ARAYÜZ) HELPERS ---
+    
+// --- BU FONKSİYONU GÜNCELLE (Sütun 6 Tasarımı için) ---
+
+        function renderList(listId, data, onClickCallback, textField = 'name') {
+            const listElement = document.getElementById(listId);
+            listElement.innerHTML = ''; 
+
+            if (!data || data.length === 0) {
+                listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Veri bulunamadı.</div>`;
+                return;
+            }
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                
+                // Senin düzelttiğin gibi, Sütun 6 ile aynı ana sınıfı kullanıyoruz
+                div.className = 'task-item p-3 rounded-md hover:bg-gray-700 transition-colors duration-150 flex justify-between items-center';
+                div.dataset.id = item.id;
+
+                if (item.is_completed) {
+                    div.classList.add('completed');
+                }
+
+                // --- YENİ TASARIM YAPISI BAŞLIYOR ---
+                
+                let topText = '';
+                let bottomText = '';
+                // Sütun 1 (5 Yıllık Hedefler) hariç hepsi 'text-sm' olacak
+                let bottomFontSizeClass = 'text-sm text-white'; 
+
+                const listType = listId.split('-')[2]; // '1', '2', '3', '4', '5'
+
+                // Sütun 6'nın "iki satırlı" yapısını burada Sütun 1-5 için oluşturuyoruz
+                switch (listType) {
+                    case '1': // Sütun 1 (Kategori)
+                        topText = ''; // Sütun 1'de üst metin yok
+                        bottomText = item.name;
+                        // Sütun 1, ana başlık olduğu için daha büyük (text-base)
+                        bottomFontSizeClass = 'text-white'; // (veya text-base)
+                        break;
+                    case '2': // Sütun 2 (Yıllık)
+                        // örn: "Yıl 1: Eylül 2026 Sonu" (Üst) / "50 Kitap Oku" (Ana)
+                        topText = `Yıl ${item.year}: ${item.period_label}`; 
+                        bottomText = item.title;
+                        break;
+                    case '3': // Sütun 3 (Aylık)
+                        topText = item.month_label; // örn: Ekim 2025
+                        bottomText = item.title;
+                        break;
+                    case '4': // Sütun 4 (Haftalık)
+                        topText = item.week_label; // örn: 1. Hafta
+                        bottomText = item.title;
+                        break;
+                    case '5': // Sütun 5 (Günlük)
+                        topText = item.day_label; // örn: Pazartesi
+                        bottomText = item.title || ''; // Başlık opsiyonel
+                        break;
+                }
+                
+                // HTML Yapısı Sütun 6 (fetchTasks) ile %100 aynı
+                div.innerHTML = `
+                    <div class="item-content flex-1 flex items-center min-w-0">
+                        <input type="checkbox" 
+                               class="action-checkbox" 
+                               title="Tamamlandı olarak işaretle"
+                               ${item.is_completed ? 'checked' : ''}>
+                        
+                        <div class="ml-2" title="${topText ? topText + ': ' : ''}${bottomText}">
+                            ${topText ? `<div class="text-xs font-semibold text-gray-400">${topText}</div>` : ''}
+                            <div class="item-text ${bottomFontSizeClass}">${bottomText}</div>
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="action-delete" title="Sil">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+                // --- YENİ TASARIM YAPISI SONU ---
+
+                // Tıklama olaylarını ata
+                const content = div.querySelector('.item-content');
+                const checkbox = div.querySelector('.action-checkbox');
+                const deleteBtn = div.querySelector('.action-delete');
+                
+                checkbox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const isCompleted = e.target.checked;
+                    div.classList.toggle('completed', isCompleted); 
+                    const type = listId.split('-')[2]; 
+                    handleToggleGoal(type, item.id, isCompleted);
+                });
+
+                content.addEventListener('click', (e) => {
+                    if (e.target.tagName.toLowerCase() === 'input') {
+                        return;
+                    }
+                    // Sınıf adını 'task-item' olarak değiştirdik
+                    e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => {
+                        el.classList.remove('selected');
+                    });
+                    div.classList.add('selected');
+                    onClickCallback(item);
+                });
+
+                deleteBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const type = listId.split('-')[2];
+                    handleDelete(type, item.id, div);
+                });
+
+                listElement.appendChild(div);
+            });
+        }
 
     function resetColumns(startColumnIndex) {
         console.log(`resetColumns çağrıldı (Başlangıç: ${startColumnIndex})`);
@@ -876,10 +1124,10 @@
 
     function showError(message) {
         console.error('UYGULAMA HATASI:', message);
-        alert(message); 
     }
 
 // --- BU FONKSİYONU GÜNCELLE ---
+        // --- MEVCUT initApp FONKSİYONUNU SİLİP BUNU YAPIŞTIRIN ---
         async function initApp() {
             console.log('Uygulama başlıyor (initApp)...');
             
@@ -892,8 +1140,14 @@
             setupModal('annual-goal-modal', 'open-annual-goal-modal-btn', 'close-annual-goal-modal-btn', 'annual-goal-form');
             setupModal('monthly-goal-modal', 'open-monthly-goal-modal-btn', 'close-monthly-goal-modal-btn', 'monthly-goal-form');
             setupModal('weekly-goal-modal', 'open-weekly-goal-modal-btn', 'close-weekly-goal-modal-btn', 'weekly-goal-form');
-            // YENİ MODAL EKLENDİ:
             setupModal('daily-goal-modal', 'open-daily-goal-modal-btn', 'close-daily-goal-modal-btn', 'daily-goal-form');
+            
+            // YENİ EKLENDİ: Silme Modalı butonlarını ayarla
+            document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
+            document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+                closeModal('delete-confirm-modal');
+                state.itemToDelete = null; // İptal edilirse state'i temizle
+            });
             
             console.log('Uygulama başarıyla yüklendi.');
         }

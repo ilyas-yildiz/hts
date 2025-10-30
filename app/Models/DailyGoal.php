@@ -11,8 +11,7 @@ class DailyGoal extends Model // Hata buradaydı, "WeeklyGoal" yazıyordu
 {
     use HasFactory;
 
-    protected $fillable = ['weekly_goal_id', 'day_label', 'title'];
-
+protected $fillable = ['weekly_goal_id', 'day_label', 'title', 'is_completed'];
     /**
      * Bu günlük hedefin ait olduğu haftalık hedef.
      */
