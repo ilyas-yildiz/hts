@@ -25,8 +25,8 @@
         ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
         
         /* Özel seçili öğe stili */
-        .list-item.selected {
-            background-color: #3b82f6; /* Mavi (blue-500) */
+     .task-item.selected {
+            background-color: #0000005d; /* Mavi (blue-500) */
             color: white;
             font-weight: 500;
         }
@@ -73,6 +73,17 @@
             color: #f87171; /* red-400 */
         }
 
+        .action-edit {
+    background: none;
+    border: none;
+    color: #f0f9ff; /* light-blue-50 */
+    cursor: pointer;
+    padding: 2px;
+    margin-right: 4px; /* Silme ikonundan ayırmak için */
+}
+.action-edit:hover {
+    color: #60a5fa; /* blue-400 */
+}
         
         /* --- DÜZELTME (Metin Kaydırma) --- */
         /* * Hatalı '.item-content' kuralı kaldırıldı.
@@ -386,7 +397,8 @@
             selectedMonthlyId: null,
             selectedWeeklyId: null,
             selectedDailyId: null,
-            itemToDelete: null // YENİ EKLENDİ (Silinecek öğeyi (type, id, element) tutar)
+            itemToDelete: null,
+            editingItem: null // YENİ EKLENDİ (Düzenlenen öğeyi (type, id, data) tutar)
         };
 
     // --- API HELPERS ---
@@ -450,29 +462,28 @@
         }
     }
 
-    async function fetchAnnualGoals(categoryId) {
-        console.log(`fetchAnnualGoals çağrıldı (Kategori ID: ${categoryId})`);
-        const data = await fetchData(`/api/annual-goals/${categoryId}`);
-        if (data) {
-            console.log('Yıllık Hedefler yüklendi:', data);
-            renderList('list-col-2', data, (item) => {
-                state.selectedAnnualId = item.id;
-                resetColumns(3);
-                
-                if (item.year === 1) {
+    // --- BU FONKSİYONU GÜNCELLE (if (item.year === 1) Kuralı Kaldırıldı) ---
+
+        async function fetchAnnualGoals(categoryId) {
+            console.log(`fetchAnnualGoals çağrıldı (Kategori ID: ${categoryId})`);
+            const data = await fetchData(`/api/annual-goals/${categoryId}`);
+            if (data) {
+                console.log('Yıllık Hedefler yüklendi:', data);
+                renderList('list-col-2', data, (item) => {
+                    state.selectedAnnualId = item.id;
+                    resetColumns(3);
+                    
+                    // DÜZELTME: (item.year === 1) kuralı kaldırıldı.
+                    // Artık hangi yıla tıklarsan tıkla (Yıl 2, 3, 4, 5),
+                    // Sütun 3 (Aylar) her zaman açılacak.
                     fetchMonthlyGoals(item.id);
                     document.getElementById('title-col-3').textContent = item.period_label;
-                } else {
-                    document.getElementById('list-col-3').innerHTML = 
-                        `<div class="p-4 text-center text-gray-500">
-                            Bu yılın aylık planlaması henüz aktif değil.
-                        </div>`;
-                }
-            }, 'period_label');
-            
-            showColumn(2);
+
+                }, 'period_label'); // 'period_label' yerine 'title' veya 'year' da kullanabiliriz
+                
+                showColumn(2);
+            }
         }
-    }
 
     async function fetchMonthlyGoals(annualGoalId) {
         console.log(`fetchMonthlyGoals çağrıldı (Yıllık ID: ${annualGoalId})`);
@@ -517,6 +528,7 @@
     }
 
 // --- BU FONKSİYONU GÜNCELLE (min-w-0 Düzeltmesi) ---
+// --- BU FONKSİYONU GÜNCELLE (Hata 1 Düzeltmesi: 'undefined' sorunu) ---
         async function fetchTasks(dailyGoalId) {
             console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
             const data = await fetchData(`/api/tasks/${dailyGoalId}`);
@@ -524,13 +536,13 @@
             
             if (data && data.length > 0) {
                 listElement.innerHTML = '';
-                data.forEach(task => {
-                    const item = document.createElement('div');
+                
+                // DİKKAT: Buradaki döngü değişkeni 'task', Sütun 1-5'teki 'item' değil.
+                data.forEach(task => { 
+                    const item = document.createElement('div'); // item = HTML element
                     item.className = `task-item flex items-center justify-between p-3 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
                     item.dataset.id = task.id;
                     
-                    // --- DÜZEN GÜNCELLEMESİ BURADA ---
-                    // "min-w-0" sınıfı eklendi
                     item.innerHTML = `
                         <div class="item-content flex-1 flex items-center min-w-0">
                             <input type="checkbox" class="action-checkbox" 
@@ -542,6 +554,12 @@
                             </div>
                         </div>
                         <div class="item-actions">
+                            <button class="action-edit" title="Düzenle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                                    <path d="m15 5 4 4"/>
+                                </svg>
+                            </button>
                             <button class="action-delete" title="Sil">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                     <polyline points="3 6 5 6 21 6"></polyline>
@@ -550,15 +568,22 @@
                             </button>
                         </div>
                     `;
-                    // --- GÜNCELLEME SONU ---
                     
                     const checkbox = item.querySelector('.action-checkbox');
+                    const editBtn = item.querySelector('.action-edit');
                     const deleteBtn = item.querySelector('.action-delete');
 
                     checkbox.addEventListener('change', async (e) => {
                         const isCompleted = e.target.checked;
                         await toggleTaskStatus(task.id, isCompleted);
                         item.classList.toggle('completed', isCompleted);
+                    });
+
+                    // DÜZELTME BURADA:
+                    // Modal'a HTML element 'item' değil, veri objesi 'task' gönderilmeli.
+                    editBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        openEditModal('task', task); // 'item' -> 'task' olarak düzeltildi
                     });
                     
                     deleteBtn.addEventListener('click', (e) => {
@@ -584,244 +609,199 @@
         });
     }
 
-    async function addNewTask(e) {
-        e.preventDefault(); 
-        const time = document.getElementById('task-time').value;
-        const desc = document.getElementById('task-desc').value;
-        
-        if (!desc || !state.selectedDailyId) {
-            showError('Görev açıklaması boş olamaz veya bir gün seçili değil.');
-            return;
+// --- MEVCUT 6 "addNew..." FONKSİYONUNU SİLİP BUNLARI YAPIŞTIRIN ---
+
+        async function addNewCategory(e) {
+            e.preventDefault();
+            // DÜZENLEME MODU KONTROLÜ
+            if (state.editingItem) {
+                await handleUpdate(e);
+                return;
+            }
+            
+            const nameInput = document.getElementById('category-name');
+            const name = nameInput.value.trim();
+            if (!name) return;
+            // ... (kalan kod aynı) ...
+            const data = { name: name };
+            const btn = document.getElementById('save-category-btn');
+            btn.disabled = true;
+            btn.textContent = 'Kaydediliyor...';
+            const newCategory = await fetchData('/api/goal-categories', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            btn.disabled = false;
+            btn.textContent = 'Kaydet';
+            if (newCategory) {
+                fetchCategories(); 
+                closeModal('category-modal'); 
+            }
         }
         
-        const data = {
-            daily_goal_id: state.selectedDailyId,
-            time_label: time || "Zamanlanmamış",
-            task_description: desc
-        };
-        
-        const btn = document.getElementById('save-task-btn');
-        btn.disabled = true;
-        btn.textContent = 'Kaydediliyor...';
-
-        const newTask = await fetchData('/api/tasks', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-        
-        btn.disabled = false;
-        btn.textContent = 'Kaydet';
-
-        if (newTask) {
-            console.log('Görev eklendi:', newTask);
-            fetchTasks(state.selectedDailyId); // Listeyi yenile
-            closeModal('task-modal'); // Modalı kapat
+        async function addNewAnnualGoal(e) {
+            e.preventDefault();
+            // DÜZENLEME MODU KONTROLÜ
+            if (state.editingItem) {
+                await handleUpdate(e);
+                return;
+            }
+            
+            if (!state.selectedCategoryId) return;
+            const title = document.getElementById('annual-goal-title').value.trim();
+            const year = document.getElementById('annual-goal-year').value;
+            const period_label = document.getElementById('annual-goal-period').value.trim();
+            if (!title || !year || !period_label) return;
+            // ... (kalan kod aynı) ...
+            const data = {
+                goal_category_id: state.selectedCategoryId,
+                title: title,
+                year: parseInt(year, 10),
+                period_label: period_label
+            };
+            const btn = document.getElementById('save-annual-goal-btn');
+            btn.disabled = true;
+            btn.textContent = 'Kaydediliyor...';
+            const newAnnualGoal = await fetchData('/api/annual-goals', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            btn.disabled = false;
+            btn.textContent = 'Kaydet';
+            if (newAnnualGoal) {
+                fetchAnnualGoals(state.selectedCategoryId); 
+                closeModal('annual-goal-modal'); 
+            }
         }
-    }
-    
-    async function addNewCategory(e) {
-        e.preventDefault();
-        const nameInput = document.getElementById('category-name');
-        const name = nameInput.value.trim();
-        
-        if (!name) {
-            showError('Kategori adı boş olamaz.');
-            return;
-        }
-        
-        const data = { name: name };
-        
-        const btn = document.getElementById('save-category-btn');
-        btn.disabled = true;
-        btn.textContent = 'Kaydediliyor...';
 
-        const newCategory = await fetchData('/api/goal-categories', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-        
-        btn.disabled = false;
-        btn.textContent = 'Kaydet';
-
-        if (newCategory) {
-            console.log('Kategori eklendi:', newCategory);
-            fetchCategories(); 
-            closeModal('category-modal'); 
+        async function addNewMonthlyGoal(e) {
+            e.preventDefault();
+            // DÜZENLEME MODU KONTROLÜ
+            if (state.editingItem) {
+                await handleUpdate(e);
+                return;
+            }
+            
+            if (!state.selectedAnnualId) return;
+            const title = document.getElementById('monthly-goal-title').value.trim();
+            const label = document.getElementById('monthly-goal-label').value.trim();
+            if (!title || !label) return;
+            // ... (kalan kod aynı) ...
+            const data = {
+                annual_goal_id: state.selectedAnnualId,
+                title: title,
+                month_label: label
+            };
+            const btn = document.getElementById('save-monthly-goal-btn');
+            btn.disabled = true;
+            btn.textContent = 'Kaydediliyor...';
+            const newMonthlyGoal = await fetchData('/api/monthly-goals', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            btn.disabled = false;
+            btn.textContent = 'Kaydet';
+            if (newMonthlyGoal) {
+                fetchMonthlyGoals(state.selectedAnnualId); 
+                closeModal('monthly-goal-modal'); 
+            }
         }
-    }
-    
-    async function addNewAnnualGoal(e) {
-        e.preventDefault();
-        
-        if (!state.selectedCategoryId) {
-            showError('Lütfen önce bir ana kategori (Sütun 1) seçin.');
-            return;
-        }
-        
-        const title = document.getElementById('annual-goal-title').value.trim();
-        const year = document.getElementById('annual-goal-year').value;
-        const period_label = document.getElementById('annual-goal-period').value.trim();
-        
-        if (!title || !year || !period_label) {
-            showError('Lütfen tüm alanları doldurun.');
-            return;
-        }
-        
-        const data = {
-            goal_category_id: state.selectedCategoryId,
-            title: title,
-            year: parseInt(year, 10),
-            period_label: period_label
-        };
-        
-        const btn = document.getElementById('save-annual-goal-btn');
-        btn.disabled = true;
-        btn.textContent = 'Kaydediliyor...';
 
-        const newAnnualGoal = await fetchData('/api/annual-goals', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-        
-        btn.disabled = false;
-        btn.textContent = 'Kaydet';
-
-        if (newAnnualGoal) {
-            console.log('Yıllık Hedef eklendi:', newAnnualGoal);
-            fetchAnnualGoals(state.selectedCategoryId); 
-            closeModal('annual-goal-modal'); 
+        async function addNewWeeklyGoal(e) {
+            e.preventDefault();
+            // DÜZENLEME MODU KONTROLÜ
+            if (state.editingItem) {
+                await handleUpdate(e);
+                return;
+            }
+            
+            if (!state.selectedMonthlyId) return;
+            const title = document.getElementById('weekly-goal-title').value.trim();
+            const label = document.getElementById('weekly-goal-label').value.trim();
+            if (!title || !label) return;
+            // ... (kalan kod aynı) ...
+            const data = {
+                monthly_goal_id: state.selectedMonthlyId,
+                title: title,
+                week_label: label
+            };
+            const btn = document.getElementById('save-weekly-goal-btn');
+            btn.disabled = true;
+            btn.textContent = 'Kaydediliyor...';
+            const newWeeklyGoal = await fetchData('/api/weekly-goals', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            btn.disabled = false;
+            btn.textContent = 'Kaydet';
+            if (newWeeklyGoal) {
+                fetchWeeklyGoals(state.selectedMonthlyId); 
+                closeModal('weekly-goal-modal'); 
+            }
         }
-    }
 
-    // --- EKSİK OLAN FONKSİYON BURADA ---
-    async function addNewMonthlyGoal(e) {
-        e.preventDefault();
-        
-        if (!state.selectedAnnualId) {
-            showError('Lütfen önce bir yıllık hedef (Sütun 2) seçin.');
-            return;
-        }
-        
-        const title = document.getElementById('monthly-goal-title').value.trim();
-        const label = document.getElementById('monthly-goal-label').value.trim();
-        
-        if (!title || !label) {
-            showError('Lütfen tüm alanları doldurun.');
-            return;
-        }
-        
-        const data = {
-            annual_goal_id: state.selectedAnnualId,
-            title: title,
-            month_label: label
-        };
-        
-        const btn = document.getElementById('save-monthly-goal-btn');
-        btn.disabled = true;
-        btn.textContent = 'Kaydediliyor...';
-
-        const newMonthlyGoal = await fetchData('/api/monthly-goals', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-        
-        btn.disabled = false;
-        btn.textContent = 'Kaydet';
-
-        if (newMonthlyGoal) {
-            console.log('Aylık Hedef eklendi:', newMonthlyGoal);
-            fetchMonthlyGoals(state.selectedAnnualId); 
-            closeModal('monthly-goal-modal'); 
-        }
-    }
-
-    // --- YENİ SÜTUN 4 FONKSİYONU BURADA ---
-    async function addNewWeeklyGoal(e) {
-        e.preventDefault();
-        
-        if (!state.selectedMonthlyId) {
-            showError('Lütfen önce bir aylık hedef (Sütun 3) seçin.');
-            return;
-        }
-        
-        const title = document.getElementById('weekly-goal-title').value.trim();
-        const label = document.getElementById('weekly-goal-label').value.trim();
-        
-        if (!title || !label) {
-            showError('Lütfen tüm alanları doldurun.');
-            return;
-        }
-        
-        const data = {
-            monthly_goal_id: state.selectedMonthlyId,
-            title: title,
-            week_label: label
-        };
-        
-        const btn = document.getElementById('save-weekly-goal-btn');
-        btn.disabled = true;
-        btn.textContent = 'Kaydediliyor...';
-
-        const newWeeklyGoal = await fetchData('/api/weekly-goals', {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
-        
-        btn.disabled = false;
-        btn.textContent = 'Kaydet';
-
-        if (newWeeklyGoal) {
-            console.log('Haftalık Hedef eklendi:', newWeeklyGoal);
-            fetchWeeklyGoals(state.selectedMonthlyId); 
-            closeModal('weekly-goal-modal'); 
-        }
-    }
-
-    /**
-         * YENİ: Yeni bir Günlük Hedef (DailyGoal) ekler.
-         */
         async function addNewDailyGoal(e) {
             e.preventDefault();
-            
-            // 1. Haftalık Hedef seçili mi diye kontrol et
-            if (!state.selectedWeeklyId) {
-                showError('Lütfen önce bir haftalık hedef (Sütun 4) seçin.');
+            // DÜZENLEME MODU KONTROLÜ
+            if (state.editingItem) {
+                await handleUpdate(e);
                 return;
             }
             
-            // 2. Form verilerini al
+            if (!state.selectedWeeklyId) return;
             const label = document.getElementById('daily-goal-label').value.trim();
             const title = document.getElementById('daily-goal-title').value.trim();
-            
-            if (!label) {
-                showError('Gün etiketi (Örn: Pazartesi) zorunludur.');
-                return;
-            }
-            
+            if (!label) return;
+            // ... (kalan kod aynı) ...
             const data = {
-                weekly_goal_id: state.selectedWeeklyId, // Bir üstteki Haftalık Hedef ID'si
+                weekly_goal_id: state.selectedWeeklyId,
                 day_label: label,
-                title: title || null // Opsiyonel olduğu için boşsa null gönder
+                title: title || null
             };
-            
-            // 3. API'ye gönder
             const btn = document.getElementById('save-daily-goal-btn');
             btn.disabled = true;
             btn.textContent = 'Kaydediliyor...';
-
             const newDailyGoal = await fetchData('/api/daily-goals', {
                 method: 'POST',
                 body: JSON.stringify(data)
             });
-            
             btn.disabled = false;
             btn.textContent = 'Kaydet';
-
             if (newDailyGoal) {
-                console.log('Günlük Hedef eklendi:', newDailyGoal);
-                // Sütun 5'i yenile (mevcut seçili haftalık hedef için)
                 fetchDailyGoals(state.selectedWeeklyId); 
-                closeModal('daily-goal-modal'); // Modalı kapat
+                closeModal('daily-goal-modal'); 
+            }
+        }
+        
+        async function addNewTask(e) {
+            e.preventDefault(); 
+            // DÜZENLEME MODU KONTROLÜ
+            if (state.editingItem) {
+                await handleUpdate(e);
+                return;
+            }
+
+            const time = document.getElementById('task-time').value;
+            const desc = document.getElementById('task-desc').value;
+            if (!desc || !state.selectedDailyId) return;
+            // ... (kalan kod aynı) ...
+            const data = {
+                daily_goal_id: state.selectedDailyId,
+                time_label: time || "Zamanlanmamış",
+                task_description: desc
+            };
+            const btn = document.getElementById('save-task-btn');
+            btn.disabled = true;
+            btn.textContent = 'Kaydediliyor...';
+            const newTask = await fetchData('/api/tasks', {
+                method: 'POST',
+                body: JSON.stringify(data)
+            });
+            btn.disabled = false;
+            btn.textContent = 'Kaydet';
+            if (newTask) {
+                fetchTasks(state.selectedDailyId);
+                closeModal('task-modal');
             }
         }
 
@@ -868,6 +848,8 @@
         }
 
 // --- BU YENİ FONKSİYONU EKLEYİN ---
+       // --- BU FONKSİYONU GÜNCELLE (Arayüzde Zincirleme Silme) ---
+
         /**
          * YENİ: Silme onay modalındaki "Evet, Sil" butonuna tıklandığında çalışır.
          */
@@ -907,17 +889,190 @@
             // 4. Arayüzden öğeyi kaldır
             itemElement.remove();
 
-            // 5. Butonu eski haline getir ve modalı kapat
+            // 5. DÜZELTME: Silinen öğeye bağlı alt sütunları ARAYÜZDEN temizle
+            switch (type) {
+                case '1': resetColumns(2); break; // Sütun 1 silindiyse, 2-6'yı temizle
+                case '2': resetColumns(3); break; // Sütun 2 silindiyse, 3-6'yı temizle
+                case '3': resetColumns(4); break; // Sütun 3 silindiyse, 4-6'yı temizle
+                case '4': resetColumns(5); break; // Sütun 4 silindiyse, 5-6'yı temizle
+                case '5': resetColumns(6); break; // Sütun 5 silindiyse, 6'yı temizle
+                // case 'task' (Sütun 6) bir şey yapmaz, çocuğu yok.
+            }
+
+            // 6. Butonu eski haline getir ve modalı kapat
             btn.disabled = false;
             btn.textContent = 'Evet, Sil';
             closeModal('delete-confirm-modal');
             state.itemToDelete = null; // State'i temizle
         }
 
+        // --- BU İKİ YENİ FONKSİYONU EKLEYİN ---
+
+        /**
+         * YENİ: "Düzenle" ikonuna tıklandığında modalı açar ve verilerle doldurur.
+         */
+        function openEditModal(type, item) {
+            state.editingItem = { type, item }; // Düzenleme moduna gir
+            
+            let modalId = '';
+            
+            switch (type) {
+                case '1': // Kategori
+                    modalId = 'category-modal';
+                    document.getElementById('category-name').value = item.name;
+                    break;
+                case '2': // Yıllık
+                    modalId = 'annual-goal-modal';
+                    document.getElementById('annual-goal-title').value = item.title;
+                    document.getElementById('annual-goal-year').value = item.year;
+                    document.getElementById('annual-goal-period').value = item.period_label;
+                    break;
+                case '3': // Aylık
+                    modalId = 'monthly-goal-modal';
+                    document.getElementById('monthly-goal-title').value = item.title;
+                    document.getElementById('monthly-goal-label').value = item.month_label;
+                    break;
+                case '4': // Haftalık
+                    modalId = 'weekly-goal-modal';
+                    document.getElementById('weekly-goal-title').value = item.title;
+                    document.getElementById('weekly-goal-label').value = item.week_label;
+                    break;
+                case '5': // Günlük
+                    modalId = 'daily-goal-modal';
+                    document.getElementById('daily-goal-label').value = item.day_label;
+                    document.getElementById('daily-goal-title').value = item.title;
+                    break;
+                case 'task': // Görev
+                    modalId = 'task-modal';
+                    document.getElementById('task-time').value = item.time_label;
+                    document.getElementById('task-desc').value = item.task_description;
+                    break;
+                default:
+                    console.error('Bilinmeyen düzenleme tipi:', type);
+                    return;
+            }
+
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                // Modalı "Düzenle" moduna geçir
+                modal.querySelector('h3').textContent = 'Öğeyi Düzenle';
+                modal.querySelector('button[type="submit"]').textContent = 'Güncelle';
+                modal.classList.remove('hidden');
+            }
+        }
+
+        /**
+         * YENİ: "Güncelle" butonuna basıldığında (Ekleme yerine) bu fonksiyon çalışır.
+         */
+      // --- BU FONKSİYONU GÜNCELLE (Hata 2 Düzeltmesi: 'kaydetmiyor' sorunu) ---
+        async function handleUpdate(e) {
+            e.preventDefault();
+            if (!state.editingItem) return;
+
+            const { type, item } = state.editingItem;
+            
+            let data = {};
+            let endpoint = '';
+            let btnId = '';
+            
+            try {
+                // 1. Tipe göre veriyi ve API adresini hazırla
+                switch (type) {
+                    case '1':
+                        data = { name: document.getElementById('category-name').value };
+                        endpoint = `/api/goal-categories/${item.id}`;
+                        btnId = 'save-category-btn';
+                        break;
+                    case '2':
+                        data = {
+                            title: document.getElementById('annual-goal-title').value,
+                            year: document.getElementById('annual-goal-year').value,
+                            period_label: document.getElementById('annual-goal-period').value
+                        };
+                        endpoint = `/api/annual-goals/${item.id}`;
+                        btnId = 'save-annual-goal-btn';
+                        break;
+                        
+                    // DÜZELTME BURADA: (case '3.' -> case '3')
+                    case '3': 
+                        data = {
+                            title: document.getElementById('monthly-goal-title').value,
+                            month_label: document.getElementById('monthly-goal-label').value
+                        };
+                        endpoint = `/api/monthly-goals/${item.id}`;
+                        btnId = 'save-monthly-goal-btn';
+                        break;
+                        
+                    // DÜZELTME BURADA: (case '4.' -> case '4')
+                    case '4': 
+                        data = {
+                            title: document.getElementById('weekly-goal-title').value,
+                            week_label: document.getElementById('weekly-goal-label').value
+                        };
+                        endpoint = `/api/weekly-goals/${item.id}`;
+                        btnId = 'save-weekly-goal-btn';
+                        break;
+                        
+                    case '5':
+                        data = {
+                            day_label: document.getElementById('daily-goal-label').value,
+                            title: document.getElementById('daily-goal-title').value || null
+                        };
+                        endpoint = `/api/daily-goals/${item.id}`;
+                        btnId = 'save-daily-goal-btn';
+                        break;
+                    case 'task':
+                        data = {
+                            time_label: document.getElementById('task-time').value,
+                            task_description: document.getElementById('task-desc').value
+                        };
+                        endpoint = `/api/tasks/${item.id}`;
+                        btnId = 'save-task-btn';
+                        break;
+                    default:
+                        throw new Error('Bilinmeyen güncelleme tipi');
+                }
+
+                // 2. API'ye gönder
+                const btn = document.getElementById(btnId);
+                btn.disabled = true;
+                btn.textContent = 'Güncelleniyor...';
+                
+                const updatedItem = await fetchData(endpoint, {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+                
+                // 3. Başarılıysa, listeyi yenile ve modalı kapat
+                if (updatedItem) {
+                    console.log('Öğe güncellendi:', updatedItem);
+                    // Hangi listenin yenileneceğini belirle
+                    switch (type) {
+                        case '1': fetchCategories(); break;
+                        case '2': fetchAnnualGoals(state.selectedCategoryId); break;
+                        case '3': fetchMonthlyGoals(state.selectedAnnualId); break;
+                        case '4': fetchWeeklyGoals(state.selectedMonthlyId); break;
+                        case '5': fetchDailyGoals(state.selectedWeeklyId); break;
+                        case 'task': fetchTasks(state.selectedDailyId); break;
+                    }
+                    closeModal(btn.closest('.fixed').id);
+                }
+                
+            } catch (error) {
+                console.error('Güncelleme hatası:', error);
+                if (btnId) {
+                    const btn = document.getElementById(btnId);
+                    btn.disabled = false;
+                    btn.textContent = 'Güncelle';
+                }
+            }
+        }
+
     // --- UI (ARAYÜZ) HELPERS ---
     
 // --- BU FONKSİYONU GÜNCELLE (Sütun 6 Tasarımı için) ---
 
+    // --- MEVCUT renderList FONKSİYONUNU SİLİP BUNU YAPIŞTIRIN ---
         function renderList(listId, data, onClickCallback, textField = 'name') {
             const listElement = document.getElementById(listId);
             listElement.innerHTML = ''; 
@@ -929,52 +1084,43 @@
 
             data.forEach(item => {
                 const div = document.createElement('div');
-                
-                // Senin düzelttiğin gibi, Sütun 6 ile aynı ana sınıfı kullanıyoruz
                 div.className = 'task-item p-3 rounded-md hover:bg-gray-700 transition-colors duration-150 flex justify-between items-center';
                 div.dataset.id = item.id;
 
                 if (item.is_completed) {
                     div.classList.add('completed');
                 }
-
-                // --- YENİ TASARIM YAPISI BAŞLIYOR ---
                 
                 let topText = '';
                 let bottomText = '';
-                // Sütun 1 (5 Yıllık Hedefler) hariç hepsi 'text-sm' olacak
                 let bottomFontSizeClass = 'text-sm text-white'; 
+                const listType = listId.split('-')[2];
 
-                const listType = listId.split('-')[2]; // '1', '2', '3', '4', '5'
-
-                // Sütun 6'nın "iki satırlı" yapısını burada Sütun 1-5 için oluşturuyoruz
                 switch (listType) {
-                    case '1': // Sütun 1 (Kategori)
-                        topText = ''; // Sütun 1'de üst metin yok
+                    case '1': 
+                        topText = '';
                         bottomText = item.name;
-                        // Sütun 1, ana başlık olduğu için daha büyük (text-base)
-                        bottomFontSizeClass = 'text-white'; // (veya text-base)
+                        bottomFontSizeClass = 'text-white';
                         break;
-                    case '2': // Sütun 2 (Yıllık)
-                        // örn: "Yıl 1: Eylül 2026 Sonu" (Üst) / "50 Kitap Oku" (Ana)
+                    case '2': 
                         topText = `Yıl ${item.year}: ${item.period_label}`; 
                         bottomText = item.title;
                         break;
-                    case '3': // Sütun 3 (Aylık)
-                        topText = item.month_label; // örn: Ekim 2025
+                    case '3':
+                        topText = item.month_label;
                         bottomText = item.title;
                         break;
-                    case '4': // Sütun 4 (Haftalık)
-                        topText = item.week_label; // örn: 1. Hafta
+                    case '4':
+                        topText = item.week_label;
                         bottomText = item.title;
                         break;
-                    case '5': // Sütun 5 (Günlük)
-                        topText = item.day_label; // örn: Pazartesi
-                        bottomText = item.title || ''; // Başlık opsiyonel
+                    case '5':
+                        topText = item.day_label;
+                        bottomText = item.title || '';
                         break;
                 }
                 
-                // HTML Yapısı Sütun 6 (fetchTasks) ile %100 aynı
+                // HTML GÜNCELLENDİ: "action-edit" (Kalem ikonu) eklendi
                 div.innerHTML = `
                     <div class="item-content flex-1 flex items-center min-w-0">
                         <input type="checkbox" 
@@ -988,6 +1134,13 @@
                         </div>
                     </div>
                     <div class="item-actions">
+                        <!-- YENİ DÜZENLEME BUTONU -->
+                        <button class="action-edit" title="Düzenle">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                                <path d="m15 5 4 4"/>
+                            </svg>
+                        </button>
                         <button class="action-delete" title="Sil">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <polyline points="3 6 5 6 21 6"></polyline>
@@ -996,11 +1149,11 @@
                         </button>
                     </div>
                 `;
-                // --- YENİ TASARIM YAPISI SONU ---
 
                 // Tıklama olaylarını ata
                 const content = div.querySelector('.item-content');
                 const checkbox = div.querySelector('.action-checkbox');
+                const editBtn = div.querySelector('.action-edit'); // YENİ
                 const deleteBtn = div.querySelector('.action-delete');
                 
                 checkbox.addEventListener('click', (e) => {
@@ -1015,12 +1168,18 @@
                     if (e.target.tagName.toLowerCase() === 'input') {
                         return;
                     }
-                    // Sınıf adını 'task-item' olarak değiştirdik
                     e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => {
                         el.classList.remove('selected');
                     });
                     div.classList.add('selected');
                     onClickCallback(item);
+                });
+
+                // YENİ DÜZENLEME OLAYI
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const type = listId.split('-')[2];
+                    openEditModal(type, item);
                 });
 
                 deleteBtn.addEventListener('click', (e) => {
@@ -1111,16 +1270,36 @@
             }
         }
 
-    function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('hidden');
-            const form = modal.querySelector('form');
-            if (form) {
-                form.reset();
+  // --- BU FONKSİYONU GÜNCELLE (Hata 2 Düzeltmesi: 'kaydet basmıyor' sorunu) ---
+
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                
+                const form = modal.querySelector('form');
+                if (form) {
+                    form.reset(); // Formu temizle
+                }
+                
+                // Modalı "Yeni Ekle" moduna geri döndür
+                // (Silme modalı hariç)
+                if (modalId !== 'delete-confirm-modal') {
+                    // DÜZELTME BURADA:
+                    // Butonu bul, metnini "Kaydet" yap VE 'disabled' durumunu kaldır.
+                    modal.querySelector('h3').textContent = modal.querySelector('h3').textContent.replace('Düzenle', 'Yeni Ekle');
+                    
+                    const submitBtn = modal.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        submitBtn.textContent = 'Kaydet';
+                        submitBtn.disabled = false; // <-- EKSİK OLAN KOD BUYDU
+                    }
+                }
+                
+                // Düzenleme modundan çık
+                state.editingItem = null;
             }
         }
-    }
 
     function showError(message) {
         console.error('UYGULAMA HATASI:', message);
