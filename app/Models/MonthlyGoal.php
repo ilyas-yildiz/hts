@@ -11,8 +11,7 @@ class MonthlyGoal extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['annual_goal_id', 'month_label', 'title'];
-
+protected $fillable = ['annual_goal_id', 'month_label', 'title', 'is_completed'];
     /**
      * Bu aylık hedefin ait olduğu yıllık hedef.
      */
