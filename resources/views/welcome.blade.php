@@ -11,6 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
    <style>
         /* Temel stiller */
         body {
@@ -96,6 +97,25 @@
             white-space: normal; /* Metnin alt satıra kaymasına izin ver */
         }
         /* --- DÜZELTME SONU --- */
+        /* YENİ EKLENDİ (Sürükle-Bırak Stilleri) */
+        
+        /* Sürüklenmekte olan öğenin yerini gösteren hayalet */
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #4b5563; /* gray-600 */
+        }
+        /* Sürüklenen öğenin kendisi (bazen opaklaşır, onu engeller) */
+        .sortable-drag {
+            opacity: 1 !important;
+        }
+        
+        /* Sütun 1-5 öğeleri için fare imlecini 'tutma' yap */
+        .task-item {
+            cursor: grab;
+        }
+        .task-item:active {
+            cursor: grabbing; /* Tutarken */
+        }
     </style>
 </head>
 <body class="h-full flex flex-col">
@@ -527,8 +547,7 @@
         }
     }
 
-// --- BU FONKSİYONU GÜNCELLE (min-w-0 Düzeltmesi) ---
-// --- BU FONKSİYONU GÜNCELLE (Hata 1 Düzeltmesi: 'undefined' sorunu) ---
+// --- MEVCUT fetchTasks FONKSİYONUNU SİLİP BUNU YAPIŞTIRIN ---
         async function fetchTasks(dailyGoalId) {
             console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
             const data = await fetchData(`/api/tasks/${dailyGoalId}`);
@@ -536,10 +555,8 @@
             
             if (data && data.length > 0) {
                 listElement.innerHTML = '';
-                
-                // DİKKAT: Buradaki döngü değişkeni 'task', Sütun 1-5'teki 'item' değil.
-                data.forEach(task => { 
-                    const item = document.createElement('div'); // item = HTML element
+                data.forEach(task => {
+                    const item = document.createElement('div');
                     item.className = `task-item flex items-center justify-between p-3 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
                     item.dataset.id = task.id;
                     
@@ -569,30 +586,21 @@
                         </div>
                     `;
                     
+                    // ... (tüm click (checkbox, editBtn, deleteBtn) event listener'ları aynı) ...
                     const checkbox = item.querySelector('.action-checkbox');
                     const editBtn = item.querySelector('.action-edit');
                     const deleteBtn = item.querySelector('.action-delete');
+                    checkbox.addEventListener('change', async (e) => { const isCompleted = e.target.checked; await toggleTaskStatus(task.id, isCompleted); item.classList.toggle('completed', isCompleted); });
+                    editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal('task', task); });
+                    deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDelete('task', task.id, item); });
 
-                    checkbox.addEventListener('change', async (e) => {
-                        const isCompleted = e.target.checked;
-                        await toggleTaskStatus(task.id, isCompleted);
-                        item.classList.toggle('completed', isCompleted);
-                    });
-
-                    // DÜZELTME BURADA:
-                    // Modal'a HTML element 'item' değil, veri objesi 'task' gönderilmeli.
-                    editBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        openEditModal('task', task); // 'item' -> 'task' olarak düzeltildi
-                    });
-                    
-                    deleteBtn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        handleDelete('task', task.id, item);
-                    });
-                    
                     listElement.appendChild(item);
                 });
+
+                // --- YENİ GÜNCELLEME BURADA ---
+                // Liste render edildikten sonra, SortableJS'i başlat
+                initSortable('list-col-6', 'Task');
+
             } else {
                 listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Bu gün için planlanmış görev yok.</div>`;
             }
@@ -847,6 +855,72 @@
             document.getElementById('delete-confirm-modal').classList.remove('hidden');
         }
 
+        // ... (handleDelete fonksiyonu bittikten sonra) ...
+
+
+        // --- BU İKİ YENİ FONKSİYONU EKLEYİN ---
+
+        /**
+         * YENİ: Sürükle-bırak bittiğinde (onEnd) çağrılır.
+         * API'ye yeni sırayı gönderir.
+         */
+        async function handleReorder(modelType, listElement) {
+            console.log(`handleReorder çağrıldı (Tip: ${modelType})`);
+
+            // 1. listedeki tüm öğelerin 'data-id'lerini al
+            // (Senin düzeltmen sayesinde sınıf adı 'task-item' oldu)
+            const items = listElement.querySelectorAll('.task-item');
+            const ids = Array.from(items).map(item => parseInt(item.dataset.id, 10));
+
+            if (ids.length === 0) return; // Liste boşsa bir şey yapma
+
+            // 2. API'ye gönderilecek veriyi hazırla
+            const data = {
+                model_type: modelType, // örn: 'GoalCategory'
+                ids: ids               // örn: [3, 1, 2]
+            };
+
+            // 3. API'ye gönder (PUT /api/reorder)
+            // (Bu işlem arkaplanda sessizce yapılır, kullanıcıyı engellemez)
+            try {
+                await fetchData('/api/reorder', {
+                    method: 'PUT',
+                    body: JSON.stringify(data)
+                });
+                console.log('Sıralama güncellendi:', modelType, ids);
+            } catch (error) {
+                console.error('Sıralama güncellenirken hata:', error);
+                showError('Sıralama güncellenirken bir hata oluştu!');
+            }
+        }
+
+        /**
+         * YENİ: Belirli bir liste sütununda (listId) SortableJS'i (sürükle-bırak) başlatır.
+         */
+        function initSortable(listId, modelType) {
+            const listElement = document.getElementById(listId);
+            if (!listElement) return;
+
+            // Eğer bu liste üzerinde zaten bir Sortable varsa, onu yok et
+            // (Bu, 'renderList'in tekrar tekrar çağrılmasında oluşacak hataları engeller)
+            if (listElement.sortableInstance) {
+                listElement.sortableInstance.destroy();
+            }
+
+            // Yeni Sortable'ı oluştur ve 'instance'ı elemente kaydet
+            listElement.sortableInstance = new Sortable(listElement, {
+                animation: 150, // Sürükleme animasyonu
+                ghostClass: 'sortable-ghost', // Hayalet sınıfı
+                dragClass: 'sortable-drag', // Sürüklenen sınıfı
+                
+                // Sürükleme bittiğinde...
+                onEnd: function (evt) {
+                    // API'ye yeni sırayı gönder
+                    handleReorder(modelType, listElement);
+                }
+            });
+        }
+
 // --- BU YENİ FONKSİYONU EKLEYİN ---
        // --- BU FONKSİYONU GÜNCELLE (Arayüzde Zincirleme Silme) ---
 
@@ -1073,13 +1147,14 @@
 // --- BU FONKSİYONU GÜNCELLE (Sütun 6 Tasarımı için) ---
 
     // --- MEVCUT renderList FONKSİYONUNU SİLİP BUNU YAPIŞTIRIN ---
+     // --- MEVCUT renderList FONKSİYONUNU SİLİP BUNU YAPIŞTIRIN ---
         function renderList(listId, data, onClickCallback, textField = 'name') {
             const listElement = document.getElementById(listId);
             listElement.innerHTML = ''; 
 
             if (!data || data.length === 0) {
                 listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Veri bulunamadı.</div>`;
-                return;
+                return; // Sıralamayı başlatma
             }
 
             data.forEach(item => {
@@ -1120,7 +1195,6 @@
                         break;
                 }
                 
-                // HTML GÜNCELLENDİ: "action-edit" (Kalem ikonu) eklendi
                 div.innerHTML = `
                     <div class="item-content flex-1 flex items-center min-w-0">
                         <input type="checkbox" 
@@ -1134,7 +1208,6 @@
                         </div>
                     </div>
                     <div class="item-actions">
-                        <!-- YENİ DÜZENLEME BUTONU -->
                         <button class="action-edit" title="Düzenle">
                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
@@ -1150,46 +1223,35 @@
                     </div>
                 `;
 
-                // Tıklama olaylarını ata
+                // ... (tüm click (checkbox, content, editBtn, deleteBtn) event listener'ları aynı) ...
                 const content = div.querySelector('.item-content');
                 const checkbox = div.querySelector('.action-checkbox');
-                const editBtn = div.querySelector('.action-edit'); // YENİ
+                const editBtn = div.querySelector('.action-edit');
                 const deleteBtn = div.querySelector('.action-delete');
-                
-                checkbox.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const isCompleted = e.target.checked;
-                    div.classList.toggle('completed', isCompleted); 
-                    const type = listId.split('-')[2]; 
-                    handleToggleGoal(type, item.id, isCompleted);
-                });
+                checkbox.addEventListener('click', (e) => { e.stopPropagation(); const isCompleted = e.target.checked; div.classList.toggle('completed', isCompleted); const type = listId.split('-')[2]; handleToggleGoal(type, item.id, isCompleted); });
+                content.addEventListener('click', (e) => { if (e.target.tagName.toLowerCase() === 'input') { return; } e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => { el.classList.remove('selected'); }); div.classList.add('selected'); onClickCallback(item); });
+                editBtn.addEventListener('click', (e) => { e.stopPropagation(); const type = listId.split('-')[2]; openEditModal(type, item); });
+                deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); const type = listId.split('-')[2]; handleDelete(type, item.id, div); });
 
-                content.addEventListener('click', (e) => {
-                    if (e.target.tagName.toLowerCase() === 'input') {
-                        return;
-                    }
-                    e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => {
-                        el.classList.remove('selected');
-                    });
-                    div.classList.add('selected');
-                    onClickCallback(item);
-                });
-
-                // YENİ DÜZENLEME OLAYI
-                editBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const type = listId.split('-')[2];
-                    openEditModal(type, item);
-                });
-
-                deleteBtn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    const type = listId.split('-')[2];
-                    handleDelete(type, item.id, div);
-                });
 
                 listElement.appendChild(div);
             });
+
+            // --- YENİ GÜNCELLEME BURADA ---
+            // Liste render edildikten sonra, SortableJS'i başlat
+            const listType = listId.split('-')[2];
+            let modelType = '';
+            switch (listType) {
+                case '1': modelType = 'GoalCategory'; break;
+                case '2': modelType = 'AnnualGoal'; break;
+                case '3': modelType = 'MonthlyGoal'; break;
+                case '4': modelType = 'WeeklyGoal'; break;
+                case '5': modelType = 'DailyGoal'; break;
+            }
+            if (modelType) {
+                initSortable(listId, modelType);
+            }
+            // --- GÜNCELLEME SONU ---
         }
 
     function resetColumns(startColumnIndex) {

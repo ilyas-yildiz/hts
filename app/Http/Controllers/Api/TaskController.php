@@ -19,13 +19,16 @@ class TaskController extends Controller
             'time_label' => 'nullable|string|max:255',
             'task_description' => 'required|string|max:1000',
         ]);
+        
+        // DÜZENLENDİ: Yeni sıra numarasını hesapla
+        $maxOrder = Task::where('daily_goal_id', $validated['daily_goal_id'])->max('order_index');
+        $validated['order_index'] = $maxOrder + 1;
+        
         $task = Task::create($validated);
         return response()->json($task, 201);
     }
 
-    /**
-     * Bir görevin (Sütun 6) tamamlanma durumunu günceller.
-     */
+    // --- TOGGLE (Değişiklik yok) ---
     public function toggle(Request $request, Task $task): JsonResponse
     {
         $validated = $request->validate([
@@ -35,27 +38,21 @@ class TaskController extends Controller
         return response()->json($task);
     }
 
-    /**
-     * Bir görevi (Sütun 6) siler.
-     */
+    // --- DESTROY (Değişiklik yok) ---
     public function destroyTask(Task $task): JsonResponse
     {
         $task->delete();
         return response()->json(null, 204);
     }
 
-    /**
-     * YENİ METOD: Bir görevin (Sütun 6) içeriğini günceller.
-     */
+    // --- UPDATE (Değişiklik yok) ---
     public function updateTask(Request $request, Task $task): JsonResponse
     {
         $validated = $request->validate([
             'time_label' => 'nullable|string|max:255',
             'task_description' => 'required|string|max:1000',
         ]);
-
         $task->update($validated);
-
         return response()->json($task);
     }
 }

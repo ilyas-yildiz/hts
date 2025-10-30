@@ -10,30 +10,21 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MonthlyGoal extends Model
 {
     use HasFactory;
+    public $timestamps = false;
+    protected $fillable = ['annual_goal_id', 'month_label', 'title', 'is_completed', 'order_index']; // order_index eklendi
 
-    public $timestamps = false; // 'updated_at' hatası için
-
-    protected $fillable = ['annual_goal_id', 'month_label', 'title', 'is_completed'];
-
-    /**
-     * YENİ: Model Olayları (Events)
-     * Bu model (MonthlyGoal) silinmeden hemen önce bu fonksiyon çalışır.
-     */
     protected static function booted()
     {
         static::deleting(function (MonthlyGoal $monthlyGoal) {
-            // Bu aylık hedefe bağlı tüm haftalık hedefleri de sil.
             $monthlyGoal->weeklyGoals()->each(function ($weeklyGoal) {
                 $weeklyGoal->delete();
             });
         });
     }
-
     public function annualGoal(): BelongsTo
     {
         return $this->belongsTo(AnnualGoal::class);
     }
-
     public function weeklyGoals(): HasMany
     {
         return $this->hasMany(WeeklyGoal::class);
