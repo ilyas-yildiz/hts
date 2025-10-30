@@ -11,18 +11,29 @@ class MonthlyGoal extends Model
 {
     use HasFactory;
 
-protected $fillable = ['annual_goal_id', 'month_label', 'title', 'is_completed'];
+    public $timestamps = false; // 'updated_at' hatası için
+
+    protected $fillable = ['annual_goal_id', 'month_label', 'title', 'is_completed'];
+
     /**
-     * Bu aylık hedefin ait olduğu yıllık hedef.
+     * YENİ: Model Olayları (Events)
+     * Bu model (MonthlyGoal) silinmeden hemen önce bu fonksiyon çalışır.
      */
+    protected static function booted()
+    {
+        static::deleting(function (MonthlyGoal $monthlyGoal) {
+            // Bu aylık hedefe bağlı tüm haftalık hedefleri de sil.
+            $monthlyGoal->weeklyGoals()->each(function ($weeklyGoal) {
+                $weeklyGoal->delete();
+            });
+        });
+    }
+
     public function annualGoal(): BelongsTo
     {
         return $this->belongsTo(AnnualGoal::class);
     }
 
-    /**
-     * Bu aylık hedefe bağlı tüm haftalık hedefler.
-     */
     public function weeklyGoals(): HasMany
     {
         return $this->hasMany(WeeklyGoal::class);

@@ -7,25 +7,35 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class DailyGoal extends Model // Hata buradaydı, "WeeklyGoal" yazıyordu
+class DailyGoal extends Model
 {
     use HasFactory;
 
-protected $fillable = ['weekly_goal_id', 'day_label', 'title', 'is_completed'];
+    public $timestamps = false; // 'updated_at' hatası için
+
+    protected $fillable = ['weekly_goal_id', 'day_label', 'title', 'is_completed'];
+
     /**
-     * Bu günlük hedefin ait olduğu haftalık hedef.
+     * YENİ: Model Olayları (Events)
+     * Bu model (DailyGoal) silinmeden hemen önce bu fonksiyon çalışır.
      */
+    protected static function booted()
+    {
+        static::deleting(function (DailyGoal $dailyGoal) {
+            // Bu günlük hedefe bağlı tüm görevleri (task) de sil.
+            $dailyGoal->tasks()->each(function ($task) {
+                $task->delete();
+            });
+        });
+    }
+
     public function weeklyGoal(): BelongsTo
     {
         return $this->belongsTo(WeeklyGoal::class);
     }
 
-    /**
-     * Bu günlük hedefe ait görevler (tasks).
-     */
     public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
     }
 }
-

@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Task;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse; // JsonResponse eklendi
+use Illuminate\Http\JsonResponse;
 
 class TaskController extends Controller
 {
@@ -14,16 +14,13 @@ class TaskController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        // 'task_description' için max validation artırıldı
         $validated = $request->validate([
             'daily_goal_id' => 'required|exists:daily_goals,id',
             'time_label' => 'nullable|string|max:255',
-            'task_description' => 'required|string|max:1000', 
+            'task_description' => 'required|string|max:1000',
         ]);
-
         $task = Task::create($validated);
-
-        return response()->json($task, 201); // 201: Kaynak oluşturuldu
+        return response()->json($task, 201);
     }
 
     /**
@@ -34,21 +31,31 @@ class TaskController extends Controller
         $validated = $request->validate([
             'is_completed' => 'required|boolean',
         ]);
-
-        $task->update([
-            'is_completed' => $validated['is_completed']
-        ]);
-
+        $task->update($validated);
         return response()->json($task);
     }
 
     /**
-     * YENİ METOD: Bir görevi (Sütun 6) siler.
+     * Bir görevi (Sütun 6) siler.
      */
     public function destroyTask(Task $task): JsonResponse
     {
         $task->delete();
-        // 204 (No Content) kodu, "Başarılı, yanıt olarak gönderecek bir şey yok" demektir.
         return response()->json(null, 204);
+    }
+
+    /**
+     * YENİ METOD: Bir görevin (Sütun 6) içeriğini günceller.
+     */
+    public function updateTask(Request $request, Task $task): JsonResponse
+    {
+        $validated = $request->validate([
+            'time_label' => 'nullable|string|max:255',
+            'task_description' => 'required|string|max:1000',
+        ]);
+
+        $task->update($validated);
+
+        return response()->json($task);
     }
 }
