@@ -1,31 +1,71 @@
-﻿name: 🚀 Deploy Laravel Project via FTP
+﻿# GitHub Action Adı
+name: Deploy Laravel Project to FTP
 
+# Tetikleyici: 'main' branch'ine her push yapıldığında çalışır
 on:
   push:
     branches:
-      - main  # main branch push edilince çalışacak
+      - main  # veya 'master' gibi ana branch'inizin adı neyse onu yazın
 
 jobs:
   ftp-deploy:
+    # Çalışma ortamı (en güncel Ubuntu)
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    # 1. Adım: Kodu (repository) checkout et
+    - name: Check out repository
+      uses: actions/checkout@v4
 
-      - name: Deploy to FTP Server
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ftp.ankaratadilatdekorasyon.com.tr
-          username: ankaratadilatdek
-          password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: /home/ankaratadilatdek/hts.ankaratadilatdekorasyon.com.tr/
-          local-dir: ./  # tüm proje yüklenecek
-          exclude: |
-            **/.git*
-            **/.github*
-            **/node_modules/**
-            **/storage/**
-            **/.env
-            **/tests/**
-            **/README.md
+    # 2. Adım: PHP Ortamını Kur (Laravel 12 için PHP 8.2+ gerekir)
+    # Sunucunuzdaki PHP sürümü ile aynı olmasına dikkat edin
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2' # Sunucunuzdaki PHP sürümünü buraya yazın
+        extensions: mbstring, xml, ctype, json, tokenizer, dom, pdo, pdo_mysql
+        tools: composer
+
+    # 3. Adım: Composer bağımlılıklarını kur
+    # Bu adım, 'vendor' klasörünü oluşturur.
+    - name: Install Composer Dependencies
+      run: composer install --no-interaction --no-dev --optimize-autoloader
+
+    # 4. Adım: Laravel Optimizasyonu (Prod için önemli)
+    # Bu komutlar cache dosyalarını oluşturur.
+    - name: Run Laravel Optimize Commands
+      run: |
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
+        php artisan event:cache
+
+    # 5. Adım: FTP ile Sunucuya Yükle
+    - name: Deploy to FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+      with:
+        # GitHub Secrets'tan bilgileri çekiyoruz
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        server-dir: ${{ secrets.SERVER_PATH }}
+        
+        # Gönderim ayarları
+        protocol: ftp # Gerekirse 'ftps' olarak değiştirilebilir
+        port: 21
+        timeout: 30000
+        
+        # Hariç tutulacak dosyalar (ÇOK ÖNEMLİ)
+        # .env dosyasını ASLA göndermemeliyiz, sunucudaki kalmalı.
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          .env
+          .env.example
+          .github/**
+          storage/framework/sessions/*
+          storage/framework/views/*
+          storage/framework/cache/data/*
+          storage/logs/*
+          public/storage
