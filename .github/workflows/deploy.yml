@@ -3,7 +3,7 @@
 on:
   push:
     branches:
-      - main
+      - main  # main branch push edilince çalışacak
 
 jobs:
   ftp-deploy:
@@ -16,10 +16,10 @@ jobs:
       - name: Deploy to FTP Server
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
-          server: ${{ secrets.FTP_SERVER }}
-          username: ${{ secrets.FTP_USERNAME }}
+          server: ftp.ankaratadilatdekorasyon.com.tr
+          username: ankaratadilatdek
           password: ${{ secrets.FTP_PASSWORD }}
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}
+          server-dir: /home/ankaratadilatdek/hts.ankaratadilatdekorasyon.com.tr/
           local-dir: ./  # tüm proje yüklenecek
           exclude: |
             **/.git*
