@@ -16,17 +16,18 @@ use App\Http\Controllers\Api\ReorderController;
 
 // --- BREEZE WEB ARAYÜZ ROTLARI ---
 
-// Ana sayfa ('/') artık 'dashboard'a yönlendiriyor
+// DÜZELTME: Ana sayfa ('/') artık 'dashboard'a SADECE YÖNLENDİRİR (isimsiz).
 Route::get('/', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+    return redirect()->route('dashboard');
+});
 
-// '/dashboard' rotası da korunuyor
+// DÜZELTME: '/dashboard' rotası 'dashboard' ismini alan TEK ROTA oldu.
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// Breeze'in 'Profil' Rotaları
+
+// Breeze'in 'Profil' Rotaları (Bunlar doğruydu)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -35,52 +36,38 @@ Route::middleware('auth')->group(function () {
 
 
 // --- HTS API ROTLARI ---
-// DÜZELTME: Tüm API rotaları 'routes/api.php' yerine buraya,
-// 'auth' (giriş yapma zorunluluğu) ve 'prefix('api')' (adresin /api/ ile başlaması)
-// koruması altına alındı.
+// (Bu kısım bir önceki adımdan, doğru ve tam)
 Route::prefix('api')->middleware(['auth'])->group(function () {
 
     /**
      * 1. GoalController Rotaları (Sütun 1-5)
      */
     Route::controller(GoalController::class)->group(function () {
-        
-        // --- Kategori (Sütun 1) ---
         Route::get('/goal-categories', 'getGoalCategories');
         Route::post('/goal-categories', 'storeCategory');
         Route::put('/goal-categories/toggle/{goalCategory}', 'toggleCategory');
         Route::delete('/goal-categories/{goalCategory}', 'destroyCategory');
         Route::put('/goal-categories/{goalCategory}', 'updateCategory');
-
-        // --- Yıllık Hedef (Sütun 2) ---
         Route::get('/annual-goals/{goalCategory}', 'getAnnualGoals');
         Route::post('/annual-goals', 'storeAnnualGoal'); 
         Route::put('/annual-goals/toggle/{annualGoal}', 'toggleAnnualGoal');
         Route::delete('/annual-goals/{annualGoal}', 'destroyAnnualGoal');
         Route::put('/annual-goals/{annualGoal}', 'updateAnnualGoal');
-
-        // --- Aylık Hedef (Sütun 3) ---
         Route::get('/monthly-goals/{annualGoal}', 'getMonthlyGoals');
         Route::post('/monthly-goals', 'storeMonthlyGoal');
         Route::put('/monthly-goals/toggle/{monthlyGoal}', 'toggleMonthlyGoal');
         Route::delete('/monthly-goals/{monthlyGoal}', 'destroyMonthlyGoal');
         Route::put('/monthly-goals/{monthlyGoal}', 'updateMonthlyGoal');
-
-        // --- Haftalık Hedef (Sütun 4) ---
         Route::get('/weekly-goals/{monthlyGoal}', 'getWeeklyGoals');
         Route::post('/weekly-goals', 'storeWeeklyGoal');
         Route::put('/weekly-goals/toggle/{weeklyGoal}', 'toggleWeeklyGoal');
         Route::delete('/weekly-goals/{weeklyGoal}', 'destroyWeeklyGoal');
         Route::put('/weekly-goals/{weeklyGoal}', 'updateWeeklyGoal');
-
-        // --- Günlük Hedef (Sütun 5) ---
         Route::get('/daily-goals/{weeklyGoal}', 'getDailyGoals');
         Route::post('/daily-goals', 'storeDailyGoal');
         Route::put('/daily-goals/toggle/{dailyGoal}', 'toggleDailyGoal');
         Route::delete('/daily-goals/{dailyGoal}', 'destroyDailyGoal');
         Route::put('/daily-goals/{dailyGoal}', 'updateDailyGoal');
-
-        // --- Görev (Sütun 6) ---
         Route::get('/tasks/{dailyGoal}', 'getTasks');
     });
 
