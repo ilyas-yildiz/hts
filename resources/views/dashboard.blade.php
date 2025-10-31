@@ -46,7 +46,7 @@
                 <div class="p-4 text-center text-gray-500">Yükleniyor...</div>
             </div>
             <div class="p-2 border-t border-gray-700">
-                <button id="open-category-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                <button id="open-category-modal-btn" class="w-full bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200">
                     + Yeni Kategori Ekle
                 </button>
             </div>

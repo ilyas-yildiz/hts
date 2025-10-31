@@ -1,0 +1,17 @@
+[33mcommit 8174f206351a9331ef5c7c1835ddfab43e383f17[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeature/authentication[m[33m, [m[1;31morigin/feature/authentication[m[33m)[m
+Author: ilyas-yildiz <ilyasyildiz444@gmail.com>
+Date:   Fri Oct 31 17:36:07 2025 +0300
+
+    fix: web.php updated
+
+[33mcommit e26fe2978f7db9996358eb39548ad27881620699[m
+Author: ilyas-yildiz <ilyasyildiz444@gmail.com>
+Date:   Fri Oct 31 17:26:48 2025 +0300
+
+    fix: deploy.yml and gitignore updated
+
+[33mcommit 4a649d4686e7dd9773cc792ad27c763937d119c2[m
+Author: ilyas-yildiz <ilyasyildiz444@gmail.com>
+Date:   Fri Oct 31 17:07:57 2025 +0300
+
+    feat: Laravel Breeze (Blade) kurulumu tamamlandı, HTS arayüzü 'dashboard'a taşındı ve 'Auth' mantığına bağlandı
