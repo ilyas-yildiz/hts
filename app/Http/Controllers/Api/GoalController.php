@@ -12,50 +12,45 @@ use App\Models\User;
 use App\Models\WeeklyGoal;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+// DİKKAT: Artık 'Hash' kullanmıyoruz, 'Auth' kullanıyoruz
+use Illuminate\Support\Facades\Auth; 
 
 class GoalController extends Controller
 {
-    private function getOrCreateDefaultUser(): User
-    {
-        return User::firstOrCreate(
-            ['email' => 'mail@adresiniz.com'],
-            ['name' => 'İlyas Yıldız', 'password' => Hash::make('password')]
-        );
-    }
+    /*
+     * DÜZELTME: 'getOrCreateDefaultUser' fonksiyonu SİLİNDİ.
+     * Artık 'Auth::user()' (giriş yapmış kullanıcı) kullanacağız.
+    */
 
     // --- GET METODLARI (orderBy eklendi) ---
     public function getGoalCategories(): JsonResponse
     {
-        $user = $this->getOrCreateDefaultUser();
-        // DÜZENLENDİ: orderBy('order_index') eklendi
+        // DÜZELTME: $user = User::first() yerine Auth::user()
+        $user = Auth::user(); 
+        
         return response()->json($user->goalCategories()->orderBy('order_index', 'asc')->get());
     }
     public function getAnnualGoals(GoalCategory $goalCategory): JsonResponse
     {
-        // DÜZENLENDİ: orderBy('order_index') eklendi
+        // TODO: (İsteğe bağlı güvenlik) Bu kategorinin giriş yapan kullanıcıya ait olup olmadığını kontrol et
         return response()->json($goalCategory->annualGoals()->orderBy('order_index', 'asc')->get());
     }
     public function getMonthlyGoals(AnnualGoal $annualGoal): JsonResponse
     {
-        // DÜZENLENDİ: orderBy('order_index') eklendi
         return response()->json($annualGoal->monthlyGoals()->orderBy('order_index', 'asc')->get());
     }
     public function getWeeklyGoals(MonthlyGoal $monthlyGoal): JsonResponse
     {
-        // DÜZENLENDİ: orderBy('order_index') eklendi
         return response()->json($monthlyGoal->weeklyGoals()->orderBy('order_index', 'asc')->get());
     }
     public function getDailyGoals(WeeklyGoal $weeklyGoal): JsonResponse
     {
-        // DÜZENLENDİ: orderBy('order_index') eklendi
         return response()->json($weeklyGoal->dailyGoals()->orderBy('order_index', 'asc')->get());
     }
     public function getTasks(DailyGoal $dailyGoal): JsonResponse
     {
         $tasks = $dailyGoal->tasks()
                           ->orderBy('is_completed', 'asc')
-                          // DÜZENLENDİ: orderBy('order_index') eklendi
                           ->orderBy('order_index', 'asc') 
                           ->get();
                           
@@ -67,9 +62,10 @@ class GoalController extends Controller
     public function storeCategory(Request $request): JsonResponse
     {
         $validated = $request->validate(['name' => 'required|string|max:255']);
-        $user = $this->getOrCreateDefaultUser();
+        
+        // DÜZELTME: $user = $this->getOrCreateDefaultUser() yerine Auth::user()
+        $user = Auth::user();
 
-        // DÜZENLENDİ: Yeni sıra numarasını hesapla
         $maxOrder = $user->goalCategories()->max('order_index');
         $validated['order_index'] = $maxOrder + 1;
         
@@ -79,13 +75,12 @@ class GoalController extends Controller
     public function storeAnnualGoal(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'goal_category_id' => 'required|exists:goal_categories,id',
+            'goal_category_id' => 'required|exists:goal_categories,id', // TODO: Bu ID'nin kullanıcıya ait olduğunu doğrula
             'title' => 'required|string|max:255',
             'year' => 'required|integer|min:1|max:5',
             'period_label' => 'required|string|max:255',
         ]);
         
-        // DÜZENLENDİ: Yeni sıra numarasını hesapla
         $maxOrder = AnnualGoal::where('goal_category_id', $validated['goal_category_id'])->max('order_index');
         $validated['order_index'] = $maxOrder + 1;
 
@@ -100,7 +95,6 @@ class GoalController extends Controller
             'month_label' => 'required|string|max:255',
         ]);
         
-        // DÜZENLENDİ: Yeni sıra numarasını hesapla
         $maxOrder = MonthlyGoal::where('annual_goal_id', $validated['annual_goal_id'])->max('order_index');
         $validated['order_index'] = $maxOrder + 1;
         
@@ -115,7 +109,6 @@ class GoalController extends Controller
             'week_label' => 'required|string|max:255',
         ]);
         
-        // DÜZENLENDİ: Yeni sıra numarasını hesapla
         $maxOrder = WeeklyGoal::where('monthly_goal_id', $validated['monthly_goal_id'])->max('order_index');
         $validated['order_index'] = $maxOrder + 1;
         
@@ -130,7 +123,6 @@ class GoalController extends Controller
             'title' => 'nullable|string|max:255',
         ]);
         
-        // DÜZENLENDİ: Yeni sıra numarasını hesapla
         $maxOrder = DailyGoal::where('weekly_goal_id', $validated['weekly_goal_id'])->max('order_index');
         $validated['order_index'] = $maxOrder + 1;
         
@@ -139,8 +131,8 @@ class GoalController extends Controller
     }
 
 
-    // --- TOGGLE METODLARI (Değişiklik yok) ---
-  public function toggleCategory(Request $request, GoalCategory $goalCategory): JsonResponse
+    // --- TOGGLE METODLARI ---
+    public function toggleCategory(Request $request, GoalCategory $goalCategory): JsonResponse
     {
         $validated = $request->validate(['is_completed' => 'required|boolean']);
         $goalCategory->update(['is_completed' => $validated['is_completed']]);
@@ -171,8 +163,9 @@ class GoalController extends Controller
         return response()->json($dailyGoal);
     }
 
-    // --- DESTROY METODLARI (Değişiklik yok) ---
-      public function destroyCategory(GoalCategory $goalCategory): JsonResponse
+
+    // --- DESTROY METODLARI ---
+    public function destroyCategory(GoalCategory $goalCategory): JsonResponse
     {
         $goalCategory->delete();
         return response()->json(null, 204); 
@@ -198,8 +191,9 @@ class GoalController extends Controller
         return response()->json(null, 204);
     }
 
-    // --- UPDATE METODLARI (Değişiklik yok) ---
-     public function updateCategory(Request $request, GoalCategory $goalCategory): JsonResponse
+
+    // --- UPDATE METODLARI ---
+    public function updateCategory(Request $request, GoalCategory $goalCategory): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -207,10 +201,6 @@ class GoalController extends Controller
         $goalCategory->update($validated);
         return response()->json($goalCategory);
     }
-
-    /**
-     * Yıllık Hedef (Sütun 2) günceller.
-     */
     public function updateAnnualGoal(Request $request, AnnualGoal $annualGoal): JsonResponse
     {
         $validated = $request->validate([
@@ -221,10 +211,6 @@ class GoalController extends Controller
         $annualGoal->update($validated);
         return response()->json($annualGoal);
     }
-
-    /**
-     * Aylık Hedef (Sütun 3) günceller.
-     */
     public function updateMonthlyGoal(Request $request, MonthlyGoal $monthlyGoal): JsonResponse
     {
         $validated = $request->validate([
@@ -234,10 +220,6 @@ class GoalController extends Controller
         $monthlyGoal->update($validated);
         return response()->json($monthlyGoal);
     }
-
-    /**
-     * Haftalık Hedef (Sütun 4) günceller.
-     */
     public function updateWeeklyGoal(Request $request, WeeklyGoal $weeklyGoal): JsonResponse
     {
         $validated = $request->validate([
@@ -247,10 +229,6 @@ class GoalController extends Controller
         $weeklyGoal->update($validated);
         return response()->json($weeklyGoal);
     }
-
-    /**
-     * Günlük Hedef (Sütun 5) günceller.
-     */
     public function updateDailyGoal(Request $request, DailyGoal $dailyGoal): JsonResponse
     {
         $validated = $request->validate([

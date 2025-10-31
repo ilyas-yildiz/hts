@@ -1,6 +1,6 @@
-<?php
+﻿<?php
 
-use App\Http\Controllers\ProfileController;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // HTS Kontrolcülerimizi buraya dahil et
@@ -10,35 +10,22 @@ use App\Http\Controllers\Api\ReorderController;
 
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| API Routes
 |--------------------------------------------------------------------------
+|
+| Burası, HTS arayüzümüzün (JavaScript) veri çekeceği YERDİR.
+|
 */
 
-// --- BREEZE WEB ARAYÜZ ROTLARI ---
-
-// Ana sayfa ('/') artık 'dashboard'a yönlendiriyor
-Route::get('/', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// '/dashboard' rotası da korunuyor
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-// Breeze'in 'Profil' Rotaları
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// Breeze'in varsayılan /api/user rotası (giriş yapmış kullanıcıyı döndürür)
+Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
+    return $request->user();
 });
 
-
-// --- HTS API ROTLARI ---
-// DÜZELTME: Tüm API rotaları 'routes/api.php' yerine buraya,
-// 'auth' (giriş yapma zorunluluğu) ve 'prefix('api')' (adresin /api/ ile başlaması)
-// koruması altına alındı.
-Route::prefix('api')->middleware(['auth'])->group(function () {
+// --- YENİ EKLENDİ: HTS API ROTLARI ---
+// 'auth:sanctum' middleware'i, bu gruptaki tüm rotaların
+// SADECE giriş yapmış kullanıcılar tarafından erişilebilmesini sağlar.
+Route::middleware(['auth:sanctum'])->group(function () {
 
     /**
      * 1. GoalController Rotaları (Sütun 1-5)
@@ -99,9 +86,4 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
      */
     Route::put('/reorder', [ReorderController::class, 'updateOrder']);
 
-}); // <-- /api ve auth grubunun sonu
-
-
-// Breeze'in oluşturduğu kimlik doğrulama rotalarını yükle
-// (Bu /login, /register, /logout vb. içerir)
-require __DIR__.'/auth.php';
+}); // <-- auth:sanctum grubunun sonu
