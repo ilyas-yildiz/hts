@@ -5,34 +5,46 @@ name: Deploy Laravel Project to FTP
 on:
   push:
     branches:
-      - main  # veya 'master' gibi ana branch'inizin adı neyse onu yazın
+      - main
 
 jobs:
   ftp-deploy:
-    # Çalışma ortamı (en güncel Ubuntu)
     runs-on: ubuntu-latest
-
     steps:
+    
     # 1. Adım: Kodu (repository) checkout et
     - name: Check out repository
       uses: actions/checkout@v4
 
-    # 2. Adım: PHP Ortamını Kur (Laravel 12 için PHP 8.2+ gerekir)
-    # Sunucunuzdaki PHP sürümü ile aynı olmasına dikkat edin
+    # 2. Adım: PHP Ortamını Kur
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
-        php-version: '8.3' # Sunucunuzdaki PHP sürümünü buraya yazın
+        php-version: '8.3'
         extensions: mbstring, xml, ctype, json, tokenizer, dom, pdo, pdo_mysql
         tools: composer
 
-    # 3. Adım: Composer bağımlılıklarını kur
-    # Bu adım, 'vendor' klasörünü oluşturur.
+    # 3. Adım: Composer bağımlılıklarını kur (vendor klasörünü oluşturur)
     - name: Install Composer Dependencies
       run: composer install --no-interaction --no-dev --optimize-autoloader
 
-    # 4. Adım: Laravel Optimizasyonu (Prod için önemli)
-    # Bu komutlar cache dosyalarını oluşturur.
+    # 4. YENİ ADIM: Node.js (NPM için) Ortamını Kur
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20' # Güncel LTS sürümü
+        cache: 'npm' # NPM paketlerini hız için cache'le
+
+    # 5. YENİ ADIM: NPM bağımlılıklarını kur (node_modules oluşturur)
+    - name: Install NPM Dependencies
+      run: npm install
+
+    # 6. YENİ ADIM: CSS/JS dosyalarını derle (public/build klasörünü oluşturur)
+    - name: Build Assets (Vite)
+      run: npm run build
+
+    # 7. Adım: Laravel Optimizasyonu (Eski Adım 4)
+    # (npm run build'den sonra çalışması daha güvenli)
     - name: Run Laravel Optimize Commands
       run: |
         php artisan config:cache
@@ -40,23 +52,19 @@ jobs:
         php artisan view:cache
         php artisan event:cache
 
-    # 5. Adım: FTP ile Sunucuya Yükle
+    # 8. Adım: FTP ile Sunucuya Yükle (Eski Adım 5)
     - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
-        # GitHub Secrets'tan bilgileri çekiyoruz
         server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         server-dir: ${{ secrets.SERVER_PATH }}
-        
-        # Gönderim ayarları
-        protocol: ftp # Gerekirse 'ftps' olarak değiştirilebilir
+        protocol: ftp
         port: 21
         timeout: 30000
         
         # Hariç tutulacak dosyalar (ÇOK ÖNEMLİ)
-        # .env dosyasını ASLA göndermemeliyiz, sunucudaki kalmalı.
         exclude: |
           **/.git*
           **/.git*/**
@@ -69,3 +77,9 @@ jobs:
           storage/framework/cache/data/*
           storage/logs/*
           public/storage
+          
+          # Docker ve Sail dosyaları (sunucuya gitmesine gerek yok)
+          docker-compose.yml
+          .dockerignore
+          *.md
+          *.sqlite
