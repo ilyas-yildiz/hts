@@ -92,3 +92,15 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
 // Breeze'in oluşturduğu kimlik doğrulama rotalarını yükle
 // (Bu /login, /register, /logout vb. içerir)
 require __DIR__.'/auth.php';
+
+Route::get('/sistemi-temizle-12345', function () {
+    try {
+        Artisan::call('cache:clear');
+        Artisan::call('config:clear');
+        Artisan::call('view:clear');
+        Artisan::call('route:clear');
+        return "Butun onbellekler temizlendi!";
+    } catch (Exception $e) {
+        return "Hata: " . $e->getMessage();
+    }
+});
