@@ -46,7 +46,7 @@
                 <div class="p-4 text-center text-gray-500">Yükleniyor...</div>
             </div>
             <div class="p-2 border-t border-gray-700">
-                <button id="open-category-modal-btn" class="w-full bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors duration-200">
+                <button id="open-category-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
                     + Yeni Kategori Ekle
                 </button>
             </div>
@@ -60,7 +60,7 @@
             </div>
             <div id="list-col-2" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             <div class="p-2 border-t border-gray-700">
-                <button id="open-annual-goal-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                <button id="open-annual-goal-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
                     + Yıllık Hedef Ekle
                 </button>
             </div>
@@ -74,7 +74,7 @@
             </div>
             <div id="list-col-3" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             <div class="p-2 border-t border-gray-700">
-                <button id="open-monthly-goal-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                <button id="open-monthly-goal-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
                     + Aylık Hedef Ekle
                 </button>
             </div>
@@ -88,7 +88,7 @@
             </div>
             <div id="list-col-4" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             <div class="p-2 border-t border-gray-700">
-                <button id="open-weekly-goal-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                <button id="open-weekly-goal-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
                     + Haftalık Hedef Ekle
                 </button>
             </div>
@@ -102,7 +102,7 @@
             </div>
             <div id="list-col-5" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             <div class="p-2 border-t border-gray-700">
-                <button id="open-daily-goal-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                <button id="open-daily-goal-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
                     + Günlük Hedef Ekle
                 </button>
             </div>
@@ -116,7 +116,7 @@
             </div>
             <div id="list-col-6" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             <div class="p-2 border-t border-gray-700">
-                <button id="open-task-modal-btn" class="w-full bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
+                <button id="open-task-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
                     + Saatlik Hedef Ekle
                 </button>
             </div>
