@@ -9,7 +9,6 @@
 
     RewriteEngine On
 
-    # Gelen istekleri 'public/' dizininin 'önüne' yönlendir
     RewriteCond %{REQUEST_FILENAME} -d [OR]
     RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^ ^$1 [N]
