@@ -1,7 +1,6 @@
 ﻿# GitHub Action Adı
 name: Deploy Laravel Project to FTP
 
-# Tetikleyici: 'main' branch'ine her push yapıldığında çalışır
 on:
   push:
     branches:
@@ -12,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     
-    # 1. Adım: Kodu (repository) checkout et
+    # 1. Adım: Kodu checkout et
     - name: Check out repository
       uses: actions/checkout@v4
 
@@ -24,35 +23,26 @@ jobs:
         extensions: mbstring, xml, ctype, json, tokenizer, dom, pdo, pdo_mysql
         tools: composer
 
-    # 3. Adım: Composer bağımlılıklarını kur (vendor klasörünü oluşturur)
+    # 3. Adım: Composer bağımlılıklarını kur
     - name: Install Composer Dependencies
       run: composer install --no-interaction --no-dev --optimize-autoloader
 
-    # 4. YENİ ADIM: Node.js (NPM için) Ortamını Kur
+    # 4. Adım: Node.js (NPM için) Ortamını Kur
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20' # Güncel LTS sürümü
-        cache: 'npm' # NPM paketlerini hız için cache'le
+        node-version: '20'
+        cache: 'npm'
 
-    # 5. YENİ ADIM: NPM bağımlılıklarını kur (node_modules oluşturur)
+    # 5. Adım: NPM bağımlılıklarını kur
     - name: Install NPM Dependencies
       run: npm install
 
-    # 6. YENİ ADIM: CSS/JS dosyalarını derle (public/build klasörünü oluşturur)
+    # 6. Adım: CSS/JS dosyalarını derle
     - name: Build Assets (Vite)
       run: npm run build
 
-    # 7. Adım: Laravel Optimizasyonu (Eski Adım 4)
-    # (npm run build'den sonra çalışması daha güvenli)
-    - name: Run Laravel Optimize Commands
-      run: |
-        php artisan config:cache
-        php artisan route:cache
-        php artisan view:cache
-        php artisan event:cache
-
-    # 8. Adım: FTP ile Sunucuya Yükle (Eski Adım 5)
+    # 7. Adım: FTP ile Sunucuya Yükle (DÜZELTİLDİ: Optimizasyon adımı kaldırıldı)
     - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
@@ -63,8 +53,8 @@ jobs:
         protocol: ftp
         port: 21
         timeout: 30000
+        dangerous-clean-slate: true
         
-        # Hariç tutulacak dosyalar (ÇOK ÖNEMLİ)
         exclude: |
           **/.git*
           **/.git*/**
@@ -77,9 +67,8 @@ jobs:
           storage/framework/cache/data/*
           storage/logs/*
           public/storage
-          
-          # Docker ve Sail dosyaları (sunucuya gitmesine gerek yok)
           docker-compose.yml
           .dockerignore
           *.md
           *.sqlite
+
