@@ -5,7 +5,7 @@
         </h2>
 
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {{ __('Hesabınız silindiğinde, tüm kaynakları ve verileri kalıcı olarak silinecektir. Hesabınızı silmeden önce, lütfen saklamak istediğiniz tüm verileri veya bilgileri indirin.') }}
+            {{ __("Hesabınız silindiğinde, tüm kaynakları ve verileri kalıcı olarak silinecektir. Devam etmeden önce, saklamak istediğiniz herhangi bir veri veya bilgiyi indirin.") }}
         </p>
     </header>
 
@@ -24,22 +24,22 @@
             </h2>
 
             <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                {{ __('Hesabınız silindiğinde, tüm kaynakları ve verileri kalıcı olarak silinecektir. Hesabınızı kalıcı olarak silmek istediğinizi onaylamak için lütfen şifrenizi girin.') }}
+                {{ __("Hesabınız silindiğinde, tüm kaynakları ve verileri kalıcı olarak silinecektir. Lütfen işlemi onaylamak için şifrenizi girin.") }}
             </p>
 
-            <div class="mt-6">
-                <x-input-label for="password" value="{{ __('Şifre') }}" class="sr-only" />
+           <div class="mt-6">
+    <x-input-label for="confirm_password" value="{{ __('Şifre') }}" class="sr-only" />
 
-                <x-text-input
-                    id="password"
-                    name="password"
-                    type="password"
-                    class="mt-1 block w-3/4"
-                    placeholder="{{ __('Şifre') }}"
-                />
+    <x-text-input
+        id="confirm_password"
+        name="password"
+        type="password"
+        class="mt-1 block w-3/4"
+        placeholder="{{ __('Şifre') }}"
+    />
 
-                <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
-            </div>
+    <x-input-error :messages="$errors->userDeletion->get('password')" class="mt-2" />
+</div>
 
             <div class="mt-6 flex justify-end">
                 <x-secondary-button x-on:click="$dispatch('close')">

@@ -1,5 +1,7 @@
 <section>
     <header>
+                                
+
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
             {{ __('Profil Bilgileri') }}
         </h2>
@@ -50,8 +52,6 @@
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Kaydet') }}</x-primary-button>
 
-            <!-- DÜZELTME: '<x-session-status />' kaldırıldı,
-                 Breeze'in 'profile-updated' Alpine.js kodu geri eklendi -->
             @if (session('status') === 'profile-updated')
                 <p
                     x-data="{ show: true }"
