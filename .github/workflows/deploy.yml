@@ -1,5 +1,4 @@
-﻿# GitHub Action Adı
-name: Deploy Laravel Project to FTP
+﻿name: Deploy Laravel Project to FTP
 
 on:
   push:
