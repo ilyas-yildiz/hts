@@ -791,7 +791,13 @@ const globalTooltip = document.getElementById('global-tooltip');
             }
 
             // --- DOM HAZIR OLDUĞUNDA UYGULAMAYI BAŞLAT ---
-            document.addEventListener('DOMContentLoaded', initApp);
+        document.addEventListener('DOMContentLoaded', function() {
+            // DÜZELTME: HTS JavaScript'ini SADECE dashboard'da çalıştır.
+            // ('col-1', HTS arayüzümüzün ana sütunudur)
+            if (document.getElementById('col-1')) {
+                initApp();
+            }
+        });
 
         </script>
     </body>

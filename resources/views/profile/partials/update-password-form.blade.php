@@ -5,7 +5,7 @@
         </h2>
 
         <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            {{ __('Güvende kalmak için hesabınızın uzun ve rastgele bir şifre kullandığından emin olun.') }}
+            {{ __("Hesabınızın güvenliği için uzun ve rastgele bir şifre kullandığınızdan emin olun.") }}
         </p>
     </header>
 
@@ -20,13 +20,13 @@
         </div>
 
         <div>
-            <x-input-label for="password" :value="__('Yeni Şifre')" />
-            <x-text-input id="password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" />
-            <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
-        </div>
+    <x-input-label for="new_password" :value="__('Yeni Şifre')" />
+    <x-text-input id="new_password" name="password" type="password" class="mt-1 block w-full" autocomplete="new-password" />
+    <x-input-error :messages="$errors->updatePassword->get('password')" class="mt-2" />
+</div>
 
         <div>
-            <x-input-label for="password_confirmation" :value="__('Yeni Şifreyi Onayla')" />
+            <x-input-label for="password_confirmation" :value="__('Şifreyi Onayla')" />
             <x-text-input id="password_confirmation" name="password_confirmation" type="password" class="mt-1 block w-full" autocomplete="new-password" />
             <x-input-error :messages="$errors->updatePassword->get('password_confirmation')" class="mt-2" />
         </div>
@@ -34,8 +34,6 @@
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Kaydet') }}</x-primary-button>
 
-            <!-- DÜZELTME: '<x-session-status />' kaldırıldı,
-                 Breeze'in 'password-updated' Alpine.js kodu geri eklendi -->
             @if (session('status') === 'password-updated')
                 <p
                     x-data="{ show: true }"
