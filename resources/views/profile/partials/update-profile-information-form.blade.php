@@ -50,7 +50,17 @@
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Kaydet') }}</x-primary-button>
 
-            <x-session-status class="ms-auto" />
+            <!-- DÜZELTME: '<x-session-status />' kaldırıldı,
+                 Breeze'in 'profile-updated' Alpine.js kodu geri eklendi -->
+            @if (session('status') === 'profile-updated')
+                <p
+                    x-data="{ show: true }"
+                    x-show="show"
+                    x-transition
+                    x-init="setTimeout(() => show = false, 2000)"
+                    class="text-sm text-gray-600 dark:text-gray-400"
+                >{{ __('Kaydedildi.') }}</p>
+            @endif
         </div>
     </form>
 </section>
