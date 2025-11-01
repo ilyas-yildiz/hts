@@ -42,7 +42,7 @@ jobs:
     - name: Build Assets (Vite)
       run: npm run build
 
-    # 7. Adım: FTP ile Sunucuya Yükle (DÜZELTİLDİ: Optimizasyon adımı kaldırıldı)
+    # 7. Adım: FTP ile Sunucuya Yükle
     - name: Deploy to FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
@@ -53,7 +53,11 @@ jobs:
         protocol: ftp
         port: 21
         timeout: 30000
-        dangerous-clean-slate: true
+        
+        # DÜZELTME: Sıfırlama bitti. Artık 'false' yapıyoruz.
+        # Bu, bir sonraki deploy'un SADECE değişen dosyaları
+        # yüklemesini sağlar ve çok daha hızlı olur.
+        dangerous-clean-slate: false
         
         exclude: |
           **/.git*
