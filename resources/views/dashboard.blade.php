@@ -274,5 +274,9 @@
             </div>
         </div>
     </div>
-
+<!-- YENİ: Global Tooltip (Tüm sütunlardan bağımsız) -->
+    <div id="global-tooltip" class="fixed hidden p-3 rounded-md shadow-lg bg-gray-900 border border-gray-700 text-white text-sm max-w-xs z-[200]" 
+         style="white-space: pre-wrap; transition: opacity 0.2s ease; opacity: 0; pointer-events: none;">
+        <!-- İçerik JS ile doldurulacak -->
+    </div>
 </x-app-layout>

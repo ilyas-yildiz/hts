@@ -17,79 +17,109 @@
 
         <!-- YENİ: HTS'nin Özel CSS Stilleri - HTS'den taşındı -->
         <style>
-            /* Scrollbar stilleri */
-            ::-webkit-scrollbar { width: 6px; height: 6px; }
-            ::-webkit-scrollbar-track { background: #374151; border-radius: 10px; }
-            ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; }
-            ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
-            
-            /* Seçili öğe stili */
-            .task-item.selected {
-                background-color: #3b82f6 !important; /* Mavi (blue-500) (tailwind'i ezmek için !important) */
-                color: white;
-                font-weight: 500;
-            }
-            
-            /* Sütun gizleme */
-            .column.hidden {
-                display: none;
-            }
+        /* Temel stiller */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #1f2937; /* Koyu Gri (gray-800) */
+            color: #f3f4f6; /* Açık Gri (gray-100) */
+        }
+        /* Scrollbar stilleri */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #374151; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+        
+        /* Seçili öğe stili (Senin düzelttiğin gibi 'task-item' kullanılıyor) */
+        .task-item.selected {
+            background-color: #3b82f6 !important; /* Mavi (blue-500) */
+            color: white;
+            font-weight: 500;
+        }
+        
+        /* Sütun gizleme */
+        .column.hidden {
+            display: none;
+        }
 
-            /* Tamamlandı Stilleri */
-            .task-item.completed .item-text,
-            .task-item.completed .task-desc {
-                text-decoration: line-through;
-                color: #6b7280; /* gray-500 */
-            }
+        /* Tamamlandı Stilleri */
+        .task-item.completed .item-text,
+        .task-item.completed .task-desc {
+            text-decoration: line-through;
+            color: #6b7280; /* gray-500 */
+        }
 
-            /* Hover (Üzerine Gelme) Efekti */
-            .item-actions {
-                opacity: 0;
-                transition: opacity 0.15s ease-in-out;
-                flex-shrink: 0;
-                margin-left: 8px;
-            }
-            .task-item:hover .item-actions,
-            .task-item:hover .item-actions {
-                opacity: 1;
-            }
-            .action-checkbox {
-                height: 1.1rem; width: 1.1rem;
-                margin-right: 8px; cursor: pointer;
-                accent-color: #3b82f6; border-radius: 4px;
-            }
-            .action-delete {
-                background: none; border: none;
-                color: #ef4444; /* red-500 */
-                cursor: pointer; padding: 2px;
-            }
-            .action-delete:hover { color: #f87171; /* red-400 */ }
-            .action-edit {
-                background: none; border: none;
-                color: #f0f9ff; /* light-blue-50 */
-                cursor: pointer; padding: 2px;
-                margin-right: 4px;
-            }
-            .action-edit:hover { color: #60a5fa; /* blue-400 */ }
+        /* Hover (Üzerine Gelme) Efekti */
+        .item-actions {
+            opacity: 0;
+            transition: opacity 0.15s ease-in-out;
+            flex-shrink: 0;
+            margin-left: 8px;
+        }
+        .task-item:hover .item-actions {
+            opacity: 1;
+        }
+        .action-checkbox {
+            height: 1.1rem; width: 1.1rem;
+            margin-right: 8px; cursor: pointer;
+            accent-color: #3b82f6; border-radius: 4px;
+        }
+        .action-delete {
+            background: none; border: none;
+            color: #ef4444; /* red-500 */
+            cursor: pointer; padding: 2px;
+        }
+        .action-delete:hover { color: #f87171; /* red-400 */ }
+        .action-edit {
+            background: none; border: none;
+            color: #f0f9ff; /* light-blue-50 */
+            cursor: pointer; padding: 2px;
+            margin-right: 4px;
+        }
+        .action-edit:hover { color: #60a5fa; /* blue-400 */ }
 
-            /* Metin Kaydırma */
-            .item-text,
-            .task-desc {
-                word-break: break-word;
-                white-space: normal;
-            }
 
-            /* Sürükle-Bırak Stilleri */
-            .sortable-ghost {
-                opacity: 0.4;
-                background-color: #4b5563; /* gray-600 */
-            }
-            .sortable-drag {
-                opacity: 1 !important;
-            }
-            .task-item { cursor: grab; }
-            .task-item:active { cursor: grabbing; }
-        </style>
+        /* Metin Davranışları */
+        
+        /* Sütun 1-5 (Bunlar kaydırmaya devam etsin, 3 nokta yok) */
+        .item-text {
+            word-break: break-word;
+            white-space: normal;
+        }
+
+        /* Sütun 6 (Bu KISALTSIN ve 'help' imleci göstersin) */
+        .task-desc {
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* 2 satırla sınırla */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
+            cursor: help; /* Tooltip'in burada olduğunu belirtmek için */
+        }
+        
+        /* Tooltip Kapsayıcısı (Sıkışma sorununu çözen) */
+        [data-tooltip] {
+            position: relative; 
+        }
+
+      
+        /* Hover anında tooltip'i göster */
+        [data-tooltip]:hover::after {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Sürükle-Bırak Stilleri */
+        .sortable-ghost {
+            opacity: 0.4;
+            background-color: #4b5563; /* gray-600 */
+        }
+        .sortable-drag {
+            opacity: 1 !important;
+        }
+        .task-item { cursor: grab; }
+        .task-item:active { cursor: grabbing; }
+    </style>
 
         <!-- Scripts (Breeze'in derlenmiş CSS ve JS'i) -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -139,7 +169,48 @@
                     return null;
                 }
             }
+            function escapeHTML(str) {
+            if (str === null || str === undefined) return '';
+            // toString() ile sayıları veya diğer tipleri de güvenle çevir
+            return str.toString()
+                     .replace(/&/g, '&amp;')
+                     .replace(/</g, '&lt;')
+                     .replace(/>/g, '&gt;')
+                     .replace(/"/g, '&quot;')
+                     .replace(/'/g, '&#039;');
+        }
             
+const globalTooltip = document.getElementById('global-tooltip');
+
+        function showTooltip(e) {
+            const el = e.currentTarget;
+            const tooltipText = el.getAttribute('data-tooltip');
+            
+            if (!tooltipText) return; // Tooltip metni yoksa çık
+
+            globalTooltip.innerHTML = tooltipText;
+            
+            // Tooltip'i pozisyonla
+            const rect = el.getBoundingClientRect();
+            let top = rect.bottom + 5; // Öğenin 5px altı
+            let left = rect.left + 5; // Öğenin 5px sağı
+
+            // Sıkışma kontrolü (CSS'teki 'tooltip-align-left' sınıfına göre)
+            if (el.classList.contains('tooltip-align-left')) {
+                 left = rect.right - 300 - 5; // 300px = tooltip genişliği
+            }
+            
+            globalTooltip.style.left = `${left}px`;
+            globalTooltip.style.top = `${top}px`;
+            globalTooltip.classList.remove('hidden');
+            setTimeout(() => globalTooltip.style.opacity = '1', 10); // Fade-in
+        }
+
+        function hideTooltip() {
+            globalTooltip.style.opacity = '0';
+            setTimeout(() => globalTooltip.classList.add('hidden'), 200); // Fade-out
+        }
+
             // --- DATA LOADING FUNCTIONS ---
             async function fetchCategories() {
                 console.log('fetchCategories çağrıldı.');
@@ -167,60 +238,102 @@
                 const data = await fetchData(`/api/daily-goals/${weeklyGoalId}`);
                 if (data) { renderList('list-col-5', data); showColumn(5); }
             }
-            async function fetchTasks(dailyGoalId) {
-                console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
-                const data = await fetchData(`/api/tasks/${dailyGoalId}`);
-                const listElement = document.getElementById('list-col-6');
-                if (data && data.length > 0) {
-                    listElement.innerHTML = '';
-                    data.forEach(task => {
-                        const item = document.createElement('div');
-                        item.className = `task-item flex items-center justify-between p-3 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
-                        item.dataset.id = task.id;
-                        item.innerHTML = `
-                            <div class="item-content flex-1 flex items-center min-w-0">
-                                <input type="checkbox" class="action-checkbox" title="Tamamlandı olarak işaretle" ${task.is_completed ? 'checked' : ''}>
-                                <div class="ml-2">
-                                    <div class="text-xs font-semibold text-gray-400">${task.time_label || ''}</div>
-                                    <div class="text-sm text-white task-desc">${task.task_description}</div>
+        // --- BU FONKSİYONU GÜNCELLE (Sütun 6 '3 Nokta' Sorunu Düzeltmesi) ---
+   // --- BU FONKSİYONU GÜNCELLE (Sütun 6: İkonları Düzelt, Tooltip mantığını düzelt) ---
+        async function fetchTasks(dailyGoalId) {
+            console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
+            const data = await fetchData(`/api/tasks/${dailyGoalId}`);
+            const listElement = document.getElementById('list-col-6');
+            
+            if (data && data.length > 0) {
+                listElement.innerHTML = '';
+                data.forEach(task => {
+                    const item = document.createElement('div');
+                    item.className = `task-item flex items-center justify-between p-3 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
+                    item.dataset.id = task.id;
+                    
+                    // DÜZELTME: İkonlar '...' yerine gerçek SVG kodunu içeriyor
+                    item.innerHTML = `
+                        <div class="item-content flex-1 flex items-center min-w-0">
+                            <input type="checkbox" class="action-checkbox" 
+                                   title="Tamamlandı olarak işaretle"
+                                   ${task.is_completed ? 'checked' : ''}>
+                            <div class="ml-2">
+                                <div class="text-xs font-semibold text-gray-400">${task.time_label || ''}</div>
+                                <div class="text-sm text-white task-desc">
+                                    ${task.task_description}
                                 </div>
                             </div>
-                            <div class="item-actions">
-                                <button class="action-edit" title="Düzenle">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                                        <path d="m15 5 4 4"/>
-                                    </svg>
-                                </button>
-                                <button class="action-delete" title="Sil">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="3 6 5 6 21 6"></polyline>
-                                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        `;
-                        const checkbox = item.querySelector('.action-checkbox');
-                        const editBtn = item.querySelector('.action-edit');
-                        const deleteBtn = item.querySelector('.action-delete');
-                        const content = item.querySelector('.item-content');
-                        checkbox.addEventListener('change', async (e) => { const isCompleted = e.target.checked; await toggleTaskStatus(task.id, isCompleted); item.classList.toggle('completed', isCompleted); });
-                        editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal('task', task); });
-                        deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDelete('task', task.id, item); });
-                        content.addEventListener('click', (e) => {
-                            if (e.target.tagName.toLowerCase() === 'input') return;
-                            e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
-                            item.classList.add('selected');
-                            state.selectedDailyId = task.daily_goal_id;
-                        });
-                        listElement.appendChild(item);
+                        </div>
+                        <div class="item-actions">
+                            <button class="action-edit" title="Düzenle">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                                    <path d="m15 5 4 4"/>
+                                </svg>
+                            </button>
+                            <button class="action-delete" title="Sil">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    
+                    const checkbox = item.querySelector('.action-checkbox');
+                    const editBtn = item.querySelector('.action-edit');
+                    const deleteBtn = item.querySelector('.action-delete');
+                    const content = item.querySelector('.item-content');
+
+                    checkbox.addEventListener('change', async (e) => { const isCompleted = e.target.checked; await toggleTaskStatus(task.id, isCompleted); item.classList.toggle('completed', isCompleted); });
+                    editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal('task', task); });
+                    deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDelete('task', task.id, item); });
+                    content.addEventListener('click', (e) => {
+                        if (e.target.tagName.toLowerCase() === 'input') return;
+                        e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
+                        item.classList.add('selected');
+                        state.selectedDailyId = task.daily_goal_id;
                     });
-                    initSortable('list-col-6', 'Task');
-                } else {
-                    listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Bu gün için planlanmış görev yok.</div>`;
-                }
-                showColumn(6);
+                    
+                    listElement.appendChild(item);
+
+                    // DÜZELTME (Tooltip): 'setTimeout' ve 'scrollHeight' mantığı
+                    setTimeout(() => {
+                        const taskDesc = item.querySelector('.task-desc');
+                        if (!taskDesc) return;
+                        
+                        const isOverflowing = taskDesc.scrollHeight > taskDesc.clientHeight;
+                        
+                        if (isOverflowing) {
+                            // 1. Taşıyorsa: Tooltip'i ata (ebeveyne)
+                            const tooltipContainer = item.querySelector('.ml-2');
+                            tooltipContainer.setAttribute('data-tooltip', escapeHTML(task.task_description));
+                            
+                            // 2. Sıkışma sorununu çöz: Sola hizala
+                            const rect = tooltipContainer.getBoundingClientRect();
+                            if (rect.right + 300 > window.innerWidth) { // 300px = tooltip genişliği
+                                tooltipContainer.classList.add('tooltip-align-left');
+                            }
+                            
+                            // 3. Olayları ekle
+                            tooltipContainer.addEventListener('mouseenter', showTooltip);
+                            tooltipContainer.addEventListener('mouseleave', hideTooltip);
+                        } else {
+                            // 4. Taşmıyorsa: İmleci (cursor) normal yap
+                            taskDesc.style.cursor = 'default';
+                        }
+                    }, 50); // 50ms gecikme (render için)
+                });
+                
+                initSortable('list-col-6', 'Task');
+
+            } else {
+                listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Bu gün için planlanmış görev yok.</div>`;
             }
+            
+            showColumn(6);
+        }
 
             // --- TASK (GÖREV) ACTIONS ---
             async function toggleTaskStatus(taskId, isCompleted) { await fetchData(`/api/tasks/toggle/${taskId}`, { method: 'PUT', body: JSON.stringify({ is_completed: isCompleted }) }); }
@@ -525,81 +638,85 @@
             }
 
             // --- UI (ARAYÜZ) HELPERS ---
-            function renderList(listId, data) {
-                const listElement = document.getElementById(listId);
-                listElement.innerHTML = ''; 
-                const listType = listId.split('-')[2];
-                if (!data || data.length === 0) {
-                    listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Veri bulunamadı.</div>`;
-                    return;
-                }
-                data.forEach(item => {
-                    const div = document.createElement('div');
-                    div.className = 'task-item p-3 rounded-md hover:bg-gray-700 transition-colors duration-150 flex justify-between items-center';
-                    div.dataset.id = item.id;
-                    if (item.is_completed) { div.classList.add('completed'); }
-                    let topText = ''; let bottomText = ''; let bottomFontSizeClass = 'text-sm text-white'; 
-                    switch (listType) {
-                        case '1': topText = ''; bottomText = item.name; bottomFontSizeClass = 'text-white'; break;
-                        case '2': topText = `Yıl ${item.year}: ${item.period_label}`; bottomText = item.title; break;
-                        case '3': topText = item.month_label; bottomText = item.title; break;
-                        case '4': topText = item.week_label; bottomText = item.title; break;
-                        case '5': topText = item.day_label; bottomText = item.title || ''; break;
-                    }
-                    div.innerHTML = `
-                        <div class="item-content flex-1 flex items-center min-w-0">
-                            <input type="checkbox" class="action-checkbox" title="Tamamlandı olarak işaretle" ${item.is_completed ? 'checked' : ''}>
-                            <div class="ml-2" title="${topText ? topText + ': ' : ''}${bottomText}">
-                                ${topText ? `<div class="text-xs font-semibold text-gray-400">${topText}</div>` : ''}
-                                <div class="item-text ${bottomFontSizeClass}">${bottomText}</div>
-                            </div>
-                        </div>
-                        <div class="item-actions">
-                            <button class="action-edit" title="Düzenle">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                                    <path d="m15 5 4 4"/>
-                                </svg>
-                            </button>
-                            <button class="action-delete" title="Sil">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    `;
-                    const content = div.querySelector('.item-content');
-                    const checkbox = div.querySelector('.action-checkbox');
-                    const editBtn = div.querySelector('.action-edit');
-                    const deleteBtn = div.querySelector('.action-delete');
-                    checkbox.addEventListener('click', (e) => { e.stopPropagation(); const isCompleted = e.target.checked; div.classList.toggle('completed', isCompleted); handleToggleGoal(listType, item.id, isCompleted); });
-                    content.addEventListener('click', (e) => {
-                        if (e.target.tagName.toLowerCase() === 'input') return;
-                        e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
-                        div.classList.add('selected');
-                        switch (listType) {
-                            case '1': state.selectedCategoryId = item.id; resetColumns(2); fetchAnnualGoals(item.id); break;
-                            case '2': state.selectedAnnualId = item.id; resetColumns(3); fetchMonthlyGoals(item.id); break;
-                            case '3': state.selectedMonthlyId = item.id; resetColumns(4); fetchWeeklyGoals(item.id); break;
-                            case '4': state.selectedWeeklyId = item.id; resetColumns(5); fetchDailyGoals(item.id); break;
-                            case '5': state.selectedDailyId = item.id; resetColumns(6); fetchTasks(item.id); break;
-                        }
-                    });
-                    editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(listType, item); });
-                    deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDelete(listType, item.id, div); });
-                    listElement.appendChild(div);
-                });
-                let modelType = '';
-                switch (listType) {
-                    case '1': modelType = 'GoalCategory'; break;
-                    case '2': modelType = 'AnnualGoal'; break;
-                    case '3': modelType = 'MonthlyGoal'; break;
-                    case '4': modelType = 'WeeklyGoal'; break;
-                    case '5': modelType = 'DailyGoal'; break;
-                }
-                if (modelType) { initSortable(listId, modelType); }
+// --- BU FONKSİYONU GÜNCELLE (Sütun 1-5: İkonlar Düzeltildi, Tooltip kaldırıldı) ---
+        function renderList(listId, data) {
+            const listElement = document.getElementById(listId);
+            listElement.innerHTML = ''; 
+            const listType = listId.split('-')[2];
+            if (!data || data.length === 0) {
+                listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Veri bulunamadı.</div>`;
+                return;
             }
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'task-item p-3 rounded-md hover:bg-gray-700 transition-colors duration-150 flex justify-between items-center';
+                div.dataset.id = item.id;
+                if (item.is_completed) { div.classList.add('completed'); }
+                
+                let topText = ''; let bottomText = ''; let bottomFontSizeClass = 'text-sm text-white'; 
+                switch (listType) {
+                    case '1': topText = ''; bottomText = item.name; bottomFontSizeClass = 'text-white'; break;
+                    case '2': topText = `Yıl ${item.year}: ${item.period_label}`; bottomText = item.title; break;
+                    case '3': topText = item.month_label; bottomText = item.title; break;
+                    case '4': topText = item.week_label; bottomText = item.title; break;
+                    case '5': topText = item.day_label; bottomText = item.title || ''; break;
+                }
+                
+                // DÜZELTME: İkonlar '...' yerine gerçek SVG kodunu içeriyor
+                div.innerHTML = `
+                    <div class="item-content flex-1 flex items-center min-w-0">
+                        <input type="checkbox" class="action-checkbox" title="Tamamlandı olarak işaretle" ${item.is_completed ? 'checked' : ''}>
+                        <div class="ml-2" title="${topText ? topText + ': ' : ''}${bottomText}">
+                            ${topText ? `<div class="text-xs font-semibold text-gray-400">${topText}</div>` : ''}
+                            <div class="item-text ${bottomFontSizeClass}">${bottomText}</div>
+                        </div>
+                    </div>
+                    <div class="item-actions">
+                        <button class="action-edit" title="Düzenle">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                                <path d="m15 5 4 4"/>
+                            </svg>
+                        </button>
+                        <button class="action-delete" title="Sil">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
+                    </div>
+                `;
+
+                // Tıklama olaylarını ata
+                const content = div.querySelector('.item-content');
+                const checkbox = div.querySelector('.action-checkbox');
+                const editBtn = div.querySelector('.action-edit');
+                const deleteBtn = div.querySelector('.action-delete');
+                
+                checkbox.addEventListener('click', (e) => { e.stopPropagation(); const isCompleted = e.target.checked; div.classList.toggle('completed', isCompleted); handleToggleGoal(listType, item.id, isCompleted); });
+                content.addEventListener('click', (e) => { if (e.target.tagName.toLowerCase() === 'input') return; e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => el.classList.remove('selected')); div.classList.add('selected'); switch (listType) { case '1': state.selectedCategoryId = item.id; resetColumns(2); fetchAnnualGoals(item.id); break; case '2': state.selectedAnnualId = item.id; resetColumns(3); fetchMonthlyGoals(item.id); break; case '3': state.selectedMonthlyId = item.id; resetColumns(4); fetchWeeklyGoals(item.id); break; case '4': state.selectedWeeklyId = item.id; resetColumns(5); fetchDailyGoals(item.id); break; case '5': state.selectedDailyId = item.id; resetColumns(6); fetchTasks(item.id); break; } });
+                editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(listType, item); });
+                deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDelete(listType, item.id, div); });
+
+                listElement.appendChild(div);
+                
+                // DÜZELTME: Sütun 1-5'te 'setTimeout' ve 'scrollHeight' mantığı yok.
+            });
+
+            // Sürükle-bırak (SortableJS) başlatma
+            let modelType = '';
+            switch (listType) {
+                case '1': modelType = 'GoalCategory'; break;
+                case '2': modelType = 'AnnualGoal'; break;
+                case '3': modelType = 'MonthlyGoal'; break;
+                case '4': modelType = 'WeeklyGoal'; break;
+                case '5': modelType = 'DailyGoal'; break;
+            }
+            if (modelType) {
+                initSortable(listId, modelType);
+            }
+        }
 
             function resetColumns(startColumnIndex) {
                 console.log(`resetColumns çağrıldı (Başlangıç: ${startColumnIndex})`);
@@ -624,20 +741,31 @@
                 }
             }
             function showError(message) { console.error('UYGULAMA HATASI:', message); }
-            async function initApp() {
-                console.log('Uygulama başlıyor (initApp)...');
-                resetColumns(2); 
-                await fetchCategories();
-                setupModal('task-modal', 'open-task-modal-btn', 'close-task-modal-btn', 'task-form');
-                setupModal('category-modal', 'open-category-modal-btn', 'close-category-modal-btn', 'category-form');
-                setupModal('annual-goal-modal', 'open-annual-goal-modal-btn', 'close-annual-goal-modal-btn', 'annual-goal-form');
-                setupModal('monthly-goal-modal', 'open-monthly-goal-modal-btn', 'close-monthly-goal-modal-btn', 'monthly-goal-form');
-                setupModal('weekly-goal-modal', 'open-weekly-goal-modal-btn', 'close-weekly-goal-modal-btn', 'weekly-goal-form');
-                setupModal('daily-goal-modal', 'open-daily-goal-modal-btn', 'close-daily-goal-modal-btn', 'daily-goal-form');
-                document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
-                document.getElementById('cancel-delete-btn').addEventListener('click', () => { closeModal('delete-confirm-modal'); state.itemToDelete = null; });
-                console.log('Uygulama başarıyla yüklendi.');
-            }
+          // --- BU FONKSİYONU GÜNCELLE (Scroll listener eklendi) ---
+        async function initApp() {
+            console.log('Uygulama başlıyor (initApp)...');
+            resetColumns(2); 
+            await fetchCategories();
+            
+            // 3. Modalları ayarla
+            setupModal('task-modal', 'open-task-modal-btn', 'close-task-modal-btn', 'task-form');
+            setupModal('category-modal', 'open-category-modal-btn', 'close-category-modal-btn', 'category-form');
+            setupModal('annual-goal-modal', 'open-annual-goal-modal-btn', 'close-annual-goal-modal-btn', 'annual-goal-form');
+            setupModal('monthly-goal-modal', 'open-monthly-goal-modal-btn', 'close-monthly-goal-modal-btn', 'monthly-goal-form');
+            setupModal('weekly-goal-modal', 'open-weekly-goal-modal-btn', 'close-weekly-goal-modal-btn', 'weekly-goal-form');
+            setupModal('daily-goal-modal', 'open-daily-goal-modal-btn', 'close-daily-goal-modal-btn', 'daily-goal-form');
+            
+            // Silme Modalı butonlarını ayarla
+            document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
+            document.getElementById('cancel-delete-btn').addEventListener('click', () => { closeModal('delete-confirm-modal'); state.itemToDelete = null; });
+            
+            // YENİ EKLENDİ: Kaydırma (scroll) sırasında tooltip'i gizle
+            document.querySelectorAll('.overflow-y-auto').forEach(el => {
+                el.addEventListener('scroll', hideTooltip);
+            });
+            
+            console.log('Uygulama başarıyla yüklendi.');
+        }
             function setupModal(modalId, openBtnId, closeBtnId, formId) {
                 const modal = document.getElementById(modalId);
                 const openBtn = document.getElementById(openBtnId);
