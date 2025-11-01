@@ -1,14 +1,21 @@
-﻿# php -- BEGIN cPanel-generated handler, do not edit
-# Set the “ea-php83” package as the default “PHP” programming language.
-<IfModule mime_module>
+﻿<IfModule mime_module>
   AddHandler application/x-httpd-ea-php83___lsphp .php .php8 .phtml
 </IfModule>
-# php -- END cPanel-generated handler, do not edit
 
 <IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
     RewriteEngine On
 
-    # Gelen isteği doğrudan /public klasörüne yönlendir
-    # Eğer projen doğrudan public_html içindeyse:
+    # Gelen istekleri 'public/' dizininin 'önüne' yönlendir
+    RewriteCond %{REQUEST_FILENAME} -d [OR]
+    RewriteCond %{REQUEST_FILENAME} -f
+    RewriteRule ^ ^$1 [N]
+
+    RewriteCond %{REQUEST_URI} (.*/)?public/ [NC]
+    RewriteRule ^(.*)s*$ $1 [L]
+
     RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>
