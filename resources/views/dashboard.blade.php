@@ -21,12 +21,10 @@
              style="display: none;">
             
             <div class="py-1">
-                <!-- Profil Linki -->
                 <a href="{{ route('profile.edit') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
                     <strong>{{ Auth::user()->name }}</strong> (Profil)
                 </a>
 
-                <!-- Çıkış Yap Formu -->
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
                     <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white" title="Çıkış Yap">
