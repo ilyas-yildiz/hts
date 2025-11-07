@@ -211,6 +211,10 @@
                         <label for="weekly-goal-label" class="block text-sm font-medium text-gray-300">Hafta Etiketi</label>
                         <input type="text" id="weekly-goal-label" placeholder="Örn: 1. Hafta (1-7 Ekim)" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
                     </div>
+                    <div>
+                        <label for="weekly-goal-start-date" class="block text-sm font-medium text-gray-300">Hafta Başlangıç Tarihi (Opsiyonel)</label>
+                        <input type="date" id="weekly-goal-start-date" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
+                    </div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
                     <button type="button" id="close-weekly-goal-modal-btn" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">İptal</button>
@@ -234,6 +238,10 @@
                         <label for="daily-goal-title" class="block text-sm font-medium text-gray-300">Günün Ana Hedefi (Opsiyonel)</label>
                         <input type="text" id="daily-goal-title" placeholder="Örn: Backend Rotaları" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
                     </div>
+                    <div>
+                        <label for="daily-goal-date" class="block text-sm font-medium text-gray-300">Günün Tarihi (Opsiyonel)</label>
+                        <input type="date" id="daily-goal-date" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
+                    </div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
                     <button type="button" id="close-daily-goal-modal-btn" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">İptal</button>
@@ -247,15 +255,35 @@
     <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
             <h3 class="text-xl font-semibold mb-4 text-white">Yeni Görev Ekle</h3>
-            <form id="task-form">
+           <form id="task-form">
                 <div class="space-y-4">
-                    <div>
-                        <label for="task-time" class="block text-sm font-medium text-gray-300">Zaman Aralığı</label>
-                        <input type="text" id="task-time" placeholder="Örn: 09:00 - 10:00" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
+                    
+                    <div id="task-category-selector" class="hidden">
+                        <label for="task-goal-category" class="block text-sm font-medium text-gray-300">Hangi 5 Yıllık Hedef (Kategori)?</label>
+                        <select id="task-goal-category" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
+                            <option value="">Lütfen bir kategori seçin...</option>
+                        </select>
                     </div>
+
+                    <div>
+                        <label for="task-goal-date" class="block text-sm font-medium text-gray-300">Görevin Tarihi</label>
+                        <input type="date" id="task-goal-date" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="task-start-time" class="block text-sm font-medium text-gray-300">Başlangıç Saati (Ops.)</label>
+                            <input type="time" id="task-start-time" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label for="task-end-time" class="block text-sm font-medium text-gray-300">Bitiş Saati (Ops.)</label>
+                            <input type="time" id="task-end-time" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
+                        </div>
+                    </div>
+
                     <div>
                         <label for="task-desc" class="block text-sm font-medium text-gray-300">Görev Açıklaması</label>
-                        <textarea id="task-desc" rows="3" placeholder="Örn: Proje planı revize edilecek" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500"></textarea>
+                        <textarea id="task-desc" rows="5" placeholder="Örn: Proje planı revize edilecek" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500"></textarea>
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">

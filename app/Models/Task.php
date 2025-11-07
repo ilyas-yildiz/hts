@@ -9,21 +9,36 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Task extends Model
 {
     use HasFactory;
-    // (Bu dosyada timestamps var, o yüzden $timestamps = false; yok)
+    // (Timestamps bu dosyada zaten vardı, $timestamps = false; yok)
 
+    /**
+     * DÜZENLENDİ (V3): 'time_label' kaldırıldı.
+     * 'start_time' ve 'end_time' eklendi.
+     */
     protected $fillable = [
-        'daily_goal_id', 
-        'time_label', 
+        'goal_category_id', 
+        'goal_date',        
+        'start_time',       // YENİ
+        'end_time',         // YENİ
         'task_description', 
         'is_completed', 
-        'order_index' // order_index eklendi
+        'order_index'
     ];
 
     /**
-     * Bu görevin ait olduğu günlük hedef.
+     * DÜZELTME: 'start_time' ve 'end_time' için olan $casts (dönüşüm)
+     * kuralları, 'TIME' tipiyle çakıştığı için KALDIRILDI.
+     * Artık 'H:i:s' (string) olarak dönecekler.
      */
-    public function dailyGoal(): BelongsTo
+    protected $casts = [
+        'goal_date' => 'date',
+    ];
+
+    /**
+     * Bu görevin ait olduğu ana kategori (Proje).
+     */
+    public function goalCategory(): BelongsTo
     {
-        return $this->belongsTo(DailyGoal::class);
+        return $this->belongsTo(GoalCategory::class);
     }
 }

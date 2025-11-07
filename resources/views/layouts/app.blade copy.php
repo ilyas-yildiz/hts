@@ -137,24 +137,23 @@
             </main>
         </div>
 
+        <!-- YENİ: HTS'nin tüm JavaScript kodunu buraya taşıdık -->
+        <!-- (welcome.blade.php'den kopyalanan tam script bloğu) -->
         <script>
-    // --- GLOBAL STATE ---
-    const state = {
-        // ... (mevcut state)
-        selectedCategoryId: null,
-        selectedAnnualId: null,
-        selectedMonthlyId: null,
-        selectedWeeklyId: null,
-        selectedDailyId: null,
-        itemToDelete: null,
-        editingItem: null,
-        // YENİ: Ajanda modu
-        isAgendaMode: false,
-        // YENİ: Kategori listesini hafızada tut (Modal'daki dropdown için)
-        categoriesCache: [] 
-    };
-
- async function fetchData(endpoint, options = {}) {
+            // --- GLOBAL STATE ---
+            const state = {
+                selectedCategoryId: null,
+                selectedAnnualId: null,
+                selectedMonthlyId: null,
+                selectedWeeklyId: null,
+                selectedDailyId: null,
+                selectedGoalDate: null,
+                itemToDelete: null,
+                editingItem: null 
+            };
+        
+           // --- BU FONKSİYONU GÜNCELLE (422 Hatasını JSON olarak fırlat) ---
+        async function fetchData(endpoint, options = {}) {
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
             const defaultHeaders = { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest', };
             if (csrfToken) { defaultHeaders['X-CSRF-TOKEN'] = csrfToken; }
@@ -261,38 +260,14 @@ const globalTooltip = document.getElementById('global-tooltip');
             setTimeout(() => globalTooltip.classList.add('hidden'), 200); // Fade-out
         }
 
-
-    // --- DATA LOADING FUNCTIONS ---
-
-// --- BU FONKSİYONU GÜNCELLE ('Bugünün Ajandası' -> 'Bugün') ---
-        async function fetchCategories() {
-            console.log('fetchCategories çağrıldı.');
-            const data = await fetchData('/api/goal-categories'); 
-            
-            if (data) { 
-                console.log('Kategoriler yüklendi:', data);
-                
-                // Kategori listesini dropdown için hafızaya al
-                state.categoriesCache = data;
-                
-                // DÜZELTME: 'BUGÜNÜN AJANDASI' -> 'Bugün' olarak değiştirildi
-                const todayAgenda = { 
-                    id: 'TODAY', 
-                    name: 'Bugün', // <-- DEĞİŞİKLİK BURADA
-                    is_completed: 0, 
-                    order_index: -1 // Her zaman en üstte
-                };
-                
-                // Orijinal datayı (data) değiştirmeden, kopyasını (displayData) oluştur
-                let displayData = [todayAgenda, ...data];
-                
-                renderList('list-col-1', displayData); 
-            } 
-            else { console.error('Kategoriler yüklenemedi, data null.'); }
-        }
-
-    // (fetchAnnualGoals, fetchMonthlyGoals, fetchWeeklyGoals, fetchDailyGoals - Değişiklik yok)
-     async function fetchAnnualGoals(categoryId) {
+            // --- DATA LOADING FUNCTIONS ---
+            async function fetchCategories() {
+                console.log('fetchCategories çağrıldı.');
+                const data = await fetchData('/api/goal-categories'); 
+                if (data) { console.log('Kategoriler yüklendi:', data); renderList('list-col-1', data); } 
+                else { console.error('Kategoriler yüklenemedi, data null.'); }
+            }
+            async function fetchAnnualGoals(categoryId) {
                 console.log(`fetchAnnualGoals çağrıldı (Kategori ID: ${categoryId})`);
                 const data = await fetchData(`/api/annual-goals/${categoryId}`);
                 if (data) { renderList('list-col-2', data); showColumn(2); }
@@ -312,9 +287,8 @@ const globalTooltip = document.getElementById('global-tooltip');
                 const data = await fetchData(`/api/daily-goals/${weeklyGoalId}`);
                 if (data) { renderList('list-col-5', data); showColumn(5); }
             }
-
-    // (fetchTasks - Bu "Planlama Modu" (Sütun 5'e tıklama) için - Değişiklik yok)
-    async function fetchTasks(dailyGoalId) {
+// --- BU FONKSİYONU GÜNCELLE (Hata 2 Düzeltmesi: 'Lütfen önce bir gün seçin') ---
+        async function fetchTasks(dailyGoalId) {
             console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
             const data = await fetchData(`/api/tasks/${dailyGoalId}`);
             const listElement = document.getElementById('list-col-6');
@@ -420,116 +394,8 @@ const globalTooltip = document.getElementById('global-tooltip');
             showColumn(6);
         }
 
-
-    // --- YENİ FONKSİYONLAR (V2 Ajanda Modu) ---
-
-// --- BU FONKSİYONU GÜNCELLE (Hata 1: İkonlar, Hata 2: Bitiş Saati Düzeltmesi) ---
-        async function fetchTodayAgenda() {
-            console.log('fetchTodayAgenda çağrıldı (Tüm kategoriler, bugün)');
-            
-            const data = await fetchData('/api/agenda/today');
-            const listElement = document.getElementById('list-col-6');
-
-            if (data && data.length > 0) {
-                listElement.innerHTML = '';
-                
-                data.forEach(task => {
-                    const item = document.createElement('div');
-                    item.className = `task-item flex items-center justify-between p-3 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
-                    item.dataset.id = task.id;
-                    
-                    // DÜZELTME 2: 'item.end_time' -> 'task.end_time' olarak düzeltildi
-                    let timeDisplay = '';
-                    if (task.start_time) {
-                        const startTime = task.start_time.substring(0, 5);
-                        timeDisplay = task.end_time ? `${startTime} - ${task.end_time.substring(0, 5)}` : startTime;
-                    } else {
-                        timeDisplay = 'Tüm Gün';
-                    }
-                    // --- GÜNCELLEME SONU ---
-
-                    const categoryName = task.goal_category ? task.goal_category.name : 'Kategori Yok';
-                    
-                    // DÜZELTME 1: İkonlar '...' yerine gerçek SVG kodunu içeriyor
-                    item.innerHTML = `
-                        <div class="item-content flex-1 flex items-center min-w-0">
-                            <input type="checkbox" class="action-checkbox" 
-                                   title="Tamamlandı olarak işaretle"
-                                   ${task.is_completed ? 'checked' : ''}>
-                            <div class="ml-2">
-                                <div class="text-xs font-semibold text-blue-400">${escapeHTML(categoryName)}</div>
-                                
-                                <div class="text-xs font-semibold text-gray-400">${timeDisplay}</div>
-                                <div class="text-sm text-white task-desc">
-                                    ${task.task_description}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="item-actions">
-                            <button class="action-edit" title="Düzenle">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                                    <path d="m15 5 4 4"/>
-                                </svg>
-                            </button>
-                            <button class="action-delete" title="Sil">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                </svg>
-                            </button>
-                        </div>
-                    `;
-                    // --- GÜNCELLEME SONU ---
-                    
-                    const checkbox = item.querySelector('.action-checkbox');
-                    const editBtn = item.querySelector('.action-edit');
-                    const deleteBtn = item.querySelector('.action-delete');
-                    const content = item.querySelector('.item-content');
-
-                    checkbox.addEventListener('change', async (e) => { const isCompleted = e.target.checked; await toggleTaskStatus(task.id, isCompleted); item.classList.toggle('completed', isCompleted); });
-                    editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal('task', task); });
-                    deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDelete('task', task.id, item); });
-                    content.addEventListener('click', (e) => {
-                        if (e.target.tagName.toLowerCase() === 'input') return;
-                        e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
-                        item.classList.add('selected');
-                    });
-                    
-                    listElement.appendChild(item);
-
-                    // Tooltip mantığı (Bu kod doğru, kalmalı)
-                    setTimeout(() => {
-                        const taskDesc = item.querySelector('.task-desc');
-                        if (!taskDesc) return;
-                        const isOverflowing = taskDesc.scrollHeight > taskDesc.clientHeight;
-                        if (isOverflowing) {
-                            const tooltipContainer = item.querySelector('.ml-2');
-                            tooltipContainer.setAttribute('data-tooltip', escapeHTML(task.task_description));
-                            const rect = tooltipContainer.getBoundingClientRect();
-                            if (rect.right + 300 > window.innerWidth) {
-                                tooltipContainer.classList.add('tooltip-align-left');
-                            }
-                            tooltipContainer.addEventListener('mouseenter', showTooltip);
-                            tooltipContainer.addEventListener('mouseleave', hideTooltip);
-                        } else {
-                            taskDesc.style.cursor = 'default';
-                        }
-                    }, 50);
-                });
-                
-                initSortable('list-col-6', 'Task');
-
-            } else {
-                listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Bugün için planlanmış görev yok.</div>`;
-            }
-            
-            showColumn(6);
-        }
-    
-
-    // --- TASK (GÖREV) ACTIONS ---
-    async function toggleTaskStatus(taskId, isCompleted) { await fetchData(`/api/tasks/toggle/${taskId}`, { method: 'PUT', body: JSON.stringify({ is_completed: isCompleted }) }); }
+            // --- TASK (GÖREV) ACTIONS ---
+            async function toggleTaskStatus(taskId, isCompleted) { await fetchData(`/api/tasks/toggle/${taskId}`, { method: 'PUT', body: JSON.stringify({ is_completed: isCompleted }) }); }
             
             // --- GOAL (HEDEF) ACTIONS ---
             async function handleToggleGoal(type, id, isCompleted) {
@@ -548,59 +414,32 @@ const globalTooltip = document.getElementById('global-tooltip');
                     body: JSON.stringify({ is_completed: isCompleted })
                 });
             }
-
             async function handleDelete(type, id, itemElement) {
-            console.log(`handleDelete çağrıldı (Tip: ${type}, ID: ${id})`);
-            
-            // 1. Silinecek öğenin bilgilerini state'e kaydet
-            state.itemToDelete = { type, id, itemElement };
-
-            // 2. Silme onay modalını aç
-            document.getElementById('delete-confirm-modal').classList.remove('hidden');
-        }
-
-        // --- EKSİK FONKSİYON 2 (confirmDelete) BURAYA EKLENECEK ---
-        async function confirmDelete() {
-            if (!state.itemToDelete) return; // Silinecek bir şey seçilmemişse çık
-
-            const { type, id, itemElement } = state.itemToDelete;
-            
-            console.log(`confirmDelete çağrıldı (Tip: ${type}, ID: ${id})`);
-
-            // 1. Endpoint'i (API Adresini) belirle
-            let endpoint = '';
-            switch (type) {
-                case '1': endpoint = 'goal-categories'; break; // Sütun 1
-                case '2': endpoint = 'annual-goals'; break; // Sütun 2
-                case '3': endpoint = 'monthly-goals'; break; // Sütun 3
-                case '4': endpoint = 'weekly-goals'; break; // Sütun 4
-                case '5': endpoint = 'daily-goals'; break; // Sütun 5
-                case 'task': endpoint = 'tasks'; break; // Sütun 6
-                default:
-                    console.error('Bilinmeyen silme tipi:', type);
-                    state.itemToDelete = null; // State'i temizle
-                    closeModal('delete-confirm-modal');
-                    return;
+                state.itemToDelete = { type, id, itemElement };
+                document.getElementById('delete-confirm-modal').classList.remove('hidden');
             }
-            
-            // 2. Butonu "Siliniyor..." yap
-            const btn = document.getElementById('confirm-delete-btn');
-            btn.disabled = true;
-            btn.textContent = 'Siliniyor...';
-
-            // 3. API'ye DELETE isteği at
-            await fetchData(`/api/${endpoint}/${id}`, {
-                method: 'DELETE'
-            });
-
-            // 4. Arayüzden öğeyi kaldır
-            itemElement.remove();
-
-            // 5. Arayüzde zincirleme silme
-            if (state.isAgendaMode && type === 'task') {
-                // Ajanda modundaysak, bir şey yapma (sadece o öğeyi sildik)
-            } else {
-                // Planlama modundaysak, alt sütunları temizle
+            async function confirmDelete() {
+                if (!state.itemToDelete) return; 
+                const { type, id, itemElement } = state.itemToDelete;
+                console.log(`confirmDelete çağrıldı (Tip: ${type}, ID: ${id})`);
+                let endpoint = '';
+                switch (type) {
+                    case '1': endpoint = 'goal-categories'; break;
+                    case '2': endpoint = 'annual-goals'; break;
+                    case '3': endpoint = 'monthly-goals'; break;
+                    case '4': endpoint = 'weekly-goals'; break;
+                    case '5': endpoint = 'daily-goals'; break;
+                    case 'task': endpoint = 'tasks'; break;
+                    default:
+                        console.error('Bilinmeyen silme tipi:', type);
+                        state.itemToDelete = null;
+                        closeModal('delete-confirm-modal');
+                        return;
+                }
+                const btn = document.getElementById('confirm-delete-btn');
+                btn.disabled = true; btn.textContent = 'Siliniyor...';
+                await fetchData(`/api/${endpoint}/${id}`, { method: 'DELETE' });
+                itemElement.remove();
                 switch (type) {
                     case '1': resetColumns(2); break;
                     case '2': resetColumns(3); break;
@@ -608,57 +447,13 @@ const globalTooltip = document.getElementById('global-tooltip');
                     case '4': resetColumns(5); break;
                     case '5': resetColumns(6); break;
                 }
+                btn.disabled = false; btn.textContent = 'Evet, Sil';
+                closeModal('delete-confirm-modal');
+                state.itemToDelete = null; 
             }
-            
-            // 6. Butonu eski haline getir ve modalı kapat
-            btn.disabled = false;
-            btn.textContent = 'Evet, Sil';
-            closeModal('delete-confirm-modal');
-            state.itemToDelete = null; // State'i temizle
-        }
-    
-    // --- BU FONKSİYONU GÜNCELLE (V2 Ajanda: Silme sonrası listeyi yenile) ---
-    async function confirmDelete() {
-        if (!state.itemToDelete) return; 
-        const { type, id, itemElement } = state.itemToDelete;
-        let endpoint = '';
-        switch (type) {
-            case '1': endpoint = 'goal-categories'; break;
-            case '2': endpoint = 'annual-goals'; break;
-            case '3': endpoint = 'monthly-goals'; break;
-            case '4': endpoint = 'weekly-goals'; break;
-            case '5': endpoint = 'daily-goals'; break;
-            case 'task': endpoint = 'tasks'; break;
-            default: console.error('Bilinmeyen silme tipi:', type); state.itemToDelete = null; closeModal('delete-confirm-modal'); return;
-        }
-        const btn = document.getElementById('confirm-delete-btn');
-        btn.disabled = true; btn.textContent = 'Siliniyor...';
-        await fetchData(`/api/${endpoint}/${id}`, { method: 'DELETE' });
-        itemElement.remove();
 
-        // DÜZELTME: Arayüzde zincirleme silme
-        if (state.isAgendaMode && type === 'task') {
-            // Ajanda modundaysak, bir şey yapma (sadece o öğeyi sildik)
-        } else {
-            // Planlama modundaysak, alt sütunları temizle
-            switch (type) {
-                case '1': resetColumns(2); break;
-                case '2': resetColumns(3); break;
-                case '3': resetColumns(4); break;
-                case '4': resetColumns(5); break;
-                case '5': resetColumns(6); break;
-            }
-        }
-        
-        btn.disabled = false; btn.textContent = 'Evet, Sil';
-        closeModal('delete-confirm-modal');
-        state.itemToDelete = null; 
-    }
-
-    // --- MODAL (EKLEME/DÜZENLEME) YÖNETİMİ ---
-
-    // (addNewCategory, addNewAnnualGoal, addNewMonthlyGoal, addNewWeeklyGoal, addNewDailyGoal - Değişiklik yok)
-async function addNewCategory(e) {
+            // --- MODAL (EKLEME/DÜZENLEME) YÖNETİMİ ---
+            async function addNewCategory(e) {
                 e.preventDefault();
                 if (state.editingItem) { await handleUpdate(e); return; }
                 const name = document.getElementById('category-name').value.trim();
@@ -763,71 +558,70 @@ async function addNewCategory(e) {
             else { btn.disabled = false; btn.textContent = 'Kaydet'; }
         }
 
-    // --- BU FONKSİYONU GÜNCELLE (V2 Ajanda: Kategori ID'sini al) ---
-    async function addNewTask(e) {
-        e.preventDefault(); 
-        if (state.editingItem) { await handleUpdate(e); return; }
-        
-        const desc = document.getElementById('task-desc').value;
-        const goalDate = document.getElementById('task-goal-date').value;
-        const startTime = document.getElementById('task-start-time').value;
-        const endTime = document.getElementById('task-end-time').value;
+       // --- BU FONKSİYONU GÜNCELLE (422 'catch' bloğu düzeltildi) ---
+        async function addNewTask(e) {
+            e.preventDefault(); 
+            if (state.editingItem) { await handleUpdate(e); return; }
+            
+            const desc = document.getElementById('task-desc').value;
+            const goalDate = document.getElementById('task-goal-date').value;
+            const startTime = document.getElementById('task-start-time').value;
+            const endTime = document.getElementById('task-end-time').value;
 
-        // DÜZELTME: Kategori ID'sini moddan al
-        let categoryId;
-        if (state.isAgendaMode) {
-            categoryId = document.getElementById('task-goal-category').value;
-        } else {
-            categoryId = state.selectedCategoryId;
-        }
+            if (!desc || !state.selectedCategoryId || !goalDate) {
+                showError('Görev açıklaması, Kategori (Sütun 1) ve Tarih (Modal) zorunludur.');
+                return;
+            }
+            
+            const data = {
+                goal_category_id: state.selectedCategoryId,
+                goal_date: goalDate,
+                start_time: startTime || null,
+                end_time: endTime || null,
+                task_description: desc
+            };
+            
+            const btn = document.getElementById('save-task-btn');
+            btn.disabled = true; btn.textContent = 'Kaydediliyor...';
 
-        if (!desc || !categoryId || !goalDate) {
-            showError('Görev açıklaması, Kategori (Proje) ve Tarih zorunludur.');
-            return;
-        }
-        
-        const data = {
-            goal_category_id: categoryId, // DÜZELTİLDİ
-            goal_date: goalDate,
-            start_time: startTime || null,
-            end_time: endTime || null,
-            task_description: desc
-        };
-        
-        const btn = document.getElementById('save-task-btn');
-        btn.disabled = true; btn.textContent = 'Kaydediliyor...';
-        try {
-            const newTask = await fetchData('/api/tasks', { method: 'POST', body: JSON.stringify(data) });
-            if (newTask) {
-                // DÜZELTME: Hangi listeyi yenileyeceğini bil
-                if (state.isAgendaMode) {
-                    fetchTodayAgenda(); // Ajanda listesini yenile
-                } else {
-                    fetchTasks(state.selectedDailyId); // Planlama listesini yenile
+            try {
+                const newTask = await fetchData('/api/tasks', { method: 'POST', body: JSON.stringify(data) });
+                
+                if (newTask) {
+                    fetchTasks(state.selectedDailyId);
+                    closeModal('task-modal');
                 }
-                closeModal('task-modal');
+            } catch (error) { // 'error' artık bizim JSON objemiz
+                // DÜZELTME: 422 Çakışma hatasını yakala ve göster
+                if (error.errors && error.errors.time) {
+                    alert(error.errors.time[0]); // "Bu saat aralığı zaten dolu."
+                } else {
+                    console.error('addNewTask Hatası:', error);
+                    showError('Bilinmeyen bir hata oluştu.');
+                }
+            } finally {
+                // Hata da olsa, başarılı da olsa butonu aç
+                btn.disabled = false; btn.textContent = 'Kaydet';
             }
-        } catch (error) {
-            if (error.errors && error.errors.time) {
-                alert(error.errors.time[0]); 
-            } else {
-                console.error('addNewTask Hatası:', error);
-                showError('Bilinmeyen bir hata oluştu.');
-            }
-        } finally {
-            btn.disabled = false; btn.textContent = 'Kaydet';
         }
-    }
 
-    // --- BU FONKSİYONU GÜNCELLE (V2 Ajanda: Kategori dropdown'unu doldur) ---
-    function openEditModal(type, item) {
-        state.editingItem = { type, item }; 
-        let modalId = '';
-        const formatDate = (dateString) => { if (!dateString) return ''; return dateString.split('T')[0]; };
-        const formatTime = (timeString) => { if (!timeString) return ''; return timeString.substring(0, 5); };
+      // --- BU FONKSİYONU GÜNCELLE (V2: Görev (Task) düzenleme için Tarih ekle) ---
+        function openEditModal(type, item) {
+            state.editingItem = { type, item }; 
+            let modalId = '';
+            
+            const formatDate = (dateString) => {
+                if (!dateString) return '';
+                return dateString.split('T')[0];
+            };
 
-        switch (type) {
-         case '1':
+            const formatTime = (timeString) => {
+                if (!timeString) return '';
+                return timeString.substring(0, 5);
+            };
+
+            switch (type) {
+           case '1':
                         modalId = 'category-modal';
                         document.getElementById('category-name').value = item.name;
                         break;
@@ -852,87 +646,88 @@ async function addNewCategory(e) {
                         document.getElementById('daily-goal-label').value = item.day_label;
                         document.getElementById('daily-goal-title').value = item.title;
                         break;
-            
-            case 'task': 
-                modalId = 'task-modal';
-                document.getElementById('task-goal-date').value = formatDate(item.goal_date);
-                document.getElementById('task-start-time').value = formatTime(item.start_time);
-                document.getElementById('task-end-time').value = formatTime(item.end_time);
-                document.getElementById('task-desc').value = item.task_description;
                 
-                // DÜZELTME: Kategori dropdown'unu doldur ve seç
-                const categorySelector = document.getElementById('task-goal-category');
-                populateCategorySelector(categorySelector, item.goal_category_id);
-                // Ajanda modunda (veya her zaman) dropdown'u göster
-                document.getElementById('task-category-selector').classList.remove('hidden');
-                break;
-            default:
-                console.error('Bilinmeyen düzenleme tipi:', type);
-                return;
+               case 'task': // Sütun 6 (Görev)
+                    modalId = 'task-modal';
+                    document.getElementById('task-goal-date').value = formatDate(item.goal_date);
+                    document.getElementById('task-start-time').value = formatTime(item.start_time); // YENİ
+                    document.getElementById('task-end-time').value = formatTime(item.end_time);   // YENİ
+                    document.getElementById('task-desc').value = item.task_description;
+                    break;
+                default:
+                    console.error('Bilinmeyen düzenleme tipi:', type);
+                    return;
+            }
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.querySelector('h3').textContent = 'Öğeyi Düzenle';
+                modal.querySelector('button[type="submit"]').textContent = 'Güncelle';
+                modal.classList.remove('hidden');
+            }
         }
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.querySelector('h3').textContent = 'Öğeyi Düzenle';
-            modal.querySelector('button[type="submit"]').textContent = 'Güncelle';
-            modal.classList.remove('hidden');
-        }
-    }
 
-    // --- BU FONKSİYONU GÜNCELLE (V2 Ajanda: Kategori ID'sini al) ---
-    async function handleUpdate(e) {
-        e.preventDefault();
-        if (!state.editingItem) return;
-        const { type, item } = state.editingItem;
-        let data = {}; let endpoint = ''; let btnId = '';
-        try {
-            switch (type) {
-                  case '1': data = { name: document.getElementById('category-name').value }; endpoint = `/api/goal-categories/${item.id}`; btnId = 'save-category-btn'; break;
+       // --- BU FONKSİYONU GÜNCELLE (422 'catch' bloğu düzeltildi) ---
+        async function handleUpdate(e) {
+            e.preventDefault();
+            if (!state.editingItem) return;
+            const { type, item } = state.editingItem;
+            let data = {}; let endpoint = ''; let btnId = '';
+            
+            try {
+                switch (type) {
+                    // ... (case '1' den '5'e kadar aynı) ...
+                    case '1': data = { name: document.getElementById('category-name').value }; endpoint = `/api/goal-categories/${item.id}`; btnId = 'save-category-btn'; break;
                     case '2': data = { title: document.getElementById('annual-goal-title').value, year: document.getElementById('annual-goal-year').value, period_label: document.getElementById('annual-goal-period').value }; endpoint = `/api/annual-goals/${item.id}`; btnId = 'save-annual-goal-btn'; break;
                     case '3': data = { title: document.getElementById('monthly-goal-title').value, month_label: document.getElementById('monthly-goal-label').value }; endpoint = `/api/monthly-goals/${item.id}`; btnId = 'save-monthly-goal-btn'; break;
                     case '4': data = { title: document.getElementById('weekly-goal-title').value, week_label: document.getElementById('weekly-goal-label').value, start_date: document.getElementById('weekly-goal-start-date').value || null }; endpoint = `/api/weekly-goals/${item.id}`; btnId = 'save-weekly-goal-btn'; break;
                     case '5': data = { day_label: document.getElementById('daily-goal-label').value, title: document.getElementById('daily-goal-title').value || null, goal_date: document.getElementById('daily-goal-date').value || null }; endpoint = `/api/daily-goals/${item.id}`; btnId = 'save-daily-goal-btn'; break;
-                
-                case 'task':
-                    data = {
-                        goal_category_id: document.getElementById('task-goal-category').value, // YENİ
-                        goal_date: document.getElementById('task-goal-date').value,
-                        start_time: document.getElementById('task-start-time').value || null,
-                        end_time: document.getElementById('task-end-time').value || null,
-                        task_description: document.getElementById('task-desc').value
-                    };
-                    endpoint = `/api/tasks/${item.id}`;
-                    btnId = 'save-task-btn';
-                    break;
-                default:
-                    throw new Error('Bilinmeyen güncelleme tipi');
-            }
-            const btn = document.getElementById(btnId);
-            btn.disabled = true; btn.textContent = 'Güncelleniyor...';
-            const updatedItem = await fetchData(endpoint, { method: 'PUT', body: JSON.stringify(data) });
-            
-            if (updatedItem) {
-                console.log('Öğe güncellendi:', updatedItem);
-                // DÜZELTME: Hangi listeyi yenileyeceğini bil
-                if (state.isAgendaMode) {
-                    fetchTodayAgenda(); // Ajanda listesini yenile
-                } else {
-                    fetchTasks(state.selectedDailyId); // Planlama listesini yenile
+                    
+                    case 'task': 
+                        data = {
+                            goal_date: document.getElementById('task-goal-date').value,
+                            start_time: document.getElementById('task-start-time').value || null,
+                            end_time: document.getElementById('task-end-time').value || null,
+                            task_description: document.getElementById('task-desc').value
+                        };
+                        endpoint = `/api/tasks/${item.id}`;
+                        btnId = 'save-task-btn';
+                        break;
+                    default:
+                        throw new Error('Bilinmeyen güncelleme tipi');
                 }
-                closeModal(btn.closest('.fixed').id);
-            }
-        } catch (error) {
-            if (error.errors && error.errors.time) {
-                alert(error.errors.time[0]); 
-            } else {
-                console.error('Güncelleme hatası:', error);
-                showError('Bilinmeyen bir hata oluştu.');
-            }
-            if (btnId) { const btn = document.getElementById(btnId); btn.disabled = false; btn.textContent = 'Güncelle'; }
-        }
-    }
+                
+                const btn = document.getElementById(btnId);
+                btn.disabled = true; btn.textContent = 'Güncelleniyor...';
+                const updatedItem = await fetchData(endpoint, { method: 'PUT', body: JSON.stringify(data) });
+                
+                if (updatedItem) {
+                    console.log('Öğe güncellendi:', updatedItem);
+                    // Listeyi yenile
+                    if (type === 'task') {
+                        fetchTasks(state.selectedDailyId);
+                    } else if (type === '1') { fetchCategories(); }
+                    else if (type === '2') { fetchAnnualGoals(state.selectedCategoryId); }
+                    else if (type === '3') { fetchMonthlyGoals(state.selectedAnnualId); }
+                    else if (type === '4') { fetchWeeklyGoals(state.selectedMonthlyId); }
+                    else if (type === '5') { fetchDailyGoals(state.selectedWeeklyId); }
 
-    // (handleReorder, initSortable - Değişiklik yok)
-  async function handleReorder(modelType, listElement) {
+                    closeModal(btn.closest('.fixed').id);
+                }
+            } catch (error) { // 'error' artık bizim JSON objemiz
+                // DÜZELTME: 422 Çakışma hatasını yakala ve göster
+                if (error.errors && error.errors.time) {
+                    alert(error.errors.time[0]); // "Bu saat aralığı dolu."
+                } else {
+                    console.error('Güncelleme hatası:', error);
+                    showError('Bilinmeyen bir hata oluştu.');
+                }
+                
+                if (btnId) { const btn = document.getElementById(btnId); btn.disabled = false; btn.textContent = 'Güncelle'; }
+            }
+        }
+
+            // --- REORDERING (Sıralama) ---
+            async function handleReorder(modelType, listElement) {
                 console.log(`handleReorder çağrıldı (Tip: ${modelType})`);
                 const items = listElement.querySelectorAll('.task-item');
                 const ids = Array.from(items).map(item => parseInt(item.dataset.id, 10));
@@ -960,9 +755,7 @@ async function addNewCategory(e) {
                 });
             }
 
-    // --- UI (ARAYÜZ) HELPERS ---
-
-// --- BU FONKSİYONU GÜNCELLE (V2 Ajanda: Sütun 6 genişletme eklendi) ---
+// --- BU FONKSİYONU GÜNCELLE (Hata: fetchTasks yanlış parametrelerle çağrılıyor) ---
         function renderList(listId, data) {
             const listElement = document.getElementById(listId);
             listElement.innerHTML = ''; 
@@ -980,38 +773,34 @@ async function addNewCategory(e) {
                 
                 let topText = ''; let bottomText = ''; let bottomFontSizeClass = 'text-sm text-white'; 
                 switch (listType) {
-                    case '1': topText = (item.id === 'TODAY') ? 'Ajanda' : ''; bottomText = item.name; bottomFontSizeClass = 'text-white'; break;
+                    case '1': topText = ''; bottomText = item.name; bottomFontSizeClass = 'text-white'; break;
                     case '2': topText = `Yıl ${item.year}: ${item.period_label}`; bottomText = item.title; break;
                     case '3': topText = item.month_label; bottomText = item.title; break;
                     case '4': topText = item.start_date ? formatDateTR(item.start_date) : item.week_label; bottomText = item.title; break;
                     case '5': topText = item.goal_date ? formatDateTR(item.goal_date) : item.day_label; bottomText = item.title || ''; break;
                 }
                 
-                // (İkonlar (SVG) senin en son düzelttiğin haliyle)
                 div.innerHTML = `
                     <div class="item-content flex-1 flex items-center min-w-0">
-                        ${item.id !== 'TODAY' ? `<input type="checkbox" class="action-checkbox" title="Tamamlandı olarak işaretle" ${item.is_completed ? 'checked' : ''}>` : '<div class="w-6"></div>'}
-                        
+                        <input type="checkbox" class="action-checkbox" title="Tamamlandı olarak işaretle" ${item.is_completed ? 'checked' : ''}>
                         <div class="ml-2" title="${topText ? topText + ': ' : ''}${bottomText}">
                             ${topText ? `<div class="text-xs font-semibold text-gray-400">${topText}</div>` : ''}
                             <div class="item-text ${bottomFontSizeClass}">${bottomText}</div>
                         </div>
                     </div>
                     <div class="item-actions">
-                        ${item.id !== 'TODAY' ? `
-                            <button class="action-edit" title="Düzenle">
-                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
-                                    <path d="m15 5 4 4"/>
-                                </svg>
-                            </button>
-                            <button class="action-delete" title="Sil">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6"></polyline>
-                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                </svg>
-                            </button>
-                        ` : ''}
+                        <button class="action-edit" title="Düzenle">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
+                                <path d="m15 5 4 4"/>
+                            </svg>
+                        </button>
+                        <button class="action-delete" title="Sil">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="3 6 5 6 21 6"></polyline>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            </svg>
+                        </button>
                     </div>
                 `;
 
@@ -1021,49 +810,34 @@ async function addNewCategory(e) {
                 const editBtn = div.querySelector('.action-edit');
                 const deleteBtn = div.querySelector('.action-delete');
                 
-                if (checkbox) {
-                    checkbox.addEventListener('click', (e) => { e.stopPropagation(); const isCompleted = e.target.checked; div.classList.toggle('completed', isCompleted); handleToggleGoal(listType, item.id, isCompleted); });
-                }
-
-                content.addEventListener('click', (e) => {
+                checkbox.addEventListener('click', (e) => { e.stopPropagation(); const isCompleted = e.target.checked; div.classList.toggle('completed', isCompleted); handleToggleGoal(listType, item.id, isCompleted); });
+                
+                content.addEventListener('click', (e) => { 
                     if (e.target.tagName.toLowerCase() === 'input') return;
                     e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
-                    div.classList.add('selected');
-
-                    // DÜZELTME: Tıklama mantığı (V2 Ajanda - Genişletme)
-                    switch (listType) {
-                        case '1': // Sütun 1 Tıklandı
-                            if (item.id === 'TODAY') {
-                                // "Bugün" tıklandı
-                                state.isAgendaMode = true;
-                                state.selectedCategoryId = null; 
-                                resetColumns(2); // Sütun 2-6'yı temizle/gizle (ve Col-6 genişliğini sıfırla)
-                                
-                                // YENİ: Sütun 6'yı 5 sütun genişliğine ayarla
-                                document.getElementById('col-6').classList.add('col-span-5');
-                                
-                                fetchTodayAgenda(); // Sütun 6'yı Ajanda Modunda doldur
-                            } else {
-                                // Normal kategori tıklandı
-                                state.isAgendaMode = false;
-                                state.selectedCategoryId = item.id;
-                                resetColumns(2); // Sütun 2-6'yı temizle/gizle (ve Col-6 genişliğini sıfırla)
-                                fetchAnnualGoals(item.id);
-                            }
-                            break;
-                        case '2': state.isAgendaMode = false; state.selectedAnnualId = item.id; resetColumns(3); fetchMonthlyGoals(item.id); break;
-                        case '3': state.isAgendaMode = false; state.selectedMonthlyId = item.id; resetColumns(4); fetchWeeklyGoals(item.id); break;
-                        case '4': state.isAgendaMode = false; state.selectedWeeklyId = item.id; resetColumns(5); fetchDailyGoals(item.id); break;
-                        case '5': state.isAgendaMode = false; state.selectedDailyId = item.id; resetColumns(6); fetchTasks(item.id); break;
-                    }
+                    div.classList.add('selected'); 
+                    
+                    switch (listType) { 
+                        case '1': state.selectedCategoryId = item.id; resetColumns(2); fetchAnnualGoals(item.id); break; 
+                        case '2': state.selectedAnnualId = item.id; resetColumns(3); fetchMonthlyGoals(item.id); break; 
+                        case '3': state.selectedMonthlyId = item.id; resetColumns(4); fetchWeeklyGoals(item.id); break; 
+                        case '4': state.selectedWeeklyId = item.id; resetColumns(5); fetchDailyGoals(item.id); break; 
+                        
+                        // --- DÜZELTME BURADA ---
+                        // fetchTasks'i *yanlış* çağıran (senin kodundaki) 'case 5'i düzeltiyoruz.
+                        // (Benim 'geri al' talimatım buydu ve doğruydu)
+                        case '5': 
+                            state.selectedDailyId = item.id;
+                            state.selectedGoalDate = item.goal_date; // (Bu satır doğru, 'Ekle' butonu için kalsın)
+                            resetColumns(6);
+                            fetchTasks(item.id); // Sadece 'item.id' (DailyGoal ID) gönder
+                            break; 
+                        // --- DÜZELTME SONU ---
+                    } 
                 });
-
-                if (editBtn) {
-                    editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(listType, item); });
-                }
-                if (deleteBtn) {
-                    deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDelete(listType, item.id, div); });
-                }
+                
+                editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal(listType, item); });
+                deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDelete(listType, item.id, div); });
 
                 listElement.appendChild(div);
                 
@@ -1099,117 +873,31 @@ async function addNewCategory(e) {
             }
         }
 
-// --- BU FONKSİYONU GÜNCELLE (V2 Ajanda: Genişlik sıfırlama eklendi) ---
-        function resetColumns(startColumnIndex) {
-            console.log(`resetColumns çağrıldı (Başlangıç: ${startColumnIndex})`);
-            for (let i = startColumnIndex; i <= 6; i++) {
-                document.getElementById(`col-${i}`).classList.add('hidden');
-                document.getElementById(`list-col-${i}`).innerHTML = '';
+            function resetColumns(startColumnIndex) {
+                console.log(`resetColumns çağrıldı (Başlangıç: ${startColumnIndex})`);
+                for (let i = startColumnIndex; i <= 6; i++) {
+                    document.getElementById(`col-${i}`).classList.add('hidden');
+                    document.getElementById(`list-col-${i}`).innerHTML = '';
+                }
             }
-            
-            // DÜZELTME: Ajanda modundan çıkarken Sütun 6'nın genişliğini sıfırla
-            // (Tailwind'in 'col-span-5' sınıfını kaldırır)
-            document.getElementById('col-6').classList.remove('col-span-5');
-        }
             function showColumn(colIndex) { document.getElementById(`col-${colIndex}`).classList.remove('hidden'); }
-    
-    // --- BU FONKSİYONU GÜNCELLE (V2 Ajanda: Dropdown'u sıfırla) ---
-    function closeModal(modalId) {
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.classList.add('hidden');
-            const form = modal.querySelector('form');
-            if (form) form.reset(); 
-            if (modalId !== 'delete-confirm-modal') {
-                modal.querySelector('h3').textContent = modal.querySelector('h3').textContent.replace('Düzenle', 'Yeni Ekle');
-                const submitBtn = modal.querySelector('button[type="submit"]');
-                if (submitBtn) { submitBtn.textContent = 'Kaydet'; submitBtn.disabled = false; }
-            }
-            state.editingItem = null;
-            
-            // YENİ: Görev modalı kapanırken, Kategori dropdown'unu gizle
-            if (modalId === 'task-modal') {
-                document.getElementById('task-category-selector').classList.add('hidden');
-            }
-        }
-    }
-
-    // (showError - Değişiklik yok)
-    function showError(message) { console.error('UYGULAMA HATASI:', message); }
-
-    // --- YENİ FONKSİYON (V2 Ajanda: Kategori Dropdown'unu doldurur) ---
-    function populateCategorySelector(selectElement, selectedId = null) {
-        selectElement.innerHTML = '<option value="">Lütfen bir kategori seçin...</option>'; // Sıfırla
-        
-        if (state.categoriesCache.length > 0) {
-            state.categoriesCache.forEach(category => {
-                const option = document.createElement('option');
-                option.value = category.id;
-                option.textContent = category.name;
-                if (category.id === selectedId) {
-                    option.selected = true;
-                }
-                selectElement.appendChild(option);
-            });
-        }
-    }
-
-
-    // --- BU FONKSİYONU GÜNCELLE (V2 Ajanda: Tarihi ve Dropdown'u ayarla) ---
-    function setupModal(modalId, openBtnId, closeBtnId, formId) {
-        const modal = document.getElementById(modalId);
-        const openBtn = document.getElementById(openBtnId);
-        const closeBtn = document.getElementById(closeBtnId);
-        const form = document.getElementById(formId);
-        if (!modal || !openBtn || !closeBtn || !form) { console.error(`Modal elementleri bulunamadı (${modalId}, ${openBtnId}). ID'leri kontrol edin.`); return; }
-        
-        openBtn.addEventListener('click', () => {
-            
-            // Hiyerarşik kontroller (Bunlar zaten vardı)
-            if (modalId === 'annual-goal-modal' && !state.selectedCategoryId) { showError("Lütfen önce bir ana kategori (Sütun 1) seçin."); return; }
-            if (modalId === 'monthly-goal-modal' && !state.selectedAnnualId) { showError("Lütfen önce bir yıllık hedef (Sütun 2) seçin."); return; }
-            if (modalId === 'weekly-goal-modal' && !state.selectedMonthlyId) { showError("Lütfen önce bir aylık hedef (Sütun 3) seçin."); return; }
-            if (modalId === 'daily-goal-modal' && !state.selectedWeeklyId) { showError("Lütfen önce bir haftalık hedef (Sütun 4) seçin."); return; }
-            
-            // DÜZELTME: "Yeni Görev Ekle" Butonu (Sütun 6)
-            if (modalId === 'task-modal') {
-                if (state.isAgendaMode) {
-                    // 1. AJANDA MODU:
-                    // Kategori dropdown'unu doldur ve göster
-                    const categorySelector = document.getElementById('task-goal-category');
-                    populateCategorySelector(categorySelector);
-                    document.getElementById('task-category-selector').classList.remove('hidden');
-                    // Ajanda modu "BUGÜN" olduğu için, tarihi bugüne ayarla
-                    document.getElementById('task-goal-date').value = new Date().toISOString().split('T')[0];
-                    
-                } else {
-                    // 2. PLANLAMA MODU:
-                    if (!state.selectedDailyId) { showError("Lütfen önce bir gün seçin."); return; }
-                    // Kategori dropdown'unu gizle
-                    document.getElementById('task-category-selector').classList.add('hidden');
-                    // Tarihi, Sütun 5'ten (seçili günden) al
-                    const goalDate = state.selectedGoalDate ? state.selectedGoalDate.split('T')[0] : '';
-                    document.getElementById('task-goal-date').value = goalDate;
+            function closeModal(modalId) {
+                const modal = document.getElementById(modalId);
+                if (modal) {
+                    modal.classList.add('hidden');
+                    const form = modal.querySelector('form');
+                    if (form) form.reset(); 
+                    if (modalId !== 'delete-confirm-modal') {
+                        modal.querySelector('h3').textContent = modal.querySelector('h3').textContent.replace('Düzenle', 'Yeni Ekle');
+                        const submitBtn = modal.querySelector('button[type="submit"]');
+                        if (submitBtn) { submitBtn.textContent = 'Kaydet'; submitBtn.disabled = false; }
+                    }
+                    state.editingItem = null;
                 }
             }
-            
-            modal.classList.remove('hidden');
-        });
-        
-        closeBtn.addEventListener('click', () => closeModal(modalId));
-        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(modalId); });
-
-        // Form gönderimini ilgili fonksiyona bağla
-        if (formId === 'task-form') form.addEventListener('submit', addNewTask);
-        else if (formId === 'category-form') form.addEventListener('submit', addNewCategory);
-        else if (formId === 'annual-goal-form') form.addEventListener('submit', addNewAnnualGoal);
-        else if (formId === 'monthly-goal-form') form.addEventListener('submit', addNewMonthlyGoal);
-        else if (formId === 'weekly-goal-form') form.addEventListener('submit', addNewWeeklyGoal);
-        else if (formId === 'daily-goal-form') form.addEventListener('submit', addNewDailyGoal);
-    }
-    
-    // (initApp ve DOMContentLoaded - Değişiklik yok)
-   async function initApp() {
+            function showError(message) { console.error('UYGULAMA HATASI:', message); }
+          // --- BU FONKSİYONU GÜNCELLE (Scroll listener eklendi) ---
+        async function initApp() {
             console.log('Uygulama başlıyor (initApp)...');
             resetColumns(2); 
             await fetchCategories();
@@ -1233,7 +921,49 @@ async function addNewCategory(e) {
             
             console.log('Uygulama başarıyla yüklendi.');
         }
- document.addEventListener('DOMContentLoaded', function() {
+            // --- BU FONKSİYONU GÜNCELLE (Task Modalı açılırken Tarihi otomatik doldur) ---
+        function setupModal(modalId, openBtnId, closeBtnId, formId) {
+            const modal = document.getElementById(modalId);
+            const openBtn = document.getElementById(openBtnId);
+            const closeBtn = document.getElementById(closeBtnId);
+            const form = document.getElementById(formId);
+            if (!modal || !openBtn || !closeBtn || !form) { console.error(`Modal elementleri bulunamadı (${modalId}, ${openBtnId}). ID'leri kontrol edin.`); return; }
+            
+            openBtn.addEventListener('click', () => {
+                
+                // Hiyerarşik kontroller (Bunlar zaten vardı)
+                if (modalId === 'task-modal' && !state.selectedDailyId) { showError("Lütfen önce bir gün seçin."); return; }
+                if (modalId === 'annual-goal-modal' && !state.selectedCategoryId) { showError("Lütfen önce bir ana kategori (Sütun 1) seçin."); return; }
+                if (modalId === 'monthly-goal-modal' && !state.selectedAnnualId) { showError("Lütfen önce bir yıllık hedef (Sütun 2) seçin."); return; }
+                if (modalId === 'weekly-goal-modal' && !state.selectedMonthlyId) { showError("Lütfen önce bir aylık hedef (Sütun 3) seçin."); return; }
+                if (modalId === 'daily-goal-modal' && !state.selectedWeeklyId) { showError("Lütfen önce bir haftalık hedef (Sütun 4) seçin."); return; }
+
+                // --- DÜZELTME BURADA ---
+                // Eğer "Yeni Görev Ekle" modalını açıyorsak (Düzenleme DEĞİLSE)
+                // ve Sütun 5'ten bir tarih seçilmişse, o tarihi modal'a ata.
+                if (modalId === 'task-modal' && state.selectedGoalDate && !state.editingItem) {
+                    const goalDate = state.selectedGoalDate.split('T')[0]; // '2025-11-07T...' -> '2025-11-07'
+                    document.getElementById('task-goal-date').value = goalDate;
+                }
+                // --- DÜZELTME SONU ---
+
+                modal.classList.remove('hidden');
+            });
+            
+            closeBtn.addEventListener('click', () => closeModal(modalId));
+            modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(modalId); });
+
+            // Form gönderimini ilgili fonksiyona bağla (Bu kısım aynı)
+            if (formId === 'task-form') form.addEventListener('submit', addNewTask);
+            else if (formId === 'category-form') form.addEventListener('submit', addNewCategory);
+            else if (formId === 'annual-goal-form') form.addEventListener('submit', addNewAnnualGoal);
+            else if (formId === 'monthly-goal-form') form.addEventListener('submit', addNewMonthlyGoal);
+            else if (formId === 'weekly-goal-form') form.addEventListener('submit', addNewWeeklyGoal);
+            else if (formId === 'daily-goal-form') form.addEventListener('submit', addNewDailyGoal);
+        }
+
+            // --- DOM HAZIR OLDUĞUNDA UYGULAMAYI BAŞLAT ---
+        document.addEventListener('DOMContentLoaded', function() {
             // DÜZELTME: HTS JavaScript'ini SADECE dashboard'da çalıştır.
             // ('col-1', HTS arayüzümüzün ana sütunudur)
             if (document.getElementById('col-1')) {
@@ -1241,6 +971,6 @@ async function addNewCategory(e) {
             }
         });
 
-</script>
+        </script>
     </body>
 </html>
