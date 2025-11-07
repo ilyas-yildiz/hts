@@ -2,11 +2,13 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Artisan; // Cache temizleme rotası için
 
 // HTS Kontrolcülerimizi buraya dahil et
 use App\Http\Controllers\Api\GoalController;
 use App\Http\Controllers\Api\TaskController;
 use App\Http\Controllers\Api\ReorderController;
+use App\Http\Controllers\Api\AgendaController; // YENİ EKLENDİ
 
 /*
 |--------------------------------------------------------------------------
@@ -15,19 +17,12 @@ use App\Http\Controllers\Api\ReorderController;
 */
 
 // --- BREEZE WEB ARAYÜZ ROTLARI ---
-
-// DÜZELTME: Ana sayfa ('/') artık 'dashboard'a SADECE YÖNLENDİRİR (isimsiz).
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
-
-// DÜZELTME: '/dashboard' rotası 'dashboard' ismini alan TEK ROTA oldu.
 Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
-
-
-// Breeze'in 'Profil' Rotaları (Bunlar doğruydu)
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -36,7 +31,6 @@ Route::middleware('auth')->group(function () {
 
 
 // --- HTS API ROTLARI ---
-// (Bu kısım bir önceki adımdan, doğru ve tam)
 Route::prefix('api')->middleware(['auth'])->group(function () {
 
     /**
@@ -86,20 +80,29 @@ Route::prefix('api')->middleware(['auth'])->group(function () {
      */
     Route::put('/reorder', [ReorderController::class, 'updateOrder']);
 
+    /**
+     * 4. YENİ: Ajanda Rotası (EKSİK OLAN KISIM)
+     */
+    Route::controller(AgendaController::class)->group(function () {
+        Route::get('/agenda/today', 'getTodayAgenda');
+    });
+
 }); // <-- /api ve auth grubunun sonu
 
 
 // Breeze'in oluşturduğu kimlik doğrulama rotalarını yükle
-// (Bu /login, /register, /logout vb. içerir)
 require __DIR__.'/auth.php';
 
+// Cache temizleme rotası
 Route::get('/sistemi-temizle-12345', function () {
     try {
         Artisan::call('cache:clear');
         Artisan::call('config:clear');
         Artisan::call('view:clear');
         Artisan::call('route:clear');
-        return "Butun onbellekler temizlendi!";
+        Artisan::call('event:clear');
+        Artisan::call('app:clear');    
+        return "Butun (AGRESİF) onbellekler temizlendi!";
     } catch (Exception $e) {
         return "Hata: " . $e->getMessage();
     }
