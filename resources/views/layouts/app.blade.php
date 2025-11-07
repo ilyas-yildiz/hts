@@ -980,7 +980,7 @@ async function addNewCategory(e) {
                 
                 let topText = ''; let bottomText = ''; let bottomFontSizeClass = 'text-sm text-white'; 
                 switch (listType) {
-                    case '1': topText = (item.id === 'TODAY') ? 'Ajanda' : ''; bottomText = item.name; bottomFontSizeClass = 'text-white'; break;
+                    case '1': topText = (item.id === 'TODAY') ? '' : ''; bottomText = item.name; bottomFontSizeClass = 'text-white'; break;
                     case '2': topText = `Yıl ${item.year}: ${item.period_label}`; bottomText = item.title; break;
                     case '3': topText = item.month_label; bottomText = item.title; break;
                     case '4': topText = item.start_date ? formatDateTR(item.start_date) : item.week_label; bottomText = item.title; break;

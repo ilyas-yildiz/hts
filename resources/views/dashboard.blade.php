@@ -1,44 +1,42 @@
 <x-app-layout>
-    <!-- Header (HTS Arayüzünden kopyalandı) -->
-    <header class="flex-shrink-0 bg-gray-900 shadow-md">
-        <div class="px-4 sm:px-6 lg:px-8"> 
-            <div class="flex justify-between items-center h-16">
-                
-                <!-- Sol Taraf (Başlık) - Değişiklik yok -->
-                <div class="flex items-center">
-                    <svg class="w-8 h-8 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h12M3.75 3h16.5M3.75 3v16.5M19.5 3c.621 0 1.125.504 1.125 1.125v14.625c0 .621-.504 1.125-1.125 1.125H9.75a1.125 1.125 0 0 1-1.125-1.125V17.25m8.625-14.625H6a2.25 2.25 0 0 0-2.25 2.25v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V3.375c0-.209-.056-.412-.16-.587l-.092-.148Z" />
-                    </svg>
-                    <span class="ml-3 text-2xl font-semibold text-white">Hedef Takip Sistemi</span>
-                </div>
-                
-                <!-- DÜZELTME: Sağ Taraf (Kullanıcı Adı ve Çıkış Butonu) -->
-                <div class="flex items-center space-x-4">
-                    
-                    <!-- DÜZELTME: Kullanıcı adını 'Profil' sayfasına link yap -->
-                    <a href="{{ route('profile.edit') }}" class="text-gray-300 hover:text-white hover:underline focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white rounded-md px-2 py-1">
-                        {{ Auth::user()->name }}
-                    </a>
-                    
-                    <!-- Çıkış Yap Formu (Bu zaten vardı) -->
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="p-2 rounded-full text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white" title="Çıkış Yap">
-                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15M12 9l-3 3m0 0 3 3m-3-3h12.75" />
-                            </svg>
-                            <span class="sr-only">Çıkış Yap</span>
-                        </button>
-                    </form>
-                </div>
-                
+    <div x-data="{ open: false }" class="absolute top-4 right-6 z-50">
+        
+        <!-- Hamburger Butonu -->
+        <button @click="open = !open" class="p-2 rounded-full text-gray-400 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-white" title="Menü">
+            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+        </button>
+
+        <!-- Açılır Menü İçeriği -->
+        <div x-show="open"
+             @click.away="open = false"
+             x-transition:enter="transition ease-out duration-100"
+             x-transition:enter-start="transform opacity-0 scale-95"
+             x-transition:enter-end="transform opacity-100 scale-100"
+             x-transition:leave="transition ease-in duration-75"
+             x-transition:leave-start="transform opacity-100 scale-100"
+             x-transition:leave-end="transform opacity-0 scale-95"
+             class="absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md bg-gray-800 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none border border-gray-700"
+             style="display: none;">
+            
+            <div class="py-1">
+                <!-- Profil Linki -->
+                <a href="{{ route('profile.edit') }}" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white">
+                    <strong>{{ Auth::user()->name }}</strong> (Profil)
+                </a>
+
+                <!-- Çıkış Yap Formu -->
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-300 hover:bg-gray-700 hover:text-white" title="Çıkış Yap">
+                        Çıkış Yap
+                    </button>
+                </form>
             </div>
         </div>
-    </header>
-
-
-    <div class="flex-1 grid grid-cols-6 min-h-0 min-w-0 px-4 sm:px-6 lg:px-8" style="height: calc(100vh - 64px);">
-        
+    </div>
+<div class="flex-1 grid grid-cols-6 min-h-0 min-w-0 px-4 sm:px-6 lg:px-8 h-screen">        
         <!-- Kolon 1: 5 Yıllık Hedef Kategorileri -->
         <div id="col-1" class="column flex flex-col border-r border-gray-700">
             <div class="flex-shrink-0 p-4 border-b border-gray-700">
