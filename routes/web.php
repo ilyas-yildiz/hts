@@ -92,7 +92,6 @@ Route::get('/sistemi-temizle-12345', function () {
         Artisan::call('view:clear');
         Artisan::call('route:clear');
         Artisan::call('event:clear');
-        Artisan::call('app:clear');    
         return "Butun (AGRESİF) onbellekler temizlendi!";
     } catch (Exception $e) {
         return "Hata: " . $e->getMessage();
