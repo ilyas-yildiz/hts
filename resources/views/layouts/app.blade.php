@@ -201,29 +201,26 @@
                      .replace(/'/g, '&#039;');
         }
 
-// --- BU FONKSİYONU GÜNCELLE (Timezone 'Bir Gün Geri Kayma' Düzeltmesi) ---
+// --- BU FONKSİYONU GÜNCELLE (DEBUGGING EKLENDİ) ---
 
+        // --- BU FONKSİYONU GÜNCELLE (Timezone 'Gösterme' Düzeltmesi) ---
         function formatDateTR(dateString) {
-            if (!dateString) return '';
+            // Backend'den artık '2025-11-12' (T...Z olmadan) gelmesini bekliyoruz
+            if (!dateString) return ''; 
+            
             try {
-                // Gelen tarihi (örn: "2025-11-12T...") al
-                const date = new Date(dateString); 
+                // DÜZELTME: "2025-11-12" string'ini 'T00:00:00' (Yerel Saat)
+                // ile 'new Date()'e vererek UTC kaymasını engelle.
+                const date = new Date(dateString + 'T00:00:00'); 
                 
-                // DÜZELTME: 'tr-TR' (Türkçe) formatını KULLAN,
-                // ama 'timeZone: 'UTC'' (Saat Dilimi: UTC) kullanmaya ZORLA.
-                const options = { 
-                    day: 'numeric', 
-                    month: 'short', 
-                    weekday: 'short', 
-                    timeZone: 'UTC' // Bu, "bir gün geri kayma" sorununu çözer
-                };
+                const day = date.toLocaleDateString('tr-TR', { day: 'numeric' });
+                const month = date.toLocaleDateString('tr-TR', { month: 'short' });
+                const weekday = date.toLocaleDateString('tr-TR', { weekday: 'short' });
                 
-                // 'tr-TR' (Türkçe) formatını kullan
-                return date.toLocaleDateString('tr-TR', options);
-
+                return `${day} ${month} ${weekday}`;
             } catch (e) {
                 console.error("Tarih formatlama hatası:", dateString, e);
-                return dateString; // Hata olursa, ham tarihi döndür
+                return dateString;
             }
         }
 
@@ -829,64 +826,73 @@ async function addNewCategory(e) {
             }
         }
 
-    // --- BU FONKSİYONU GÜNCELLE (V2 Ajanda: Kategori dropdown'unu doldur) ---
-    function openEditModal(type, item) {
-        state.editingItem = { type, item }; 
-        let modalId = '';
-        const formatDate = (dateString) => { if (!dateString) return ''; return dateString.split('T')[0]; };
-        const formatTime = (timeString) => { if (!timeString) return ''; return timeString.substring(0, 5); };
-
-        switch (type) {
-         case '1':
-                        modalId = 'category-modal';
-                        document.getElementById('category-name').value = item.name;
-                        break;
-                    case '2':
-                        modalId = 'annual-goal-modal';
-                        document.getElementById('annual-goal-title').value = item.title;
-                        document.getElementById('annual-goal-year').value = item.year;
-                        document.getElementById('annual-goal-period').value = item.period_label;
-                        break;
-                    case '3':
-                        modalId = 'monthly-goal-modal';
-                        document.getElementById('monthly-goal-title').value = item.title;
-                        document.getElementById('monthly-goal-label').value = item.month_label;
-                        break;
-                    case '4':
-                        modalId = 'weekly-goal-modal';
-                        document.getElementById('weekly-goal-title').value = item.title;
-                        document.getElementById('weekly-goal-label').value = item.week_label;
-                        break;
-                    case '5':
-                        modalId = 'daily-goal-modal';
-                        document.getElementById('daily-goal-label').value = item.day_label;
-                        document.getElementById('daily-goal-title').value = item.title;
-                        break;
+// --- BU FONKSİYONU GÜNCELLE (Timezone Düzeltmesi) ---
+        function openEditModal(type, item) {
+            state.editingItem = { type, item }; 
+            let modalId = '';
             
-            case 'task': 
-                modalId = 'task-modal';
-                document.getElementById('task-goal-date').value = formatDate(item.goal_date);
-                document.getElementById('task-start-time').value = formatTime(item.start_time);
-                document.getElementById('task-end-time').value = formatTime(item.end_time);
-                document.getElementById('task-desc').value = item.task_description;
-                
-                // DÜZELTME: Kategori dropdown'unu doldur ve seç
-                const categorySelector = document.getElementById('task-goal-category');
-                populateCategorySelector(categorySelector, item.goal_category_id);
-                // Ajanda modunda (veya her zaman) dropdown'u göster
-                document.getElementById('task-category-selector').classList.remove('hidden');
-                break;
-            default:
-                console.error('Bilinmeyen düzenleme tipi:', type);
-                return;
+            // DÜZELTME: Bu 'formatDate' (bozuk) fonksiyonu buradan siliyoruz.
+            // const formatDate = (dateString) => { ... }; // <-- SİLİNDİ
+            
+            // YENİ: 'formatTime' (bu doğru)
+            const formatTime = (timeString) => {
+                if (!timeString) return '';
+                return timeString.substring(0, 5);
+            };
+
+            switch (type) {
+                case '1':
+                    modalId = 'category-modal';
+                    document.getElementById('category-name').value = item.name;
+                    break;
+                case '2':
+                    modalId = 'annual-goal-modal';
+                    document.getElementById('annual-goal-title').value = item.title;
+                    document.getElementById('annual-goal-year').value = item.year;
+                    document.getElementById('annual-goal-period').value = item.period_label;
+                    break;
+                case '3':
+                    modalId = 'monthly-goal-modal';
+                    document.getElementById('monthly-goal-title').value = item.title;
+                    document.getElementById('monthly-goal-label').value = item.month_label;
+                    break;
+                case '4':
+                    modalId = 'weekly-goal-modal';
+                    document.getElementById('weekly-goal-title').value = item.title;
+                    document.getElementById('weekly-goal-label').value = item.week_label;
+                    // DÜZELTME: 'formatDateTR' (global) fonksiyonunu kullan
+                    document.getElementById('weekly-goal-start-date').value = item.start_date; // Model 'Y-m-d' verdiği için direkt bas
+                    break;
+                case '5':
+                    modalId = 'daily-goal-modal';
+                    document.getElementById('daily-goal-label').value = item.day_label;
+                    document.getElementById('daily-goal-title').value = item.title;
+                    // DÜZELTME: 'formatDateTR' (global) fonksiyonunu kullan
+                    document.getElementById('daily-goal-date').value = item.goal_date; // Model 'Y-m-d' verdiği için direkt bas
+                    break;
+                case 'task':
+                    modalId = 'task-modal';
+                    // DÜZELTME: 'formatDateTR' (global) fonksiyonunu kullan
+                    document.getElementById('task-goal-date').value = item.goal_date; // Model 'Y-m-d' verdiği için direkt bas
+                    document.getElementById('task-start-time').value = formatTime(item.start_time);
+                    document.getElementById('task-end-time').value = formatTime(item.end_time);
+                    document.getElementById('task-desc').value = item.task_description;
+                    
+                    const categorySelector = document.getElementById('task-goal-category');
+                    populateCategorySelector(categorySelector, item.goal_category_id);
+                    document.getElementById('task-category-selector').classList.remove('hidden');
+                    break;
+                default:
+                    console.error('Bilinmeyen düzenleme tipi:', type);
+                    return;
+            }
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.querySelector('h3').textContent = 'Öğeyi Düzenle';
+                modal.querySelector('button[type="submit"]').textContent = 'Güncelle';
+                modal.classList.remove('hidden');
+            }
         }
-        const modal = document.getElementById(modalId);
-        if (modal) {
-            modal.querySelector('h3').textContent = 'Öğeyi Düzenle';
-            modal.querySelector('button[type="submit"]').textContent = 'Güncelle';
-            modal.classList.remove('hidden');
-        }
-    }
 
 // --- BU FONKSİYONU GÜNCELLE (Timezone Düzeltmesi VE 'break;' hatası) ---
         async function handleUpdate(e) {

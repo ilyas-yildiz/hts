@@ -11,24 +11,23 @@ class WeeklyGoal extends Model
 {
     use HasFactory;
 
-    public $timestamps = false; // 'updated_at' hatası için
+    public $timestamps = false;
 
-    // DÜZENLENDİ: 'start_date' eklendi
     protected $fillable = [
         'monthly_goal_id', 
         'week_label', 
-        'start_date', // YENİ EKLENDİ
+        'start_date', 
         'title', 
         'is_completed', 
         'order_index'
     ];
 
     /**
-     * YENİ: 'start_date' sütununun otomatik olarak bir Tarih (Carbon)
-     * objesine dönüştürülmesini sağlar.
+     * DÜZELTME: 'date' (timezone'lu) yerine 'date:Y-m-d' (timezone'suz)
+     * kullanarak "bir gün geri kayma" JSON hatasını düzelt.
      */
     protected $casts = [
-        'start_date' => 'date',
+        'start_date' => 'date:Y-m-d', // 'date' -> 'date:Y-m-d'
     ];
 
     /**
