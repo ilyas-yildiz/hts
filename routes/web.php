@@ -109,3 +109,27 @@ Route::get('/veritabani-guncelle-v3-gizli', function () {
         return "Hata: " . $e->getMessage();
     }
 });
+
+// YENİ EKLENDİ: Saat Dilimi (Timezone) Test Rotası
+Route::get('/saat-dilimi-testi-gizli', function () {
+    try {
+        // 1. (Garanti olsun diye) Ayar cache'ini tekrar temizle
+        Artisan::call('config:clear');
+        
+        // 2. Laravel'in şu anki ayarını al
+        $configTimezone = config('app.timezone');
+        
+        // 3. Carbon'un (tarih kütüphanesi) şu anki "Bugün" anlayışını al
+        $carbonNow = \Carbon\Carbon::now();
+        $carbonToday = \Carbon\Carbon::today()->toDateTimeString();
+
+        return response()->json([
+            '1_Laravel_Ayar_Dosyasi_Ne_Diyor' => "config('app.timezone') = " . $configTimezone,
+            '2_Carbon_Kutuphanesi_Neyi_Anliyor' => "Carbon::now() = " . $carbonNow,
+            '3_Ajanda_Bugun_Deyince_Neyi_Anliyor' => "Carbon::today() = " . $carbonToday,
+        ]);
+
+    } catch (Exception $e) {
+        return "Hata: " . $e->getMessage();
+    }
+});
