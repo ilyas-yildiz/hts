@@ -200,29 +200,27 @@
                      .replace(/"/g, '&quot;')
                      .replace(/'/g, '&#039;');
         }
-            /**
-         * YENİ: Tarihi (örn: '2025-11-03') '3 Kasım Pzt' formatına çevirir.
-         */
-     function formatDateTR(dateString) {
+
+ // --- BU FONKSİYONU GÜNCELLE (Tarih 'Bir Gün Geri Kayma' Düzeltmesi) ---
+
+        function formatDateTR(dateString) {
             if (!dateString) return '';
             try {
-                // DÜZELTME:
-                // Laravel'den gelen tam tarih string'ini (örn: "2025-11-03 00:00:00")
-                // doğrudan 'new Date()' içine al.
-                // Ekstra '+ T00:00:00' (HATALI KISIM) kaldırıldı.
-                const date = new Date(dateString); 
+                // DÜZELTME: Saat dilimi (timezone) sorunlarını önlemek için.
+                // 1. Gelen tarihi (örn: "2025-11-08T...") 'T' harfine göre böl
+                //    ve sadece "2025-11-08" kısmını al.
+                const dateOnly = dateString.split('T')[0];
+
+                // 2. new Date("2025-11-08") (UTC sayar) YERİNE,
+                //    new Date("2025-11-08T00:00:00") (YEREL saat sayar) kullan.
+                //    ( sondaki 'Z' harfinin olmaması önemlidir! )
+                const date = new Date(dateOnly + 'T00:00:00'); 
                 
                 // 'tr-TR' (Türkçe) formatını kullan
                 const day = date.toLocaleDateString('tr-TR', { day: 'numeric' });
                 const month = date.toLocaleDateString('tr-TR', { month: 'short' });
                 const weekday = date.toLocaleDateString('tr-TR', { weekday: 'short' });
                 
-                // Saat dilimi (timezone) kaymalarını önlemek için (eğer tarih 1 gün geri gelirse)
-                // UTC (Eşgüdümlü) tarihleri kullanabiliriz, ama şimdilik bu daha basit:
-                if (day === undefined || month === undefined || weekday === undefined) {
-                    throw new Error('Tarih formatı anlaşılamadı.');
-                }
-
                 return `${day} ${month} ${weekday}`;
             } catch (e) {
                 console.error("Tarih formatlama hatası:", dateString, e);
