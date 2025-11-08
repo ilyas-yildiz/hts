@@ -11,9 +11,8 @@ class DailyGoal extends Model
 {
     use HasFactory;
 
-    public $timestamps = false; // 'updated_at' hatası için
+    public $timestamps = false; 
 
-    // 'goal_date' (tarih) sütunu bir önceki adımda eklenmişti
     protected $fillable = [
         'weekly_goal_id', 
         'day_label', 
@@ -23,23 +22,28 @@ class DailyGoal extends Model
         'order_index'
     ];
 
-    protected $casts = [
-        'goal_date' => 'date',
-    ];
-
     /**
-     * DÜZENLENDİ: 'booted()' metodu kaldırıldı.
-     * Görevler (Tasks) artık 'DailyGoal'a değil, 'GoalCategory'ye bağlı,
-     * bu yüzden 'DailyGoal' silinirken 'Task'ları silmesine gerek kalmadı.
+     * DÜZELTME: 'date' (timezone'lu) yerine 'date:Y-m-d' (timezone'suz)
+     * kullanarak "bir gün geri kayma" JSON hatasını düzelt.
      */
+    protected $casts = [
+        'goal_date' => 'date:Y-m-d', // 'date' -> 'date:Y-m-d'
+    ];
     
+    /**
+     * Model Olayları (Events) - Zincirleme silme
+     */
+    protected static function booted()
+    {
+        static::deleting(function (DailyGoal $dailyGoal) {
+            $dailyGoal->tasks()->each(function ($task) {
+                $task->delete();
+            });
+        });
+    }
+
     public function weeklyGoal(): BelongsTo
     {
         return $this->belongsTo(WeeklyGoal::class);
     }
-
-    /**
-     * DÜZENLENDİ: 'tasks(): HasMany' ilişkisi kaldırıldı.
-     * Görevler artık bu modele doğrudan bağlı değil.
-     */
 }
