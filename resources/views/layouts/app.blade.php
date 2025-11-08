@@ -201,31 +201,29 @@
                      .replace(/'/g, '&#039;');
         }
 
-// --- BU FONKSİYONU GÜNCELLE (Timezone 'Gösterme' Düzeltmesi) ---
+// --- BU FONKSİYONU GÜNCELLE (Timezone 'Bir Gün Geri Kayma' Düzeltmesi) ---
+
         function formatDateTR(dateString) {
             if (!dateString) return '';
             try {
-                // DÜZELTME: Gelen '2025-11-08 00:00:00' veya '...T...' string'ini
-                // 'T' harfinden bölerek SADECE '2025-11-08' kısmını al.
-                const dateOnly = dateString.split('T')[0];
-
-                // DÜZELTME 2: 'new Date()'i SADECE YYYY-MM-DD formatıyla çağır.
-                // Bu, tarayıcıların bunu UTC olarak değil,
-                // KULLANICININ YEREL SAAT DİLİMİNDE gece yarısı olarak yorumlamasını sağlar.
-                // (Ama '2025-11-08' -> '2025, 11, 08' yapmak daha güvenlidir)
+                // Gelen tarihi (örn: "2025-11-12T...") al
+                const date = new Date(dateString); 
                 
-                const parts = dateOnly.split('-');
-                // Not: JavaScript aylar 0-11 arasıdır, o yüzden parts[1] - 1
-                const date = new Date(parts[0], parts[1] - 1, parts[2]);
-
-                const day = date.toLocaleDateString('tr-TR', { day: 'numeric' });
-                const month = date.toLocaleDateString('tr-TR', { month: 'short' });
-                const weekday = date.toLocaleDateString('tr-TR', { weekday: 'short' });
+                // DÜZELTME: 'tr-TR' (Türkçe) formatını KULLAN,
+                // ama 'timeZone: 'UTC'' (Saat Dilimi: UTC) kullanmaya ZORLA.
+                const options = { 
+                    day: 'numeric', 
+                    month: 'short', 
+                    weekday: 'short', 
+                    timeZone: 'UTC' // Bu, "bir gün geri kayma" sorununu çözer
+                };
                 
-                return `${day} ${month} ${weekday}`;
+                // 'tr-TR' (Türkçe) formatını kullan
+                return date.toLocaleDateString('tr-TR', options);
+
             } catch (e) {
                 console.error("Tarih formatlama hatası:", dateString, e);
-                return dateString;
+                return dateString; // Hata olursa, ham tarihi döndür
             }
         }
 
