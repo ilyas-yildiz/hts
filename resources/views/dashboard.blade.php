@@ -1,14 +1,12 @@
 <x-app-layout>
     <div x-data="{ open: false }" class="absolute top-4 right-6 z-50">
         
-        <!-- Hamburger Butonu -->
         <button @click="open = !open" class="p-2 rounded-full text-gray-400 bg-gray-900 bg-opacity-70 hover:bg-opacity-100 hover:text-white focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-900 focus:ring-white" title="Menü">
             <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
             </svg>
         </button>
 
-        <!-- Açılır Menü İçeriği -->
         <div x-show="open"
              @click.away="open = false"
              x-transition:enter="transition ease-out duration-100"
@@ -34,11 +32,9 @@
             </div>
         </div>
     </div>
-<div class="flex-1 grid grid-cols-6 min-h-0 min-w-0 px-4 sm:px-6 lg:px-8 h-screen">        
-       <!-- Kolon 1: 5 Yıllık Hedef Kategorileri -->
+<div class="flex-1 grid grid-cols-6 min-h-0 min-w-0 px-4 sm:px-6 lg:px-8 h-screen">         
         <div id="col-1" class="column flex flex-col border-r border-gray-700">
-            <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
-            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
                 <div>
                     <h2 class="text-lg font-semibold text-white">5 Yıllık Hedefler</h2>
                     <p class="text-sm text-gray-400">Ana Kategoriler</p>
@@ -49,17 +45,13 @@
                     </button>
                 </div>
             </div>
-            <!-- Liste Alanı (Değişiklik yok) -->
             <div id="list-col-1" class="flex-1 overflow-y-auto p-2 space-y-1">
                 <div class="p-4 text-center text-gray-500">Yükleniyor...</div>
             </div>
-            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
-        </div>
+            </div>
 
-        <!-- Kolon 2: Yıllık Hedefler -->
         <div id="col-2" class="column hidden flex flex-col border-r border-gray-700">
-            <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
-            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
                 <div>
                     <h2 class="text-lg font-semibold text-white">Yıllık Hedefler</h2>
                     <p class="text-sm text-gray-400">Yıllık Dağılım</p>
@@ -71,13 +63,10 @@
                 </div>
             </div>
             <div id="list-col-2" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
-        </div>
+            </div>
 
-        <!-- Kolon 3: Aylık Hedefler -->
         <div id="col-3" class="column hidden flex flex-col border-r border-gray-700">
-            <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
-            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
                 <div>
                     <h2 class="text-lg font-semibold text-white">Aylık Hedefler</h2>
                     <p class="text-sm text-gray-400">Aylık Plan</p>
@@ -89,13 +78,10 @@
                 </div>
             </div>
             <div id="list-col-3" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
-        </div>
+            </div>
 
-        <!-- Kolon 4: Haftalık Hedefler -->
         <div id="col-4" class="column hidden flex flex-col border-r border-gray-700">
-             <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
-            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+             <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
                 <div>
                     <h2 class="text-lg font-semibold text-white">Haftalık Hedefler</h2>
                     <p class="text-sm text-gray-400">Haftalık Plan</p>
@@ -107,13 +93,10 @@
                 </div>
             </div>
             <div id="list-col-4" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
-        </div>
+            </div>
 
-        <!-- Kolon 5: Günlük Hedefler -->
         <div id="col-5" class="column hidden flex flex-col border-r border-gray-700">
-            <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
-            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
                 <div>
                     <h2 class="text-lg font-semibold text-white">Günlük Hedefler</h2>
                     <p class="text-sm text-gray-400">Günlük Plan</p>
@@ -125,13 +108,10 @@
                 </div>
             </div>
             <div id="list-col-5" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
-        </div>
+            </div>
 
-        <!-- Kolon 6: Görevler -->
         <div id="col-6" class="column hidden flex flex-col">
-            <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
-            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
                 <div>
                     <h2 class="text-lg font-semibold text-white">Görevler</h2>
                     <p class="text-sm text-gray-400">Günlük Görev Listesi</p>
@@ -143,13 +123,9 @@
                 </div>
             </div>
             <div id="list-col-6" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
-        </div>
+            </div>
     </div>
 
-    <!-- HTS MODALLARI (Tümü) -->
-    
-    <!-- Kategori Modalı -->
     <div id="category-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
             <h3 class="text-xl font-semibold mb-4 text-white">Yeni Kategori Ekle</h3>
@@ -168,7 +144,6 @@
         </div>
     </div>
 
-    <!-- Yıllık Hedef Modalı -->
     <div id="annual-goal-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
             <h3 class="text-xl font-semibold mb-4 text-white">Yeni Yıllık Hedef Ekle</h3>
@@ -195,7 +170,6 @@
         </div>
     </div>
 
-    <!-- Aylık Hedef Modalı -->
     <div id="monthly-goal-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
             <h3 class="text-xl font-semibold mb-4 text-white">Yeni Aylık Hedef Ekle</h3>
@@ -218,7 +192,6 @@
         </div>
     </div>
 
-    <!-- Haftalık Hedef Modalı -->
     <div id="weekly-goal-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
             <h3 class="text-xl font-semibold mb-4 text-white">Yeni Haftalık Hedef Ekle</h3>
@@ -245,7 +218,6 @@
         </div>
     </div>
 
-    <!-- Günlük Hedef Modalı -->
     <div id="daily-goal-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
             <h3 class="text-xl font-semibold mb-4 text-white">Yeni Günlük Hedef Ekle</h3>
@@ -272,7 +244,6 @@
         </div>
     </div>
 
-    <!-- Görev Modalı -->
     <div id="task-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
             <h3 class="text-xl font-semibold mb-4 text-white">Yeni Görev Ekle</h3>
@@ -308,14 +279,13 @@
                     </div>
                 </div>
                 <div class="mt-6 flex justify-end space-x-3">
-                    <button type="button" id="close-task-modal-btn" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">İptal</button>
+                    <button type="button" id="close-task-modal-btn" class="bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700">İptal</tr}>
                     <button type="submit" id="save-task-btn" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700">Kaydet</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Silme Onay Modalı -->
     <div id="delete-confirm-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-sm">
             <h3 class="text-xl font-semibold mb-2 text-white">Silme Onayı</h3>
@@ -326,9 +296,7 @@
             </div>
         </div>
     </div>
-<!-- YENİ: Global Tooltip (Tüm sütunlardan bağımsız) -->
-    <div id="global-tooltip" class="fixed hidden p-3 rounded-md shadow-lg bg-gray-900 border border-gray-700 text-white text-sm max-w-xs z-[200]" 
+<div id="global-tooltip" class="fixed hidden p-3 rounded-md shadow-lg bg-gray-900 border border-gray-700 text-white text-sm max-w-xs z-[200]" 
          style="white-space: pre-wrap; transition: opacity 0.2s ease; opacity: 0; pointer-events: none;">
-        <!-- İçerik JS ile doldurulacak -->
-    </div>
+        </div>
 </x-app-layout>
