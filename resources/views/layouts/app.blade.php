@@ -350,8 +350,7 @@
             if (data) { renderList('list-col-5', data); }
     }
 
-    // GÜNCELLEME: Sütun 6 (Görevler) Padding Düzeltmesi
-    async function fetchTasks(dailyGoalId) {
+ async function fetchTasks(dailyGoalId) {
         console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
         const data = await fetchData(`/api/tasks/${dailyGoalId}`);
         const listElement = document.getElementById('list-col-6');
@@ -360,7 +359,6 @@
             listElement.innerHTML = '';
             data.forEach(task => {
                 const item = document.createElement('div');
-                // GÜNCELLEME: p-3 (padding) buradan (ana div'den) kaldırıldı -> p-0
                 item.className = `task-item flex items-center justify-between p-0 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
                 item.dataset.id = task.id;
                 
@@ -382,7 +380,15 @@
                 item.innerHTML = `
                     <div class="drag-handle block lg:hidden p-3 text-gray-500" title="Sıralamak için sürükle">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                            <circle cx="4" cy="4" r="1.1"/>
+                            <circle cx="8" cy="4" r="1.1"/>
+                            <circle cx="12" cy="4" r="1.1"/>
+                            <circle cx="4" cy="8" r="1.1"/>
+                            <circle cx="8" cy="8" r="1.1"/>
+                            <circle cx="12" cy="8" r="1.1"/>
+                            <circle cx="4" cy="12" r="1.1"/>
+                            <circle cx="8" cy="12" r="1.1"/>
+                            <circle cx="12" cy="12" r="1.1"/>
                         </svg>
                     </div>
                     <div class="item-content flex-1 flex items-center min-w-0 p-3">
@@ -396,7 +402,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="item-actions">
+                    <div class="item-actions pr-3">
                         <button class="action-edit" title="Düzenle">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
@@ -454,8 +460,7 @@
         }
     }
 
-    // GÜNCELLEME: Sütun 6 (Ajanda) Padding Düzeltmesi
-    async function fetchTodayAgenda() {
+async function fetchTodayAgenda() {
         console.log('fetchTodayAgenda çağrıldı (Tüm kategoriler, bugün)');
         
         const data = await fetchData('/api/agenda/today');
@@ -466,7 +471,6 @@
             
             data.forEach(task => {
                 const item = document.createElement('div');
-                // GÜNCELLEME: p-3 (padding) buradan (ana div'den) kaldırıldı -> p-0
                 item.className = `task-item flex items-center justify-between p-0 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
                 item.dataset.id = task.id;
                 
@@ -483,7 +487,15 @@
                 item.innerHTML = `
                     <div class="drag-handle block lg:hidden p-3 text-gray-500" title="Sıralamak için sürükle">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                            <circle cx="4" cy="4" r="1.1"/>
+                            <circle cx="8" cy="4" r="1.1"/>
+                            <circle cx="12" cy="4" r="1.1"/>
+                            <circle cx="4" cy="8" r="1.1"/>
+                            <circle cx="8" cy="8" r="1.1"/>
+                            <circle cx="12" cy="8" r="1.1"/>
+                            <circle cx="4" cy="12" r="1.1"/>
+                            <circle cx="8" cy="12" r="1.1"/>
+                            <circle cx="12" cy="12" r="1.1"/>
                         </svg>
                     </div>
                     <div class="item-content flex-1 flex items-center min-w-0 p-3">
@@ -499,7 +511,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="item-actions">
+                    <div class="item-actions pr-3">
                         <button class="action-edit" title="Düzenle">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
@@ -1003,7 +1015,7 @@
 
     // --- UI (ARAYÜZ) HELPERS ---
 
-  function renderList(listId, data) {
+function renderList(listId, data) {
         const listElement = document.getElementById(listId);
         listElement.innerHTML = ''; 
         const listType = listId.split('-')[2];
@@ -1018,13 +1030,11 @@
             div.dataset.id = item.id;
             if (item.is_completed) { div.classList.add('completed'); }
             
-            // GÜNCELLEME: Sütun 1 font boyutu (bottomFontSizeClass) artık hep aynı
             let topText = ''; let bottomText = ''; let bottomFontSizeClass = 'text-sm text-white'; 
             switch (listType) {
                 case '1': 
                     topText = (item.id === 'TODAY') ? '' : ''; 
                     bottomText = item.name; 
-                    // 'bottomFontSizeClass = 'text-white';' satırı kaldırıldı. Artık varsayılan (text-sm) kullanılacak.
                     break;
                 case '2': topText = `Yıl ${item.year}: ${item.period_label}`; bottomText = item.title; break;
                 case '3': topText = item.month_label; bottomText = item.title; break;
@@ -1035,7 +1045,15 @@
             div.innerHTML = `
                 <div class="drag-handle block lg:hidden p-3 text-gray-500" title="Sıralamak için sürükle">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                         <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                        <circle cx="4" cy="4" r="1.1"/>
+                        <circle cx="8" cy="4" r="1.1"/>
+                        <circle cx="12" cy="4" r="1.1"/>
+                        <circle cx="4" cy="8" r="1.1"/>
+                        <circle cx="8" cy="8" r="1.1"/>
+                        <circle cx="12" cy="8" r="1.1"/>
+                        <circle cx="4" cy="12" r="1.1"/>
+                        <circle cx="8" cy="12" r="1.1"/>
+                        <circle cx="12" cy="12" r="1.1"/>
                     </svg>
                 </div>
                 
