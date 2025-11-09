@@ -137,7 +137,7 @@
             </main>
         </div>
 
-        <script>
+ <script>
     // --- GLOBAL STATE ---
     const state = {
         selectedCategoryId: null,
@@ -149,13 +149,12 @@
         editingItem: null,
         isAgendaMode: false,
         categoriesCache: [],
-        // GÜNCELLEME: Mobil drill-down için seçili günün tarihini sakla (Task Modalı için)
-        selectedGoalDate: null 
+        selectedGoalDate: null,
+        breadcrumb: [] 
     };
 
-    // --- YENİ YARDIMCI FONKSİYON ---
+    // --- YARDIMCI FONKSİYONLAR ---
     function isMobile() {
-        // Tailwind'in 'lg' breakpoint'i 1024px'dir
         return window.innerWidth < 1024;
     }
 
@@ -241,6 +240,78 @@
     function hideTooltip() {
         globalTooltip.style.opacity = '0';
         setTimeout(() => globalTooltip.classList.add('hidden'), 200); 
+    }
+
+    // GÜNCELLEME: Breadcrumb (İz Sürme) - Tıklanabilir ve Etiketli
+    function renderBreadcrumb() {
+        const container = document.getElementById('hts-breadcrumb-container');
+        if (!container) return; 
+        
+        container.innerHTML = ''; 
+
+        // GÜNCELLEME: Etiketler
+        const labels = [
+            "5 Yıllık Hedef:", // level 1 (index 0)
+            "Yıllık Hedef:",   // level 2 (index 1)
+            "Aylık Hedef:",    // level 3 (index 2)
+            "Haftalık Hedef:", // level 4 (index 3)
+            "Günlük Hedef:"    // level 5 (index 4)
+        ];
+
+        if (state.isAgendaMode) {
+            container.innerHTML = `<div class="text-white font-semibold">Bugün'ün Ajandası</div>`;
+            return;
+        }
+
+        if (state.breadcrumb.length === 0) {
+            // "Ana Kategoriler" (temel seviye)
+            const baseItem = document.createElement('div');
+            baseItem.className = 'text-gray-400 text-sm';
+            baseItem.textContent = 'Ana Kategoriler';
+            container.appendChild(baseItem);
+            return;
+        }
+        
+        // GÜNCELLEME: Tıklanabilir öğeler oluşturma
+        state.breadcrumb.forEach((item, index) => {
+            const isLast = index === state.breadcrumb.length - 1;
+            const breadcrumbItem = document.createElement('div');
+            
+            // GÜNCELLEME: Sadece son öğe beyaz, diğerleri tıklanabilir (mavi)
+            let itemClass = 'text-sm ';
+            if (isLast) {
+                itemClass += 'text-white font-medium';
+            } else {
+                itemClass += 'text-blue-400 hover:text-blue-300 cursor-pointer';
+                breadcrumbItem.dataset.level = index + 1; // 1, 2, 3...
+            }
+            breadcrumbItem.className = itemClass;
+
+            // GÜNCELLEME: Girinti ve ok yerine etiketi ekle
+            breadcrumbItem.innerHTML = `
+                <span class="text-gray-400">${labels[index]}</span> 
+                ${escapeHTML(item.name)}
+            `;
+
+            // GÜNCELLEME: Tıklama olayını ekle (son öğe hariç)
+            if (!isLast) {
+                breadcrumbItem.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const targetLevel = parseInt(e.currentTarget.dataset.level, 10); // 1, 2, 3...
+                    
+                    // state.breadcrumb'i o seviyeye kadar kes
+                    state.breadcrumb = state.breadcrumb.slice(0, targetLevel);
+                    
+                    // İlgili sütunu göster (targetLevel = sütun numarası)
+                    showColumn(targetLevel);
+                    
+                    // Breadcrumb'ı yeniden çiz
+                    renderBreadcrumb();
+                });
+            }
+            
+            container.appendChild(breadcrumbItem);
+        });
     }
 
 
@@ -385,7 +456,6 @@
         } else {
             listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Bu gün için planlanmış görev yok.</div>`;
         }
-        // showColumn(6); (Bu artık renderList içindeki tıklama olayıyla yönetiliyor)
     }
 
 
@@ -483,8 +553,6 @@
         } else {
             listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Bugün için planlanmış görev yok.</div>`;
         }
-        
-        // showColumn(6); (Bu artık renderList içindeki tıklama olayıyla yönetiliyor)
     }
     
 
@@ -534,28 +602,28 @@
         await fetchData(`/api/${endpoint}/${id}`, { method: 'DELETE' });
         itemElement.remove();
 
-        // GÜNCELLEME: Mobil/Masaüstü silme mantığı
         if (state.isAgendaMode && type === 'task') {
-            // Ajanda modundaysak, bir şey yapma (sadece o öğeyi sildik)
+            // Ajanda modunda
         } else {
-            // Planlama modundaysak
+            // Planlama modunda
             if (!isMobile()) {
-                // Sadece masaüstünde alt sütunları temizle
+                // Masaüstü
                 switch (type) {
-                    case '1': resetColumns(2); break;
-                    case '2': resetColumns(3); break;
-                    case '3': resetColumns(4); break;
-                    case '4': resetColumns(5); break;
-                    case '5': resetColumns(6); break;
+                    case '1': resetColumns(2); renderBreadcrumb(); break; 
+                    case '2': resetColumns(3); renderBreadcrumb(); break;
+                    case '3': resetColumns(4); renderBreadcrumb(); break;
+                    case '4': resetColumns(5); renderBreadcrumb(); break;
+                    case '5': resetColumns(6); renderBreadcrumb(); break;
                 }
             } else {
-                // Mobilde, bir üst sütuna geri dön
+                // Mobil
                 switch (type) {
-                    case '2': showColumn(1); break;
-                    case '3': showColumn(2); break;
-                    case '4': showColumn(3); break;
-                    case '5': showColumn(4); break;
-                    case 'task': showColumn(5); break;
+                    case '1': state.breadcrumb = []; renderBreadcrumb(); showColumn(1); break; // GÜNCELLEME: Sütun 1'den silerse
+                    case '2': state.breadcrumb = []; renderBreadcrumb(); showColumn(1); break;
+                    case '3': state.breadcrumb = state.breadcrumb.slice(0, 1); renderBreadcrumb(); showColumn(2); break;
+                    case '4': state.breadcrumb = state.breadcrumb.slice(0, 2); renderBreadcrumb(); showColumn(3); break;
+                    case '5': state.breadcrumb = state.breadcrumb.slice(0, 3); renderBreadcrumb(); showColumn(4); break;
+                    case 'task': state.breadcrumb = state.breadcrumb.slice(0, 4); renderBreadcrumb(); showColumn(5); break;
                 }
             }
         }
@@ -852,6 +920,8 @@
             
             if (updatedItem) {
                 console.log('Öğe güncellendi:', updatedItem);
+                
+                // Veriyi yenile
                 if (state.isAgendaMode) {
                     fetchTodayAgenda();
                 } else if (type === 'task') { fetchTasks(state.selectedDailyId); }
@@ -860,6 +930,22 @@
                 else if (type === '3') { fetchMonthlyGoals(state.selectedAnnualId); }
                 else if (type === '4') { fetchWeeklyGoals(state.selectedMonthlyId); }
                 else if (type === '5') { fetchDailyGoals(state.selectedWeeklyId); }
+
+                // Breadcrumb'ı da yenile
+                if (state.breadcrumb.length > 0 && !state.isAgendaMode) {
+                    let newName = '';
+                    switch (type) {
+                        case '1': newName = updatedItem.name; break;
+                        case '2': newName = `Yıl ${updatedItem.year}: ${updatedItem.period_label}`; break;
+                        case '3': newName = updatedItem.month_label; break;
+                        case '4': newName = (updatedItem.start_date ? formatDateTR(updatedItem.start_date) : updatedItem.week_label); break;
+                        case '5': newName = (updatedItem.goal_date ? formatDateTR(updatedItem.goal_date) : updatedItem.day_label); break;
+                    }
+                    if (newName && state.breadcrumb[state.breadcrumb.length - 1].level == type) {
+                        state.breadcrumb[state.breadcrumb.length - 1].name = newName;
+                        renderBreadcrumb();
+                    }
+                }
 
                 closeModal(btn.closest('.fixed').id);
             }
@@ -904,7 +990,6 @@
 
     // --- UI (ARAYÜZ) HELPERS ---
 
-    // GÜNCELLEME: Mobil/Masaüstü tıklama mantığı
     function renderList(listId, data) {
         const listElement = document.getElementById(listId);
         listElement.innerHTML = ''; 
@@ -965,59 +1050,71 @@
                 checkbox.addEventListener('click', (e) => { e.stopPropagation(); const isCompleted = e.target.checked; div.classList.toggle('completed', isCompleted); handleToggleGoal(listType, item.id, isCompleted); });
             }
 
+            // GÜNCELLEME: Tıklama olayı breadcrumb'ı günceller
             content.addEventListener('click', (e) => {
                 if (e.target.tagName.toLowerCase() === 'input') return;
                 e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
                 div.classList.add('selected');
 
-                // GÜNCELLEME: Tıklama mantığı (V3 Mobil Drill-Down)
                 switch (listType) {
-                    case '1': // Sütun 1 Tıklandı
+                    case '1': 
                         if (item.id === 'TODAY') {
-                            // "Bugün" tıklandı
                             state.isAgendaMode = true;
-                            state.selectedCategoryId = null; 
-                            resetColumns(2); // Sütun 2-6'nın verilerini temizle
+                            state.breadcrumb = []; 
+                            resetColumns(2); 
                             
                             if (isMobile()) {
-                                showColumn(6); // Mobil: Sütun 1'i gizle, Sütun 6'yı göster
+                                showColumn(6); 
                             } else {
-                                document.getElementById('col-6').classList.add('col-span-5'); // Masaüstü: Genişlet
-                                showColumn(6); // Sütun 6'yı göster (resetColumns gizlemişti)
+                                document.getElementById('col-6').classList.add('col-span-5'); 
+                                showColumn(6); 
                             }
-                            fetchTodayAgenda(); // Sütun 6'yı Ajanda Modunda doldur
+                            fetchTodayAgenda(); 
                         } else {
-                            // Normal kategori tıklandı
                             state.isAgendaMode = false;
                             state.selectedCategoryId = item.id;
+                            state.breadcrumb = [{ level: 1, name: item.name }]; 
                             resetColumns(2);
-                            showColumn(2); // ÖNEMLİ: Sütun 2'yi göster (Drill-down)
+                            showColumn(2); 
                             fetchAnnualGoals(item.id);
                         }
                         break;
                     case '2': 
-                        state.isAgendaMode = false; state.selectedAnnualId = item.id; resetColumns(3); 
-                        showColumn(3); // Drill-down
+                        state.isAgendaMode = false; state.selectedAnnualId = item.id; 
+                        state.breadcrumb = state.breadcrumb.slice(0, 1); 
+                        state.breadcrumb.push({ level: 2, name: item.title }); // GÜNCELLEME: Düz başlık
+                        resetColumns(3); 
+                        showColumn(3); 
                         fetchMonthlyGoals(item.id); 
                         break;
                     case '3': 
-                        state.isAgendaMode = false; state.selectedMonthlyId = item.id; resetColumns(4); 
-                        showColumn(4); // Drill-down
+                        state.isAgendaMode = false; state.selectedMonthlyId = item.id; 
+                        state.breadcrumb = state.breadcrumb.slice(0, 2); 
+                        state.breadcrumb.push({ level: 3, name: item.title }); // GÜNCELLEME: Düz başlık
+                        resetColumns(4); 
+                        showColumn(4); 
                         fetchWeeklyGoals(item.id); 
                         break;
                     case '4': 
-                        state.isAgendaMode = false; state.selectedWeeklyId = item.id; resetColumns(5); 
-                        showColumn(5); // Drill-down
+                        state.isAgendaMode = false; state.selectedWeeklyId = item.id; 
+                        state.breadcrumb = state.breadcrumb.slice(0, 3); 
+                        state.breadcrumb.push({ level: 4, name: item.title }); // GÜNCELLEME: Düz başlık
+                        resetColumns(5); 
+                        showColumn(5); 
                         fetchDailyGoals(item.id); 
                         break;
                     case '5': 
                         state.isAgendaMode = false; state.selectedDailyId = item.id; 
-                        state.selectedGoalDate = item.goal_date; // GÜNCELLEME: Tarihi hafızaya al
+                        state.selectedGoalDate = item.goal_date; 
+                        state.breadcrumb = state.breadcrumb.slice(0, 4); 
+                        state.breadcrumb.push({ level: 5, name: (item.title || item.day_label) }); // GÜNCELLEME: Düz başlık
                         resetColumns(6); 
-                        showColumn(6); // Drill-down
+                        showColumn(6); 
                         fetchTasks(item.id); 
                         break;
                 }
+                
+                renderBreadcrumb();
             });
 
             if (editBtn) {
@@ -1059,46 +1156,41 @@
         }
     }
 
-    // GÜNCELLEME: Mobil/Masaüstü farklı davranacak
     function resetColumns(startColumnIndex) {
         console.log(`resetColumns çağrıldı (Başlangıç: ${startColumnIndex})`);
         
         if (isMobile()) {
-            // MOBİLDE: Sütunları gizleme, sadece listelerin içini temizle
             for (let i = startColumnIndex; i <= 6; i++) {
                 document.getElementById(`list-col-${i}`).innerHTML = '';
             }
         } else {
-            // MASAÜSTÜNDE: (Eski davranış) Sütunları gizle VE içini temizle
             for (let i = startColumnIndex; i <= 6; i++) {
                 document.getElementById(`col-${i}`).classList.add('hidden');
                 document.getElementById(`list-col-${i}`).innerHTML = '';
             }
         }
         
-        // Genişletme sınıfını her zaman temizle
         document.getElementById('col-6').classList.remove('col-span-5');
+
+        if (startColumnIndex > 0) {
+            state.breadcrumb = state.breadcrumb.slice(0, startColumnIndex - 1);
+        }
     }
     
-    // GÜNCELLEME: Mobil/Masaüstü farklı davranacak
     function showColumn(colIndex) {
         if (isMobile()) {
-            // MOBİLDE: Diğer tüm sütunları gizle, sadece isteneni göster
             for (let i = 1; i <= 6; i++) {
                 const col = document.getElementById(`col-${i}`);
                 if (i === colIndex) {
                     col.classList.remove('hidden');
-                    col.classList.add('flex'); // 'lg:flex' 'flex'i içermediği için 'flex'i manuel ekliyoruz
+                    col.classList.add('flex'); 
                 } else {
                     col.classList.add('hidden');
                     col.classList.remove('flex');
                 }
             }
         } else {
-            // MASAÜSTÜNDE: (Eski davranış) Sadece istenen sütunu göster
             document.getElementById(`col-${colIndex}`).classList.remove('hidden');
-            // 'lg:flex' class'ı zaten 'flex'i masaüstünde uygulayacaktır,
-            // ama 'flex' eklemek de zarar vermez (eğer 'hidden lg:flex' yerine 'hidden' kullanılırsa diye)
             document.getElementById(`col-${colIndex}`).classList.add('flex');
         }
     }
@@ -1141,7 +1233,6 @@
     }
 
 
-    // GÜNCELLEME: Görev modalı açılırken 'selectedGoalDate'i kullanacak
     function setupModal(modalId, openBtnId, closeBtnId, formId) {
         const modal = document.getElementById(modalId);
         const openBtn = document.getElementById(openBtnId);
@@ -1158,18 +1249,15 @@
             
             if (modalId === 'task-modal') {
                 if (state.isAgendaMode) {
-                    // 1. AJANDA MODU:
                     const categorySelector = document.getElementById('task-goal-category');
                     populateCategorySelector(categorySelector);
                     document.getElementById('task-category-selector').classList.remove('hidden');
                     document.getElementById('task-goal-date').value = new Date().toISOString().split('T')[0];
                     
                 } else {
-                    // 2. PLANLAMA MODU:
                     if (!state.selectedDailyId) { showError("Lütfen önce bir gün seçin."); return; }
                     document.getElementById('task-category-selector').classList.add('hidden');
                     
-                    // GÜNCELLEME: Tarihi Sütun 5'ten (selectedGoalDate) al
                     const goalDate = state.selectedGoalDate ? state.selectedGoalDate.split('T')[0] : '';
                     document.getElementById('task-goal-date').value = goalDate;
                 }
@@ -1189,20 +1277,20 @@
         else if (formId === 'daily-goal-form') form.addEventListener('submit', addNewDailyGoal);
     }
     
-    // GÜNCELLEME: Mobil "Geri" butonları eklendi
+    // GÜNCELLEME: Mobil "Geri" butonları breadcrumb'ı günceller
     async function initApp() {
         console.log('Uygulama başlıyor (initApp)...');
 
         if (isMobile()) {
-            // Mobildeysek, Sütun 1'i göster, diğerlerini gizle (başlangıç)
             showColumn(1);
         } else {
-            // Masaüstündeysek, Sütun 2-6'yı gizle (başlangıç)
             resetColumns(2); 
         }
         
         await fetchCategories();
         
+        renderBreadcrumb();
+
         // Modalları ayarla
         setupModal('task-modal', 'open-task-modal-btn', 'close-task-modal-btn', 'task-form');
         setupModal('category-modal', 'open-category-modal-btn', 'close-category-modal-btn', 'category-form');
@@ -1215,19 +1303,37 @@
         document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
         document.getElementById('cancel-delete-btn').addEventListener('click', () => { closeModal('delete-confirm-modal'); state.itemToDelete = null; });
         
-        // YENİ: Mobil "Geri" Buton Olayları
-        document.getElementById('back-to-col-1').addEventListener('click', () => showColumn(1));
-        document.getElementById('back-to-col-2').addEventListener('click', () => showColumn(2));
-        document.getElementById('back-to-col-3').addEventListener('click', () => showColumn(3));
-        document.getElementById('back-to-col-4').addEventListener('click', () => showColumn(4));
+        // Mobil "Geri" Buton Olayları (Breadcrumb güncellemesi eklendi)
+        document.getElementById('back-to-col-1').addEventListener('click', () => {
+            state.breadcrumb = []; 
+            renderBreadcrumb();
+            showColumn(1);
+        });
+        document.getElementById('back-to-col-2').addEventListener('click', () => {
+            state.breadcrumb = state.breadcrumb.slice(0, 1); 
+            renderBreadcrumb();
+            showColumn(2);
+        });
+        document.getElementById('back-to-col-3').addEventListener('click', () => {
+            state.breadcrumb = state.breadcrumb.slice(0, 2); 
+            renderBreadcrumb();
+            showColumn(3);
+        });
+        document.getElementById('back-to-col-4').addEventListener('click', () => {
+            state.breadcrumb = state.breadcrumb.slice(0, 3); 
+            renderBreadcrumb();
+            showColumn(4);
+        });
         
-        // Sütun 6'nın Geri butonu (Akıllı)
         document.getElementById('back-btn-col-6').addEventListener('click', () => {
             if (state.isAgendaMode) {
-                // Ajandadan geliyorsak Sütun 1'e ("Bugün"ün olduğu yer) dön
+                state.isAgendaMode = false; 
+                state.breadcrumb = [];
+                renderBreadcrumb();
                 showColumn(1);
             } else {
-                // Planlamadan geliyorsak Sütun 5'e dön
+                state.breadcrumb = state.breadcrumb.slice(0, 4); 
+                renderBreadcrumb();
                 showColumn(5);
             }
         });
