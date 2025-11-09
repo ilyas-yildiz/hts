@@ -35,90 +35,115 @@
         </div>
     </div>
 <div class="flex-1 grid grid-cols-6 min-h-0 min-w-0 px-4 sm:px-6 lg:px-8 h-screen">        
-        <!-- Kolon 1: 5 Yıllık Hedef Kategorileri -->
+       <!-- Kolon 1: 5 Yıllık Hedef Kategorileri -->
         <div id="col-1" class="column flex flex-col border-r border-gray-700">
-            <div class="flex-shrink-0 p-4 border-b border-gray-700">
-                <h2 class="text-lg font-semibold text-white">5 Yıllık Hedefler</h2>
-                <p class="text-sm text-gray-400">Ana Kategoriler</p>
+            <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
+            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">5 Yıllık Hedefler</h2>
+                    <p class="text-sm text-gray-400">Ana Kategoriler</p>
+                </div>
+                <div>
+                    <button id="open-category-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Yeni Kategori Ekle">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    </button>
+                </div>
             </div>
+            <!-- Liste Alanı (Değişiklik yok) -->
             <div id="list-col-1" class="flex-1 overflow-y-auto p-2 space-y-1">
                 <div class="p-4 text-center text-gray-500">Yükleniyor...</div>
             </div>
-            <div class="p-2 border-t border-gray-700">
-                <button id="open-category-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                    + Yeni Kategori Ekle
-                </button>
-            </div>
+            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
         </div>
 
         <!-- Kolon 2: Yıllık Hedefler -->
         <div id="col-2" class="column hidden flex flex-col border-r border-gray-700">
-            <div class="flex-shrink-0 p-4 border-b border-gray-700">
-                <h2 class="text-lg font-semibold text-white">Yıllık Hedefler</h2>
-                <p class="text-sm text-gray-400">Yıllık Dağılım</p>
+            <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
+            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">Yıllık Hedefler</h2>
+                    <p class="text-sm text-gray-400">Yıllık Dağılım</p>
+                </div>
+                <div>
+                    <button id="open-annual-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Yıllık Hedef Ekle">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    </button>
+                </div>
             </div>
             <div id="list-col-2" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-            <div class="p-2 border-t border-gray-700">
-                <button id="open-annual-goal-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                    + Yıllık Hedef Ekle
-                </button>
-            </div>
+            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
         </div>
 
         <!-- Kolon 3: Aylık Hedefler -->
         <div id="col-3" class="column hidden flex flex-col border-r border-gray-700">
-            <div class="flex-shrink-0 p-4 border-b border-gray-700">
-                <h2 class="text-lg font-semibold text-white">Aylık Hedefler</h2>
-                <p class="text-sm text-gray-400">Aylık Plan</p>
+            <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
+            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">Aylık Hedefler</h2>
+                    <p class="text-sm text-gray-400">Aylık Plan</p>
+                </div>
+                <div>
+                    <button id="open-monthly-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Aylık Hedef Ekle">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    </button>
+                </div>
             </div>
             <div id="list-col-3" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-            <div class="p-2 border-t border-gray-700">
-                <button id="open-monthly-goal-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                    + Aylık Hedef Ekle
-                </button>
-            </div>
+            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
         </div>
 
         <!-- Kolon 4: Haftalık Hedefler -->
         <div id="col-4" class="column hidden flex flex-col border-r border-gray-700">
-             <div class="flex-shrink-0 p-4 border-b border-gray-700">
-                <h2 class="text-lg font-semibold text-white">Haftalık Hedefler</h2>
-                <p class="text-sm text-gray-400">Haftalık Plan</p>
+             <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
+            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">Haftalık Hedefler</h2>
+                    <p class="text-sm text-gray-400">Haftalık Plan</p>
+                </div>
+                <div>
+                    <button id="open-weekly-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Haftalık Hedef Ekle">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    </button>
+                </div>
             </div>
             <div id="list-col-4" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-            <div class="p-2 border-t border-gray-700">
-                <button id="open-weekly-goal-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                    + Haftalık Hedef Ekle
-                </button>
-            </div>
+            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
         </div>
 
         <!-- Kolon 5: Günlük Hedefler -->
         <div id="col-5" class="column hidden flex flex-col border-r border-gray-700">
-            <div class="flex-shrink-0 p-4 border-b border-gray-700">
-                <h2 class="text-lg font-semibold text-white">Günlük Hedefler</h2>
-                <p class="text-sm text-gray-400">Günlük Plan</p>
+            <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
+            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">Günlük Hedefler</h2>
+                    <p class="text-sm text-gray-400">Günlük Plan</p>
+                </div>
+                <div>
+                    <button id="open-daily-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Günlük Hedef Ekle">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    </button>
+                </div>
             </div>
             <div id="list-col-5" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-            <div class="p-2 border-t border-gray-700">
-                <button id="open-daily-goal-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                    + Günlük Hedef Ekle
-                </button>
-            </div>
+            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
         </div>
 
         <!-- Kolon 6: Görevler -->
         <div id="col-6" class="column hidden flex flex-col">
-            <div class="flex-shrink-0 p-4 border-b border-gray-700">
-                <h2 class="text-lg font-semibold text-white">Görevler</h2>
-                <p class="text-sm text-gray-400">Günlük Görev Listesi</p>
+            <!-- DÜZELTME: Başlık (flex) ve '+' Butonu Eklendi -->
+            <div class="flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                <div>
+                    <h2 class="text-lg font-semibold text-white">Görevler</h2>
+                    <p class="text-sm text-gray-400">Günlük Görev Listesi</p>
+                </div>
+                <div>
+                    <button id="open-task-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Saatlik Hedef Ekle">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                    </button>
+                </div>
             </div>
             <div id="list-col-6" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-            <div class="p-2 border-t border-gray-700">
-                <button id="open-task-modal-btn" class="w-full bg-slate-900 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors duration-200">
-                    + Saatlik Hedef Ekle
-                </button>
-            </div>
+            <!-- DÜZELTME: Alttaki buton div'i SİLİNDİ -->
         </div>
     </div>
 

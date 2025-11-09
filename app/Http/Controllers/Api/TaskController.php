@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\ValidationException; // Hata fırlatmak için eklendi
+use Illuminate\Validation\ValidationException;
 
 class TaskController extends Controller
 {
@@ -19,32 +19,28 @@ class TaskController extends Controller
         $validated = $request->validate([
             'goal_category_id' => 'required|exists:goal_categories,id',
             'goal_date'        => 'required|date',
-            'start_time'       => 'nullable|date_format:H:i', // '14:30' formatı
-            'end_time'         => 'nullable|date_format:H:i|after:start_time', // Bitiş, başlangıçtan sonra olmalı
-            'task_description' => 'required|string|max:1000',
+            'start_time'       => 'nullable|date_format:H:i',
+            'end_time'         => 'nullable|date_format:H:i|after:start_time',
+            
+            // DÜZELTME: 'max:1000' limiti kaldırıldı. Artık 'TEXT' limiti geçerli.
+            'task_description' => 'required|string', 
         ]);
 
-        // 2. YENİ: Çakışma Kontrolü (Conflict Check)
-        // Sadece 'start_time' girildiyse (Tüm gün görevi değilse) kontrol et
+        // 2. Çakışma Kontrolü (Conflict Check)
         if ($validated['start_time'] && $validated['end_time']) {
             $startTime = $validated['start_time'];
             $endTime = $validated['end_time'];
 
-            // Veritabanında, o gün için, bu saat aralığıyla çakışan başka bir görev var mı?
             $conflictingTask = Task::where('goal_date', $validated['goal_date'])
-                // Kendi ID'si dışındakilere bak (update için)
-                // ->where('id', '!=', $task->id ?? 0) 
                 ->where(function ($query) use ($startTime, $endTime) {
                     $query->where(function ($q) use ($startTime, $endTime) {
-                        // Yeni görev, mevcut görevin *içinde* mi başlıyor?
                         $q->where('start_time', '<', $endTime)
                           ->where('end_time', '>', $startTime);
                     });
                 })
-                ->exists(); // Sadece var mı diye bak, getirme
+                ->exists(); 
 
             if ($conflictingTask) {
-                // Eğer çakışma varsa, 422 (Unprocessable Entity) hatası döndür
                 throw ValidationException::withMessages([
                     'time' => 'Bu saat aralığı ('.$startTime.' - '.$endTime.') zaten dolu. Lütfen başka bir saat seçin.',
                 ]);
@@ -87,21 +83,24 @@ class TaskController extends Controller
     {
         // 1. Gelen veriyi doğrula
         $validated = $request->validate([
+            // DÜZELTME: 'goal_category_id' (Düzenlemede Kategori Değiştirme) eklendi
+            'goal_category_id' => 'required|exists:goal_categories,id', 
+            'goal_date'        => 'nullable|date',
             'start_time'       => 'nullable|date_format:H:i',
             'end_time'         => 'nullable|date_format:H:i|after:start_time',
-            'task_description' => 'required|string|max:1000',
-            'goal_date'        => 'nullable|date',
+            
+            // DÜZELTME: 'max:1000' limiti kaldırıldı.
+            'task_description' => 'required|string',
         ]);
 
-        // 2. YENİ: Çakışma Kontrolü (Update için)
+        // 2. Çakışma Kontrolü (Update için)
         if (isset($validated['start_time']) && isset($validated['end_time'])) {
             $startTime = $validated['start_time'];
             $endTime = $validated['end_time'];
             $goalDate = $validated['goal_date'] ?? $task->goal_date; // Tarih değişmiyorsa eskisi
 
             $conflictingTask = Task::where('goal_date', $goalDate)
-                // KENDİSİ HARİÇ (Update'in en önemli kuralı)
-                ->where('id', '!=', $task->id) 
+                ->where('id', '!=', $task->id) // KENDİSİ HARİÇ
                 ->where(function ($query) use ($startTime, $endTime) {
                     $query->where(function ($q) use ($startTime, $endTime) {
                         $q->where('start_time', '<', $endTime)
