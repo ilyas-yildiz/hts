@@ -33,127 +33,130 @@
         </div>
     </div>
 
-<div class="flex-1 grid grid-cols-1 lg:grid-cols-6 min-h-0 min-w-0 px-4 sm:px-6 lg:px-8 h-screen">         
-        
-        <div id="col-1" class="column flex flex-col border-r border-gray-700">
-            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
-                <div>
-                    <h2 class="text-lg font-semibold text-white">5 Yıllık Hedefler</h2>
-                    <p class="text-sm text-gray-400">Ana Kategoriler</p>
-                </div>
-                <div class="mr-2"> 
-                    <button id="open-category-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Yeni Kategori Ekle">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    </button>
-                </div>
-            </div>
-            <div id="list-col-1" class="flex-1 overflow-y-auto p-2 space-y-1">
-                <div class="p-4 text-center text-gray-500">Yükleniyor...</div>
-            </div>
+<div class="h-full flex flex-col">
+
+    <div id="hts-breadcrumb-container" class="flex-shrink-0 px-4 sm:px-6 lg:px-8 pt-4 pb-2 space-y-1">
         </div>
 
-        <div id="col-2" class="column hidden lg:flex flex-col border-r border-gray-700">
-            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
-                <div class="flex items-center">
-                    <button id="back-to-col-1" class="p-1 rounded-full text-gray-400 hover:text-white mr-2 block lg:hidden" title="Geri (5 Yıllık)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-                    </button>
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-6 min-h-0 min-w-0 px-4 sm:px-6 lg:px-8">         
+            
+            <div id="col-1" class="column flex flex-col border-r border-gray-700">
+                <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
                     <div>
-                        <h2 class="text-lg font-semibold text-white">Yıllık Hedefler</h2>
-                        <p class="text-sm text-gray-400">Yıllık Dağılım</p>
+                        <h2 class="text-lg font-semibold text-white">5 Yıllık Hedefler</h2>
+                        <p class="text-sm text-gray-400">Ana Kategoriler</p>
+                    </div>
+                    <div class="mr-2"> 
+                        <button id="open-category-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Yeni Kategori Ekle">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        </button>
                     </div>
                 </div>
-                <div class="mr-2"> 
-                    <button id="open-annual-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Yıllık Hedef Ekle">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    </button>
+                <div id="list-col-1" class="flex-1 overflow-y-auto p-2 space-y-1">
+                    <div class="p-4 text-center text-gray-500">Yükleniyor...</div>
                 </div>
             </div>
-            <div id="list-col-2" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-        </div>
 
-        <div id="col-3" class="column hidden lg:flex flex-col border-r border-gray-700">
-            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
-                <div class="flex items-center">
-                    <button id="back-to-col-2" class="p-1 rounded-full text-gray-400 hover:text-white mr-2 block lg:hidden" title="Geri (Yıllık)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-                    </button>
-                    <div>
-                        <h2 class="text-lg font-semibold text-white">Aylık Hedefler</h2>
-                        <p class="text-sm text-gray-400">Aylık Plan</p>
+            <div id="col-2" class="column hidden lg:flex flex-col border-r border-gray-700">
+                <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <button id="back-to-col-1" class="p-1 rounded-full text-gray-400 hover:text-white mr-2 block lg:hidden" title="Geri (5 Yıllık)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                        </button>
+                        <div>
+                            <h2 class="text-lg font-semibold text-white">Yıllık Hedefler</h2>
+                            <p class="text-sm text-gray-400">Yıllık Dağılım</p>
+                        </div>
+                    </div>
+                    <div class="mr-2"> 
+                        <button id="open-annual-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Yıllık Hedef Ekle">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        </button>
                     </div>
                 </div>
-                <div class="mr-2"> 
-                    <button id="open-monthly-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Aylık Hedef Ekle">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    </button>
-                </div>
+                <div id="list-col-2" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             </div>
-            <div id="list-col-3" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-        </div>
 
-        <div id="col-4" class="column hidden lg:flex flex-col border-r border-gray-700">
-            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
-                <div class="flex items-center">
-                    <button id="back-to-col-3" class="p-1 rounded-full text-gray-400 hover:text-white mr-2 block lg:hidden" title="Geri (Aylık)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-                    </button>
-                    <div>
-                        <h2 class="text-lg font-semibold text-white">Haftalık Hedefler</h2>
-                        <p class="text-sm text-gray-400">Haftalık Plan</p>
+            <div id="col-3" class="column hidden lg:flex flex-col border-r border-gray-700">
+                <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <button id="back-to-col-2" class="p-1 rounded-full text-gray-400 hover:text-white mr-2 block lg:hidden" title="Geri (Yıllık)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                        </button>
+                        <div>
+                            <h2 class="text-lg font-semibold text-white">Aylık Hedefler</h2>
+                            <p class="text-sm text-gray-400">Aylık Plan</p>
+                        </div>
+                    </div>
+                    <div class="mr-2"> 
+                        <button id="open-monthly-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Aylık Hedef Ekle">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        </button>
                     </div>
                 </div>
-                <div class="mr-2"> 
-                    <button id="open-weekly-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Haftalık Hedef Ekle">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    </button>
-                </div>
+                <div id="list-col-3" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             </div>
-            <div id="list-col-4" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-        </div>
 
-        <div id="col-5" class="column hidden lg:flex flex-col border-r border-gray-700">
-            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
-                <div class="flex items-center">
-                    <button id="back-to-col-4" class="p-1 rounded-full text-gray-400 hover:text-white mr-2 block lg:hidden" title="Geri (Haftalık)">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-                    </button>
-                    <div>
-                        <h2 class="text-lg font-semibold text-white">Günlük Hedefler</h2>
-                        <p class="text-sm text-gray-400">Günlük Plan</p>
+            <div id="col-4" class="column hidden lg:flex flex-col border-r border-gray-700">
+                <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <button id="back-to-col-3" class="p-1 rounded-full text-gray-400 hover:text-white mr-2 block lg:hidden" title="Geri (Aylık)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                        </button>
+                        <div>
+                            <h2 class="text-lg font-semibold text-white">Haftalık Hedefler</h2>
+                            <p class="text-sm text-gray-400">Haftalık Plan</p>
+                        </div>
+                    </div>
+                    <div class="mr-2"> 
+                        <button id="open-weekly-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Haftalık Hedef Ekle">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        </button>
                     </div>
                 </div>
-                <div class="mr-2"> 
-                    <button id="open-daily-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Günlük Hedef Ekle">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    </button>
-                </div>
+                <div id="list-col-4" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             </div>
-            <div id="list-col-5" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-        </div>
 
-        <div id="col-6" class="column hidden lg:flex flex-col">
-            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
-                <div class="flex items-center">
-                    <button id="back-btn-col-6" class="p-1 rounded-full text-gray-400 hover:text-white mr-2 block lg:hidden" title="Geri">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
-                    </button>
-                    <div>
-                        <h2 class="text-lg font-semibold text-white">Görevler</h2>
-                        <p class="text-sm text-gray-400">Günlük Görev Listesi</p>
+            <div id="col-5" class="column hidden lg:flex flex-col border-r border-gray-700">
+                <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <button id="back-to-col-4" class="p-1 rounded-full text-gray-400 hover:text-white mr-2 block lg:hidden" title="Geri (Haftalık)">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                        </button>
+                        <div>
+                            <h2 class="text-lg font-semibold text-white">Günlük Hedefler</h2>
+                            <p class="text-sm text-gray-400">Günlük Plan</p>
+                        </div>
+                    </div>
+                    <div class="mr-2"> 
+                        <button id="open-daily-goal-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Günlük Hedef Ekle">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        </button>
                     </div>
                 </div>
-                <div class="mr-2"> 
-                    <button id="open-task-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Saatlik Hedef Ekle">
-                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
-                    </button>
-                </div>
+                <div id="list-col-5" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
             </div>
-            <div id="list-col-6" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
-        </div>
-    </div>
 
-    <div id="category-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
+            <div id="col-6" class="column hidden lg:flex flex-col">
+                <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+                    <div class="flex items-center">
+                        <button id="back-btn-col-6" class="p-1 rounded-full text-gray-400 hover:text-white mr-2 block lg:hidden" title="Geri">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" /></svg>
+                        </button>
+                        <div>
+                            <h2 class="text-lg font-semibold text-white">Saatlik Görevler</h2>
+                            <p class="text-sm text-gray-400">Saat Listesi</p>
+                        </div>
+                    </div>
+                    <div class="mr-2"> 
+                        <button id="open-task-modal-btn" class="p-1 rounded-full text-gray-400 bg-gray-700 hover:bg-blue-600 hover:text-white transition-colors duration-200" title="Saatlik Hedef Ekle">
+                            <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        </button>
+                    </div>
+                </div>
+                <div id="list-col-6" class="flex-1 overflow-y-auto p-2 space-y-1"></div>
+            </div>
+    </div> </div> <div id="category-modal" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 hidden">
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
             <h3 class="text-xl font-semibold mb-4 text-white">Yeni Kategori Ekle</h3>
             <form id="category-form">
