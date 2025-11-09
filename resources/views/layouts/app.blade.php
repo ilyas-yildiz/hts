@@ -1,21 +1,18 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full"> <!-- h-full eklendi -->
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full">
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
-        <meta name="csrf-token" content="{{ csrf_token() }}"> <!-- HTS için zaten gerekliydi -->
+        <meta name="csrf-token" content="{{ csrf_token() }}"> 
 
         <title>{{ config('app.name', 'HTS') }}</title>
 
-        <!-- Fonts (Inter) - HTS'den taşındı -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-        <!-- YENİ: SortableJS Kütüphanesi - HTS'den taşındı -->
         <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 
-        <!-- YENİ: HTS'nin Özel CSS Stilleri - HTS'den taşındı -->
         <style>
         /* Temel stiller */
         body {
@@ -29,7 +26,7 @@
         ::-webkit-scrollbar-thumb { background: #6b7280; border-radius: 10px; }
         ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
         
-        /* Seçili öğe stili (Senin düzelttiğin gibi 'task-item' kullanılıyor) */
+        /* Seçili öğe stili */
         .task-item.selected {
             background-color: #3b82f6 !important; /* Mavi (blue-500) */
             color: white;
@@ -80,13 +77,13 @@
 
         /* Metin Davranışları */
         
-        /* Sütun 1-5 (Bunlar kaydırmaya devam etsin, 3 nokta yok) */
+        /* Sütun 1-5 */
         .item-text {
             word-break: break-word;
             white-space: normal;
         }
 
-        /* Sütun 6 (Bu KISALTSIN ve 'help' imleci göstersin) */
+        /* Sütun 6 */
         .task-desc {
             display: -webkit-box;
             -webkit-line-clamp: 2; /* 2 satırla sınırla */
@@ -94,15 +91,15 @@
             overflow: hidden;
             text-overflow: ellipsis;
             word-break: break-word;
-            cursor: help; /* Tooltip'in burada olduğunu belirtmek için */
+            cursor: help; 
         }
         
-        /* Tooltip Kapsayıcısı (Sıkışma sorununu çözen) */
+        /* Tooltip Kapsayıcısı */
         [data-tooltip] {
             position: relative; 
         }
 
-      
+        
         /* Hover anında tooltip'i göster */
         [data-tooltip]:hover::after {
             opacity: 1;
@@ -117,27 +114,29 @@
         .sortable-drag {
             opacity: 1 !important;
         }
-        .task-item { cursor: grab; }
-        .task-item:active { cursor: grabbing; }
+        
+        /* GÜNCELLEME: 'cursor: grab' sadece masaüstünde (lg) aktif olacak */
+        @media (min-width: 1024px) {
+            .task-item { cursor: grab; }
+            .task-item:active { cursor: grabbing; }
+        }
+        /* Mobilde sürükleme ikonu (handle) için cursor */
+        .drag-handle {
+            cursor: move; /* (veya grab) */
+        }
     </style>
 
-        <!-- Scripts (Breeze'in derlenmiş CSS ve JS'i) -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     
-    <!-- DÜZELTME: HTS'nin koyu arka planı ve h-full (tam yükseklik) için body güncellendi -->
     <body class="h-full font-sans antialiased" style="background-color: #1f2937;">
-        <!-- DÜZELTME: Breeze'in varsayılan 'min-h-screen bg-gray-100' kaldırıldı,
-             HTS'nin 'h-full flex flex-col' yapısı eklendi -->
         <div class="h-full flex flex-col">
-            <!-- Page Content (HTS arayüzü buraya gelecek) -->
-            <!-- DÜZELTME: 'flex-1 min-h-0' eklendi -->
             <main class="flex-1 min-h-0">
                 {{ $slot }}
             </main>
         </div>
 
- <script>
+<script>
     // --- GLOBAL STATE ---
     const state = {
         selectedCategoryId: null,
@@ -242,20 +241,18 @@
         setTimeout(() => globalTooltip.classList.add('hidden'), 200); 
     }
 
-    // GÜNCELLEME: Breadcrumb (İz Sürme) - Tıklanabilir ve Etiketli
     function renderBreadcrumb() {
         const container = document.getElementById('hts-breadcrumb-container');
         if (!container) return; 
         
         container.innerHTML = ''; 
 
-        // GÜNCELLEME: Etiketler
         const labels = [
-            "5 Yıllık Hedef:", // level 1 (index 0)
-            "Yıllık Hedef:",   // level 2 (index 1)
-            "Aylık Hedef:",    // level 3 (index 2)
-            "Haftalık Hedef:", // level 4 (index 3)
-            "Günlük Hedef:"    // level 5 (index 4)
+            "5 Yıllık Hedef:", 
+            "Yıllık Hedef:",   
+            "Aylık Hedef:",    
+            "Haftalık Hedef:", 
+            "Günlük Hedef:"    
         ];
 
         if (state.isAgendaMode) {
@@ -264,7 +261,6 @@
         }
 
         if (state.breadcrumb.length === 0) {
-            // "Ana Kategoriler" (temel seviye)
             const baseItem = document.createElement('div');
             baseItem.className = 'text-gray-400 text-sm';
             baseItem.textContent = 'Ana Kategoriler';
@@ -272,40 +268,33 @@
             return;
         }
         
-        // GÜNCELLEME: Tıklanabilir öğeler oluşturma
         state.breadcrumb.forEach((item, index) => {
             const isLast = index === state.breadcrumb.length - 1;
             const breadcrumbItem = document.createElement('div');
             
-            // GÜNCELLEME: Sadece son öğe beyaz, diğerleri tıklanabilir (mavi)
             let itemClass = 'text-sm ';
             if (isLast) {
                 itemClass += 'text-white font-medium';
             } else {
                 itemClass += 'text-blue-400 hover:text-blue-300 cursor-pointer';
-                breadcrumbItem.dataset.level = index + 1; // 1, 2, 3...
+                breadcrumbItem.dataset.level = index + 1; 
             }
             breadcrumbItem.className = itemClass;
 
-            // GÜNCELLEME: Girinti ve ok yerine etiketi ekle
             breadcrumbItem.innerHTML = `
                 <span class="text-gray-400">${labels[index]}</span> 
                 ${escapeHTML(item.name)}
             `;
 
-            // GÜNCELLEME: Tıklama olayını ekle (son öğe hariç)
             if (!isLast) {
                 breadcrumbItem.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const targetLevel = parseInt(e.currentTarget.dataset.level, 10); // 1, 2, 3...
+                    const targetLevel = parseInt(e.currentTarget.dataset.level, 10); 
                     
-                    // state.breadcrumb'i o seviyeye kadar kes
                     state.breadcrumb = state.breadcrumb.slice(0, targetLevel);
                     
-                    // İlgili sütunu göster (targetLevel = sütun numarası)
                     showColumn(targetLevel);
                     
-                    // Breadcrumb'ı yeniden çiz
                     renderBreadcrumb();
                 });
             }
@@ -361,6 +350,7 @@
             if (data) { renderList('list-col-5', data); }
     }
 
+    // GÜNCELLEME 2 (Script): Mobil sürükleme ikonu eklendi
     async function fetchTasks(dailyGoalId) {
         console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
         const data = await fetchData(`/api/tasks/${dailyGoalId}`);
@@ -389,6 +379,11 @@
                 }
 
                 item.innerHTML = `
+                    <div class="drag-handle block lg:hidden p-2 text-gray-500" title="Sıralamak için sürükle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                        </svg>
+                    </div>
                     <div class="item-content flex-1 flex items-center min-w-0">
                         <input type="checkbox" class="action-checkbox" 
                                title="Tamamlandı olarak işaretle"
@@ -458,7 +453,7 @@
         }
     }
 
-
+    // GÜNCELLEME 3 (Script): Mobil sürükleme ikonu eklendi
     async function fetchTodayAgenda() {
         console.log('fetchTodayAgenda çağrıldı (Tüm kategoriler, bugün)');
         
@@ -484,6 +479,11 @@
                 const categoryName = task.goal_category ? task.goal_category.name : 'Kategori Yok';
                 
                 item.innerHTML = `
+                    <div class="drag-handle block lg:hidden p-2 text-gray-500" title="Sıralamak için sürükle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                        </svg>
+                    </div>
                     <div class="item-content flex-1 flex items-center min-w-0">
                         <input type="checkbox" class="action-checkbox" 
                                title="Tamamlandı olarak işaretle"
@@ -618,7 +618,7 @@
             } else {
                 // Mobil
                 switch (type) {
-                    case '1': state.breadcrumb = []; renderBreadcrumb(); showColumn(1); break; // GÜNCELLEME: Sütun 1'den silerse
+                    case '1': state.breadcrumb = []; renderBreadcrumb(); showColumn(1); break;
                     case '2': state.breadcrumb = []; renderBreadcrumb(); showColumn(1); break;
                     case '3': state.breadcrumb = state.breadcrumb.slice(0, 1); renderBreadcrumb(); showColumn(2); break;
                     case '4': state.breadcrumb = state.breadcrumb.slice(0, 2); renderBreadcrumb(); showColumn(3); break;
@@ -921,7 +921,6 @@
             if (updatedItem) {
                 console.log('Öğe güncellendi:', updatedItem);
                 
-                // Veriyi yenile
                 if (state.isAgendaMode) {
                     fetchTodayAgenda();
                 } else if (type === 'task') { fetchTasks(state.selectedDailyId); }
@@ -931,15 +930,14 @@
                 else if (type === '4') { fetchWeeklyGoals(state.selectedMonthlyId); }
                 else if (type === '5') { fetchDailyGoals(state.selectedWeeklyId); }
 
-                // Breadcrumb'ı da yenile
                 if (state.breadcrumb.length > 0 && !state.isAgendaMode) {
                     let newName = '';
                     switch (type) {
                         case '1': newName = updatedItem.name; break;
-                        case '2': newName = `Yıl ${updatedItem.year}: ${updatedItem.period_label}`; break;
-                        case '3': newName = updatedItem.month_label; break;
-                        case '4': newName = (updatedItem.start_date ? formatDateTR(updatedItem.start_date) : updatedItem.week_label); break;
-                        case '5': newName = (updatedItem.goal_date ? formatDateTR(updatedItem.goal_date) : updatedItem.day_label); break;
+                        case '2': newName = updatedItem.title; break; // Düz başlık
+                        case '3': newName = updatedItem.title; break; // Düz başlık
+                        case '4': newName = updatedItem.title; break; // Düz başlık
+                        case '5': newName = (updatedItem.title || updatedItem.day_label); break; // Düz başlık
                     }
                     if (newName && state.breadcrumb[state.breadcrumb.length - 1].level == type) {
                         state.breadcrumb[state.breadcrumb.length - 1].name = newName;
@@ -974,22 +972,37 @@
             showError('Sıralama güncellenirken bir hata oluştu!');
         }
     }
+
+    // GÜNCELLEME 1 (Script): initSortable artık mobilde "handle" kullanıyor
     function initSortable(listId, modelType) {
         const listElement = document.getElementById(listId);
         if (!listElement) return;
         if (listElement.sortableInstance) { listElement.sortableInstance.destroy(); }
-        listElement.sortableInstance = new Sortable(listElement, {
-            animation: 150, 
+
+        // SortableJS ayarlarını hazırla
+        const options = {
+            animation: 150,
             ghostClass: 'sortable-ghost',
             dragClass: 'sortable-drag',
+            // Sürüklemeyi BAŞLATMAYACAK elemanlar (butonlar vb.)
+            filter: '.action-checkbox, .action-edit, .action-delete', 
             onEnd: function (evt) {
                 handleReorder(modelType, listElement);
             }
-        });
+        };
+
+        // Mobildeyse, sürükleme için 'drag-handle' sınıfını zorunlu kıl
+        if (isMobile()) {
+            options.handle = '.drag-handle';
+        }
+        // Masaüstünde 'handle' ayarı yok, yani tüm öğe (filtreler hariç) sürüklenebilir.
+
+        listElement.sortableInstance = new Sortable(listElement, options);
     }
 
     // --- UI (ARAYÜZ) HELPERS ---
 
+    // GÜNCELLEME 4 (Script): Mobil sürükleme ikonu eklendi
     function renderList(listId, data) {
         const listElement = document.getElementById(listId);
         listElement.innerHTML = ''; 
@@ -1001,7 +1014,8 @@
 
         data.forEach(item => {
             const div = document.createElement('div');
-            div.className = 'task-item p-3 rounded-md hover:bg-gray-700 transition-colors duration-150 flex justify-between items-center';
+            // GÜNCELLEME: padding (p-3) kaldırıldı, içerik flex-1'e taşındı
+            div.className = 'task-item p-0 rounded-md hover:bg-gray-700 transition-colors duration-150 flex justify-between items-center';
             div.dataset.id = item.id;
             if (item.is_completed) { div.classList.add('completed'); }
             
@@ -1015,7 +1029,13 @@
             }
             
             div.innerHTML = `
-                <div class="item-content flex-1 flex items-center min-w-0">
+                <div class="drag-handle block lg:hidden p-3 text-gray-500" title="Sıralamak için sürükle">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                         <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
+                    </svg>
+                </div>
+                
+                <div class="item-content flex-1 flex items-center min-w-0 p-3">
                     ${item.id !== 'TODAY' ? `<input type="checkbox" class="action-checkbox" title="Tamamlandı olarak işaretle" ${item.is_completed ? 'checked' : ''}>` : '<div class="w-6"></div>'}
                     
                     <div class="ml-2" title="${topText ? topText + ': ' : ''}${bottomText}">
@@ -1023,7 +1043,7 @@
                         <div class="item-text ${bottomFontSizeClass}">${bottomText}</div>
                     </div>
                 </div>
-                <div class="item-actions">
+                <div class="item-actions p-3">
                     ${item.id !== 'TODAY' ? `
                         <button class="action-edit" title="Düzenle">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1050,7 +1070,6 @@
                 checkbox.addEventListener('click', (e) => { e.stopPropagation(); const isCompleted = e.target.checked; div.classList.toggle('completed', isCompleted); handleToggleGoal(listType, item.id, isCompleted); });
             }
 
-            // GÜNCELLEME: Tıklama olayı breadcrumb'ı günceller
             content.addEventListener('click', (e) => {
                 if (e.target.tagName.toLowerCase() === 'input') return;
                 e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
@@ -1082,7 +1101,7 @@
                     case '2': 
                         state.isAgendaMode = false; state.selectedAnnualId = item.id; 
                         state.breadcrumb = state.breadcrumb.slice(0, 1); 
-                        state.breadcrumb.push({ level: 2, name: item.title }); // GÜNCELLEME: Düz başlık
+                        state.breadcrumb.push({ level: 2, name: item.title }); 
                         resetColumns(3); 
                         showColumn(3); 
                         fetchMonthlyGoals(item.id); 
@@ -1090,7 +1109,7 @@
                     case '3': 
                         state.isAgendaMode = false; state.selectedMonthlyId = item.id; 
                         state.breadcrumb = state.breadcrumb.slice(0, 2); 
-                        state.breadcrumb.push({ level: 3, name: item.title }); // GÜNCELLEME: Düz başlık
+                        state.breadcrumb.push({ level: 3, name: item.title }); 
                         resetColumns(4); 
                         showColumn(4); 
                         fetchWeeklyGoals(item.id); 
@@ -1098,7 +1117,7 @@
                     case '4': 
                         state.isAgendaMode = false; state.selectedWeeklyId = item.id; 
                         state.breadcrumb = state.breadcrumb.slice(0, 3); 
-                        state.breadcrumb.push({ level: 4, name: item.title }); // GÜNCELLEME: Düz başlık
+                        state.breadcrumb.push({ level: 4, name: item.title }); 
                         resetColumns(5); 
                         showColumn(5); 
                         fetchDailyGoals(item.id); 
@@ -1107,7 +1126,7 @@
                         state.isAgendaMode = false; state.selectedDailyId = item.id; 
                         state.selectedGoalDate = item.goal_date; 
                         state.breadcrumb = state.breadcrumb.slice(0, 4); 
-                        state.breadcrumb.push({ level: 5, name: (item.title || item.day_label) }); // GÜNCELLEME: Düz başlık
+                        state.breadcrumb.push({ level: 5, name: (item.title || item.day_label) }); 
                         resetColumns(6); 
                         showColumn(6); 
                         fetchTasks(item.id); 
@@ -1277,7 +1296,6 @@
         else if (formId === 'daily-goal-form') form.addEventListener('submit', addNewDailyGoal);
     }
     
-    // GÜNCELLEME: Mobil "Geri" butonları breadcrumb'ı günceller
     async function initApp() {
         console.log('Uygulama başlıyor (initApp)...');
 
@@ -1291,7 +1309,6 @@
         
         renderBreadcrumb();
 
-        // Modalları ayarla
         setupModal('task-modal', 'open-task-modal-btn', 'close-task-modal-btn', 'task-form');
         setupModal('category-modal', 'open-category-modal-btn', 'close-category-modal-btn', 'category-form');
         setupModal('annual-goal-modal', 'open-annual-goal-modal-btn', 'close-annual-goal-modal-btn', 'annual-goal-form');
@@ -1299,11 +1316,9 @@
         setupModal('weekly-goal-modal', 'open-weekly-goal-modal-btn', 'close-weekly-goal-modal-btn', 'weekly-goal-form');
         setupModal('daily-goal-modal', 'open-daily-goal-modal-btn', 'close-daily-goal-modal-btn', 'daily-goal-form');
         
-        // Silme Modalı butonlarını ayarla
         document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
         document.getElementById('cancel-delete-btn').addEventListener('click', () => { closeModal('delete-confirm-modal'); state.itemToDelete = null; });
         
-        // Mobil "Geri" Buton Olayları (Breadcrumb güncellemesi eklendi)
         document.getElementById('back-to-col-1').addEventListener('click', () => {
             state.breadcrumb = []; 
             renderBreadcrumb();
@@ -1338,7 +1353,6 @@
             }
         });
 
-        // Tooltip kaydırma olayı
         document.querySelectorAll('.overflow-y-auto').forEach(el => {
             el.addEventListener('scroll', hideTooltip);
         });
