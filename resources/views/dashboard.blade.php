@@ -35,7 +35,7 @@
 
 <div class="h-full flex flex-col">
 
-    <div id="hts-breadcrumb-container" class="flex-shrink-0 px-4 sm:px-6 lg:px-8 pt-4 pb-2 space-y-1">
+    <div id="hts-breadcrumb-container" class="flex-shrink-0 px-4 sm:px-6 lg:px-8 pt-4 pb-2 space-y-1 block lg:hidden">
         </div>
 
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-6 min-h-0 min-w-0 px-4 sm:px-6 lg:px-8">         

@@ -350,7 +350,7 @@
             if (data) { renderList('list-col-5', data); }
     }
 
-    // GÜNCELLEME 2 (Script): Mobil sürükleme ikonu eklendi
+    // GÜNCELLEME: Sütun 6 (Görevler) Padding Düzeltmesi
     async function fetchTasks(dailyGoalId) {
         console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
         const data = await fetchData(`/api/tasks/${dailyGoalId}`);
@@ -360,7 +360,8 @@
             listElement.innerHTML = '';
             data.forEach(task => {
                 const item = document.createElement('div');
-                item.className = `task-item flex items-center justify-between p-3 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
+                // GÜNCELLEME: p-3 (padding) buradan (ana div'den) kaldırıldı -> p-0
+                item.className = `task-item flex items-center justify-between p-0 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
                 item.dataset.id = task.id;
                 
                 const safeDescription = escapeHTML(task.task_description);
@@ -379,12 +380,12 @@
                 }
 
                 item.innerHTML = `
-                    <div class="drag-handle block lg:hidden p-2 text-gray-500" title="Sıralamak için sürükle">
+                    <div class="drag-handle block lg:hidden p-3 text-gray-500" title="Sıralamak için sürükle">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
                         </svg>
                     </div>
-                    <div class="item-content flex-1 flex items-center min-w-0">
+                    <div class="item-content flex-1 flex items-center min-w-0 p-3">
                         <input type="checkbox" class="action-checkbox" 
                                title="Tamamlandı olarak işaretle"
                                ${task.is_completed ? 'checked' : ''}>
@@ -453,7 +454,7 @@
         }
     }
 
-    // GÜNCELLEME 3 (Script): Mobil sürükleme ikonu eklendi
+    // GÜNCELLEME: Sütun 6 (Ajanda) Padding Düzeltmesi
     async function fetchTodayAgenda() {
         console.log('fetchTodayAgenda çağrıldı (Tüm kategoriler, bugün)');
         
@@ -465,7 +466,8 @@
             
             data.forEach(task => {
                 const item = document.createElement('div');
-                item.className = `task-item flex items-center justify-between p-3 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
+                // GÜNCELLEME: p-3 (padding) buradan (ana div'den) kaldırıldı -> p-0
+                item.className = `task-item flex items-center justify-between p-0 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
                 item.dataset.id = task.id;
                 
                 let timeDisplay = '';
@@ -479,12 +481,12 @@
                 const categoryName = task.goal_category ? task.goal_category.name : 'Kategori Yok';
                 
                 item.innerHTML = `
-                    <div class="drag-handle block lg:hidden p-2 text-gray-500" title="Sıralamak için sürükle">
+                    <div class="drag-handle block lg:hidden p-3 text-gray-500" title="Sıralamak için sürükle">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M7 2a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 5a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7 8a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0m-3 3a1 1 0 1 1-2 0 1 1 0 0 1 2 0m3 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0"/>
                         </svg>
                     </div>
-                    <div class="item-content flex-1 flex items-center min-w-0">
+                    <div class="item-content flex-1 flex items-center min-w-0 p-3">
                         <input type="checkbox" class="action-checkbox" 
                                title="Tamamlandı olarak işaretle"
                                ${task.is_completed ? 'checked' : ''}>
@@ -934,10 +936,10 @@
                     let newName = '';
                     switch (type) {
                         case '1': newName = updatedItem.name; break;
-                        case '2': newName = updatedItem.title; break; // Düz başlık
-                        case '3': newName = updatedItem.title; break; // Düz başlık
-                        case '4': newName = updatedItem.title; break; // Düz başlık
-                        case '5': newName = (updatedItem.title || updatedItem.day_label); break; // Düz başlık
+                        case '2': newName = updatedItem.title; break; 
+                        case '3': newName = updatedItem.title; break; 
+                        case '4': newName = updatedItem.title; break; 
+                        case '5': newName = (updatedItem.title || updatedItem.day_label); break; 
                     }
                     if (newName && state.breadcrumb[state.breadcrumb.length - 1].level == type) {
                         state.breadcrumb[state.breadcrumb.length - 1].name = newName;
@@ -973,37 +975,35 @@
         }
     }
 
-    // GÜNCELLEME 1 (Script): initSortable artık mobilde "handle" kullanıyor
     function initSortable(listId, modelType) {
         const listElement = document.getElementById(listId);
         if (!listElement) return;
         if (listElement.sortableInstance) { listElement.sortableInstance.destroy(); }
 
-        // SortableJS ayarlarını hazırla
         const options = {
             animation: 150,
             ghostClass: 'sortable-ghost',
             dragClass: 'sortable-drag',
-            // Sürüklemeyi BAŞLATMAYACAK elemanlar (butonlar vb.)
-            filter: '.action-checkbox, .action-edit, .action-delete', 
+            filter: '.action-checkbox, .action-edit, .action-delete, .item-content', // GÜNCELLEME: item-content de filtreye eklendi (mobilde)
             onEnd: function (evt) {
                 handleReorder(modelType, listElement);
             }
         };
 
-        // Mobildeyse, sürükleme için 'drag-handle' sınıfını zorunlu kıl
         if (isMobile()) {
             options.handle = '.drag-handle';
+        } else {
+            // Masaüstünde, tıklamayı önlemek için 'item-content'i filtreye ekle
+            // ve sürüklemenin sadece 'task-item'ın kendisinden başlamasını sağla
+            options.filter = '.action-checkbox, .action-edit, .action-delete, .item-content, .drag-handle';
         }
-        // Masaüstünde 'handle' ayarı yok, yani tüm öğe (filtreler hariç) sürüklenebilir.
 
         listElement.sortableInstance = new Sortable(listElement, options);
     }
 
     // --- UI (ARAYÜZ) HELPERS ---
 
-    // GÜNCELLEME 4 (Script): Mobil sürükleme ikonu eklendi
-    function renderList(listId, data) {
+  function renderList(listId, data) {
         const listElement = document.getElementById(listId);
         listElement.innerHTML = ''; 
         const listType = listId.split('-')[2];
@@ -1014,14 +1014,18 @@
 
         data.forEach(item => {
             const div = document.createElement('div');
-            // GÜNCELLEME: padding (p-3) kaldırıldı, içerik flex-1'e taşındı
             div.className = 'task-item p-0 rounded-md hover:bg-gray-700 transition-colors duration-150 flex justify-between items-center';
             div.dataset.id = item.id;
             if (item.is_completed) { div.classList.add('completed'); }
             
+            // GÜNCELLEME: Sütun 1 font boyutu (bottomFontSizeClass) artık hep aynı
             let topText = ''; let bottomText = ''; let bottomFontSizeClass = 'text-sm text-white'; 
             switch (listType) {
-                case '1': topText = (item.id === 'TODAY') ? '' : ''; bottomText = item.name; bottomFontSizeClass = 'text-white'; break;
+                case '1': 
+                    topText = (item.id === 'TODAY') ? '' : ''; 
+                    bottomText = item.name; 
+                    // 'bottomFontSizeClass = 'text-white';' satırı kaldırıldı. Artık varsayılan (text-sm) kullanılacak.
+                    break;
                 case '2': topText = `Yıl ${item.year}: ${item.period_label}`; bottomText = item.title; break;
                 case '3': topText = item.month_label; bottomText = item.title; break;
                 case '4': topText = item.start_date ? formatDateTR(item.start_date) : item.week_label; bottomText = item.title; break;
@@ -1043,7 +1047,7 @@
                         <div class="item-text ${bottomFontSizeClass}">${bottomText}</div>
                     </div>
                 </div>
-                <div class="item-actions p-3">
+                <div class="item-actions pr-3">
                     ${item.id !== 'TODAY' ? `
                         <button class="action-edit" title="Düzenle">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
