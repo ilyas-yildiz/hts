@@ -278,6 +278,8 @@
         <div class="bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md">
             <h3 class="text-xl font-semibold mb-4 text-white">Yeni Görev Ekle</h3>
            <form id="task-form">
+            <div id="task-modal-error" class="hidden p-3 mb-4 text-sm text-red-300 bg-red-800 bg-opacity-50 rounded-md border border-red-700">
+                    </div>
                 <div class="space-y-4">
                     
                     <div id="task-category-selector" class="hidden">

@@ -7,6 +7,7 @@ use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
+use Carbon\Carbon; // GÜNCELLEME: Saat formatlama için eklendi
 
 class TaskController extends Controller
 {
@@ -18,41 +19,74 @@ class TaskController extends Controller
         // 1. Gelen veriyi doğrula
         $validated = $request->validate([
             'goal_category_id' => 'required|exists:goal_categories,id',
-            'goal_date'        => 'required|date',
+            'goal_date'        => 'required|date_format:Y-m-d', 
             'start_time'       => 'nullable|date_format:H:i',
             'end_time'         => 'nullable|date_format:H:i|after:start_time',
-            
-            // DÜZELTME: 'max:1000' limiti kaldırıldı. Artık 'TEXT' limiti geçerli.
             'task_description' => 'required|string', 
         ]);
 
-        // 2. Çakışma Kontrolü (Conflict Check)
-        if ($validated['start_time'] && $validated['end_time']) {
-            $startTime = $validated['start_time'];
-            $endTime = $validated['end_time'];
+        $startTime = $validated['start_time'] ?? null;
+        $endTime = $validated['end_time'] ?? null;
+        $goalDate = $validated['goal_date'];
 
-            $conflictingTask = Task::where('goal_date', $validated['goal_date'])
-                ->where(function ($query) use ($startTime, $endTime) {
+        // 2. ÇAKIŞMA KONTROLÜ
+        if ($startTime) {
+            
+            $baseQuery = Task::where('goal_date', $goalDate)
+                             ->whereNotNull('start_time');
+
+            $conflictQuery = $baseQuery->where(function ($query) use ($startTime, $endTime) {
+
+                if ($endTime) {
                     $query->where(function ($q) use ($startTime, $endTime) {
-                        $q->where('start_time', '<', $endTime)
+                        $q->whereNotNull('end_time')
+                          ->where('start_time', '<', $endTime)
                           ->where('end_time', '>', $startTime);
+                    })->orWhere(function ($q) use ($startTime, $endTime) {
+                        $q->whereNull('end_time')
+                          ->where('start_time', '>=', $startTime)
+                          ->where('start_time', '<', $endTime);
                     });
-                })
-                ->exists(); 
+                } 
+                else {
+                    $query->where(function ($q) use ($startTime) {
+                        $q->whereNotNull('end_time')
+                          ->where('start_time', '<=', $startTime)
+                          ->where('end_time', '>', $startTime);
+                    })->orWhere(function ($q) use ($startTime) {
+                        $q->whereNull('end_time')
+                          ->where('start_time', '=', $startTime);
+                    });
+                }
+            });
+
+            $conflictingTask = $conflictQuery->first();
 
             if ($conflictingTask) {
+                // GÜNCELLEME: Saatleri 'H:i' (10:00) formatına çevir
+                $st = Carbon::parse($conflictingTask->start_time)->format('H:i');
+                $et = $conflictingTask->end_time ? Carbon::parse($conflictingTask->end_time)->format('H:i') : null;
+                
+                $conflictTimeStr = $et ? $st . ' - ' . $et : $st;
+
+                $newTimeStr = $endTime ? "$startTime - $endTime" : $startTime;
+
+                // GÜNCELLEME: Başlıktaki "Çakışma:" kelimesi kaldırıldı
                 throw ValidationException::withMessages([
-                    'time' => 'Bu saat aralığı ('.$startTime.' - '.$endTime.') zaten dolu. Lütfen başka bir saat seçin.',
+                    'time' => [
+                        "Girmek istediğiniz saat ($newTimeStr),",
+                        "mevcut '$conflictTimeStr - {$conflictingTask->task_description}' görevi ile çakışıyor."
+                    ],
                 ]);
             }
         }
         
         // 3. Sıralamayı hesapla
         $maxOrder = Task::where('goal_category_id', $validated['goal_category_id'])
-                        ->where('goal_date', $validated['goal_date'])
-                        ->max('order_index');
-                        
-        $validated['order_index'] = $maxOrder + 1;
+                            ->where('goal_date', $validated['goal_date'])
+                            ->max('order_index');
+                            
+        $validated['order_index'] = ($maxOrder ?? 0) + 1;
         
         // 4. Kaydet
         $task = Task::create($validated);
@@ -83,40 +117,82 @@ class TaskController extends Controller
     {
         // 1. Gelen veriyi doğrula
         $validated = $request->validate([
-            // DÜZELTME: 'goal_category_id' (Düzenlemede Kategori Değiştirme) eklendi
             'goal_category_id' => 'required|exists:goal_categories,id', 
-            'goal_date'        => 'nullable|date',
+            'goal_date'        => 'nullable|date_format:Y-m-d',
             'start_time'       => 'nullable|date_format:H:i',
             'end_time'         => 'nullable|date_format:H:i|after:start_time',
-            
-            // DÜZELTME: 'max:1000' limiti kaldırıldı.
             'task_description' => 'required|string',
         ]);
 
-        // 2. Çakışma Kontrolü (Update için)
-        if (isset($validated['start_time']) && isset($validated['end_time'])) {
-            $startTime = $validated['start_time'];
+        $startTime = $validated['start_time'] ?? $task->start_time;
+        $endTime = $validated['end_time'] ?? $task->end_time;
+        if ($request->has('end_time')) {
             $endTime = $validated['end_time'];
-            $goalDate = $validated['goal_date'] ?? $task->goal_date; // Tarih değişmiyorsa eskisi
+        }
+        
+        $goalDate = $validated['goal_date'] ?? $task->goal_date;
 
-            $conflictingTask = Task::where('goal_date', $goalDate)
-                ->where('id', '!=', $task->id) // KENDİSİ HARİÇ
-                ->where(function ($query) use ($startTime, $endTime) {
+        // 2. GÜNCELLENMİŞ ÇAKIŞMA KONTROLÜ (Update için)
+        if ($startTime) {
+            
+            $baseQuery = Task::where('goal_date', $goalDate)
+                             ->where('id', '!=', $task->id) 
+                             ->whereNotNull('start_time');
+
+            $conflictQuery = $baseQuery->where(function ($query) use ($startTime, $endTime) {
+
+                if ($endTime) {
                     $query->where(function ($q) use ($startTime, $endTime) {
-                        $q->where('start_time', '<', $endTime)
+                        $q->whereNotNull('end_time')
+                          ->where('start_time', '<', $endTime)
                           ->where('end_time', '>', $startTime);
+                    })->orWhere(function ($q) use ($startTime, $endTime) {
+                        $q->whereNull('end_time')
+                          ->where('start_time', '>=', $startTime)
+                          ->where('start_time', '<', $endTime);
                     });
-                })
-                ->exists();
+                } 
+                else {
+                    $query->where(function ($q) use ($startTime) {
+                        $q->whereNotNull('end_time')
+                          ->where('start_time', '<=', $startTime)
+                          ->where('end_time', '>', $startTime);
+                    })->orWhere(function ($q) use ($startTime) {
+                        $q->whereNull('end_time')
+                          ->where('start_time', '=', $startTime);
+                    });
+                }
+            });
+
+            $conflictingTask = $conflictQuery->first();
 
             if ($conflictingTask) {
+                // GÜNCELLEME: Saatleri 'H:i' (10:00) formatına çevir
+                $st = Carbon::parse($conflictingTask->start_time)->format('H:i');
+                $et = $conflictingTask->end_time ? Carbon::parse($conflictingTask->end_time)->format('H:i') : null;
+
+                $conflictTimeStr = $et ? $st . ' - ' . $et : $st;
+
+                $newTimeStr = $endTime ? "$startTime - $endTime" : $startTime;
+
+                // GÜNCELLEME: Başlıktaki "Çakışma:" kelimesi kaldırıldı
                 throw ValidationException::withMessages([
-                    'time' => 'Bu saat aralığı ('.$startTime.' - '.$endTime.') zaten dolu.',
+                    'time' => [
+                        "Girmek istediğiniz saat ($newTimeStr),",
+                        "mevcut '$conflictTimeStr - {$conflictingTask->task_description}' görevi ile çakışıyor."
+                    ],
                 ]);
             }
         }
         
         // 3. Güncelle
+        if ($request->has('start_time')) {
+             $validated['start_time'] = $startTime;
+        }
+        if ($request->has('end_time')) {
+             $validated['end_time'] = $endTime;
+        }
+
         $task->update($validated);
 
         return response()->json($task);
