@@ -992,22 +992,31 @@ async function fetchTodayAgenda() {
         if (!listElement) return;
         if (listElement.sortableInstance) { listElement.sortableInstance.destroy(); }
 
+        // SortableJS ayarlarını hazırla
         const options = {
             animation: 150,
             ghostClass: 'sortable-ghost',
             dragClass: 'sortable-drag',
-            filter: '.action-checkbox, .action-edit, .action-delete, .item-content', // GÜNCELLEME: item-content de filtreye eklendi (mobilde)
+            // TEMEL FİLTRE: Butonlar ASLA sürüklememeli (her iki platformda da)
+            filter: '.action-checkbox, .action-edit, .action-delete', 
             onEnd: function (evt) {
                 handleReorder(modelType, listElement);
             }
         };
 
+        // GÜNCELLEME: Mobil ve Masaüstü filtre/handle mantığı düzeltildi
         if (isMobile()) {
+            // MOBİLDE:
+            // 1. Sadece ikondan sürükle
             options.handle = '.drag-handle';
+            // 2. İçeriğe dokunmak sürüklemeyi BAŞLATMASIN (kaydırma için)
+            options.filter += ', .item-content'; 
         } else {
-            // Masaüstünde, tıklamayı önlemek için 'item-content'i filtreye ekle
-            // ve sürüklemenin sadece 'task-item'ın kendisinden başlamasını sağla
-            options.filter = '.action-checkbox, .action-edit, .action-delete, .item-content, .drag-handle';
+            // MASAÜSTÜNDE (Desktop):
+            // 1. 'handle' ayarı yok (tüm öğe sürükler)
+            // 2. Gizli olan sürükleme ikonuna tıklamak sürüklemeyi BAŞLATMASIN
+            options.filter += ', .drag-handle';
+            // 3. (ÖNEMLİ) .item-content'i FİLTRELEME, böylece sürükleme yapılabilir.
         }
 
         listElement.sortableInstance = new Sortable(listElement, options);
