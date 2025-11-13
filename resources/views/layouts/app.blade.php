@@ -149,7 +149,8 @@
         isAgendaMode: false,
         categoriesCache: [],
         selectedGoalDate: null,
-        breadcrumb: [] 
+        breadcrumb: [],
+        agendaDateLabel: 'Bugün' // YENİ: Ajanda modunun başlığı için
     };
 
     // --- YARDIMCI FONKSİYONLAR ---
@@ -241,6 +242,7 @@
         setTimeout(() => globalTooltip.classList.add('hidden'), 200); 
     }
 
+    // GÜNCELLEME: Breadcrumb, Ajanda modu için state.agendaDateLabel'i kullanır
     function renderBreadcrumb() {
         const container = document.getElementById('hts-breadcrumb-container');
         if (!container) return; 
@@ -256,7 +258,8 @@
         ];
 
         if (state.isAgendaMode) {
-            container.innerHTML = `<div class="text-white font-semibold">Bugün'ün Ajandası</div>`;
+            // GÜNCELLEME: "Bugün" yerine dinamik başlık
+            container.innerHTML = `<div class="text-white font-semibold">${state.agendaDateLabel}'ün Ajandası</div>`;
             return;
         }
 
@@ -350,7 +353,7 @@
             if (data) { renderList('list-col-5', data); }
     }
 
- async function fetchTasks(dailyGoalId) {
+    async function fetchTasks(dailyGoalId) {
         console.log(`fetchTasks çağrıldı (Günlük ID: ${dailyGoalId})`);
         const data = await fetchData(`/api/tasks/${dailyGoalId}`);
         const listElement = document.getElementById('list-col-6');
@@ -460,10 +463,13 @@
         }
     }
 
-async function fetchTodayAgenda() {
-        console.log('fetchTodayAgenda çağrıldı (Tüm kategoriler, bugün)');
+
+    // GÜNCELLEME: 'fetchTodayAgenda' fonksiyonu, 'fetchAgendaForDate' olarak yeniden adlandırıldı ve dinamik hale getirildi.
+    async function fetchAgendaForDate(dateString) { // '2025-11-12' formatında
+        console.log(`fetchAgendaForDate çağrıldı (Tarih: ${dateString})`);
         
-        const data = await fetchData('/api/agenda/today');
+        // YENİ: Dinamik endpoint
+        const data = await fetchData(`/api/agenda/${dateString}`);
         const listElement = document.getElementById('list-col-6');
 
         if (data && data.length > 0) {
@@ -565,10 +571,46 @@ async function fetchTodayAgenda() {
             initSortable('list-col-6', 'Task');
 
         } else {
-            listElement.innerHTML = `<div class="p-4 text-center text-gray-500">Bugün için planlanmış görev yok.</div>`;
+            // GÜNCELLEME: Tarih seçildiğinde "görev yok" mesajı
+            const formattedDate = formatDateTR(dateString);
+            listElement.innerHTML = `<div class="p-4 text-center text-gray-500">${formattedDate} tarihi için planlanmış görev yok.</div>`;
         }
     }
     
+    // YENİ: Ajanda Modu'nu tetikleyen yardımcı fonksiyon
+    function triggerAgendaMode(mode) { // mode: 'today' VEYA '2025-11-13'
+        console.log(`Ajanda modu tetiklendi: ${mode}`);
+        state.isAgendaMode = true;
+        state.selectedCategoryId = null; 
+        resetColumns(2); 
+
+        let queryDate;
+        
+        if (mode === 'today') {
+            queryDate = new Date().toISOString().split('T')[0];
+            state.agendaDateLabel = "Bugün";
+            // Tarih seçiciyi bugünün tarihiyle güncelle
+            document.getElementById('agenda-date-picker').value = queryDate;
+        } else {
+            queryDate = mode; // '2025-11-13'
+            // Seçilen tarihi "13 Kas Per" olarak formatla
+            state.agendaDateLabel = formatDateTR(queryDate); 
+            // (input zaten seçili, tekrar ayarlanmasına gerek yok)
+        }
+
+        renderBreadcrumb(); 
+
+        if (isMobile()) {
+            showColumn(6); 
+        } else {
+            document.getElementById('col-6').classList.add('col-span-5'); 
+            showColumn(6); 
+        }
+        
+        // GÜNCELLEME: 'fetchTodayAgenda' yerine yeni fonksiyonu çağır
+        fetchAgendaForDate(queryDate);
+    }
+
 
     // --- TASK (GÖREV) ACTIONS ---
     async function toggleTaskStatus(taskId, isCompleted) { await fetchData(`/api/tasks/toggle/${taskId}`, { method: 'PUT', body: JSON.stringify({ is_completed: isCompleted }) }); }
@@ -702,18 +744,16 @@ async function fetchTodayAgenda() {
             btn.disabled = false; btn.textContent = 'Kaydet';
         }
     }
-   async function addNewWeeklyGoal(e) {
+    async function addNewWeeklyGoal(e) {
         e.preventDefault();
         if (state.editingItem) { await handleUpdate(e); return; }
         if (!state.selectedMonthlyId) return;
         
         const title = document.getElementById('weekly-goal-title').value.trim();
         const label = document.getElementById('weekly-goal-label').value.trim();
-        let startDate = document.getElementById('weekly-goal-start-date').value; // GÜNCELLEME: " 12:00:00" eki kaldırıldı
+        let startDate = document.getElementById('weekly-goal-start-date').value; 
         
         if (!title || !label) return;
-
-        // GÜNCELLEME: " 12:00:00" bloğu buradan kaldırıldı
 
         const data = { 
             monthly_goal_id: state.selectedMonthlyId, 
@@ -729,18 +769,16 @@ async function fetchTodayAgenda() {
         else { btn.disabled = false; btn.textContent = 'Kaydet'; }
     }
 
-   async function addNewDailyGoal(e) {
+    async function addNewDailyGoal(e) {
         e.preventDefault();
         if (state.editingItem) { await handleUpdate(e); return; }
         if (!state.selectedWeeklyId) return;
         
         const label = document.getElementById('daily-goal-label').value.trim();
         const title = document.getElementById('daily-goal-title').value.trim();
-        let goalDate = document.getElementById('daily-goal-date').value; // GÜNCELLEME: " 12:00:00" eki kaldırıldı
+        let goalDate = document.getElementById('daily-goal-date').value;
         
         if (!label) return;
-
-        // GÜNCELLEME: " 12:00:00" bloğu buradan kaldırıldı
 
         const data = { 
             weekly_goal_id: state.selectedWeeklyId, 
@@ -756,7 +794,7 @@ async function fetchTodayAgenda() {
         else { btn.disabled = false; btn.textContent = 'Kaydet'; }
     }
 
-async function addNewTask(e) {
+    async function addNewTask(e) {
         e.preventDefault(); 
         if (state.editingItem) { await handleUpdate(e); return; }
         
@@ -793,7 +831,9 @@ async function addNewTask(e) {
             const newTask = await fetchData('/api/tasks', { method: 'POST', body: JSON.stringify(data) });
             if (newTask) {
                 if (state.isAgendaMode) {
-                    fetchTodayAgenda();
+                    // GÜNCELLEME: Ajanda modundaysak, o günün (seçili) ajandasını yenile
+                    const selectedDate = document.getElementById('agenda-date-picker').value;
+                    fetchAgendaForDate(selectedDate || new Date().toISOString().split('T')[0]);
                 } else {
                     fetchTasks(state.selectedDailyId);
                 }
@@ -802,7 +842,6 @@ async function addNewTask(e) {
         } catch (error) {
             if (error.errors && error.errors.time) {
                 const errorDiv = document.getElementById('task-modal-error');
-                // GÜNCELLEME: '<strong>Çakışma:</strong>' ön eki kaldırıldı
                 if (Array.isArray(error.errors.time)) {
                      errorDiv.innerHTML = error.errors.time.join('<br>');
                 } else {
@@ -818,7 +857,7 @@ async function addNewTask(e) {
         }
     }
 
-function openEditModal(type, item) {
+    function openEditModal(type, item) {
         state.editingItem = { type, item }; 
         let modalId = '';
         
@@ -832,7 +871,23 @@ function openEditModal(type, item) {
                 modalId = 'category-modal';
                 document.getElementById('category-name').value = item.name;
                 break;
-            //... (diğer case'ler aynı) ...
+            case '2':
+                modalId = 'annual-goal-modal';
+                document.getElementById('annual-goal-title').value = item.title;
+                document.getElementById('annual-goal-year').value = item.year;
+                document.getElementById('annual-goal-period').value = item.period_label;
+                break;
+            case '3':
+                modalId = 'monthly-goal-modal';
+                document.getElementById('monthly-goal-title').value = item.title;
+                document.getElementById('monthly-goal-label').value = item.month_label;
+                break;
+            case '4':
+                modalId = 'weekly-goal-modal';
+                document.getElementById('weekly-goal-title').value = item.title;
+                document.getElementById('weekly-goal-label').value = item.week_label;
+                document.getElementById('weekly-goal-start-date').value = item.start_date; 
+                break;
             case '5':
                 modalId = 'daily-goal-modal';
                 document.getElementById('daily-goal-label').value = item.day_label;
@@ -841,7 +896,6 @@ function openEditModal(type, item) {
                 break;
             case 'task':
                 modalId = 'task-modal';
-                // GÜNCELLEME: Hata mesajını temizle
                 document.getElementById('task-modal-error').classList.add('hidden');
                 
                 document.getElementById('task-goal-date').value = item.goal_date; 
@@ -865,7 +919,7 @@ function openEditModal(type, item) {
         }
     }
 
-async function handleUpdate(e) {
+    async function handleUpdate(e) {
         e.preventDefault();
         if (!state.editingItem) return;
 
@@ -927,7 +981,9 @@ async function handleUpdate(e) {
                 console.log('Öğe güncellendi:', updatedItem);
                 
                 if (state.isAgendaMode) {
-                    fetchTodayAgenda();
+                    // GÜNCELLEME: Ajanda modundaysak, o günün (seçili) ajandasını yenile
+                    const selectedDate = document.getElementById('agenda-date-picker').value;
+                    fetchAgendaForDate(selectedDate || new Date().toISOString().split('T')[0]);
                 } else if (type === 'task') { fetchTasks(state.selectedDailyId); }
                 else if (type === '1') { fetchCategories(); }
                 else if (type === '2') { fetchAnnualGoals(state.selectedCategoryId); }
@@ -955,7 +1011,6 @@ async function handleUpdate(e) {
         } catch (error) {
             if (type === 'task' && error.errors && error.errors.time) {
                 const errorDiv = document.getElementById('task-modal-error');
-                // GÜNCELLEME: '<strong>Çakışma:</strong>' ön eki kaldırıldı
                 if (Array.isArray(error.errors.time)) {
                      errorDiv.innerHTML = error.errors.time.join('<br>');
                 } else {
@@ -990,31 +1045,21 @@ async function handleUpdate(e) {
         if (!listElement) return;
         if (listElement.sortableInstance) { listElement.sortableInstance.destroy(); }
 
-        // SortableJS ayarlarını hazırla
         const options = {
             animation: 150,
             ghostClass: 'sortable-ghost',
             dragClass: 'sortable-drag',
-            // TEMEL FİLTRE: Butonlar ASLA sürüklememeli (her iki platformda da)
             filter: '.action-checkbox, .action-edit, .action-delete', 
             onEnd: function (evt) {
                 handleReorder(modelType, listElement);
             }
         };
 
-        // GÜNCELLEME: Mobil ve Masaüstü filtre/handle mantığı düzeltildi
         if (isMobile()) {
-            // MOBİLDE:
-            // 1. Sadece ikondan sürükle
             options.handle = '.drag-handle';
-            // 2. İçeriğe dokunmak sürüklemeyi BAŞLATMASIN (kaydırma için)
             options.filter += ', .item-content'; 
         } else {
-            // MASAÜSTÜNDE (Desktop):
-            // 1. 'handle' ayarı yok (tüm öğe sürükler)
-            // 2. Gizli olan sürükleme ikonuna tıklamak sürüklemeyi BAŞLATMASIN
             options.filter += ', .drag-handle';
-            // 3. (ÖNEMLİ) .item-content'i FİLTRELEME, böylece sürükleme yapılabilir.
         }
 
         listElement.sortableInstance = new Sortable(listElement, options);
@@ -1022,7 +1067,8 @@ async function handleUpdate(e) {
 
     // --- UI (ARAYÜZ) HELPERS ---
 
-function renderList(listId, data) {
+    // GÜNCELLEME: 'renderList' artık 'triggerAgendaMode'u çağırıyor
+    function renderList(listId, data) {
         const listElement = document.getElementById(listId);
         listElement.innerHTML = ''; 
         const listType = listId.split('-')[2];
@@ -1107,17 +1153,8 @@ function renderList(listId, data) {
                 switch (listType) {
                     case '1': 
                         if (item.id === 'TODAY') {
-                            state.isAgendaMode = true;
-                            state.breadcrumb = []; 
-                            resetColumns(2); 
-                            
-                            if (isMobile()) {
-                                showColumn(6); 
-                            } else {
-                                document.getElementById('col-6').classList.add('col-span-5'); 
-                                showColumn(6); 
-                            }
-                            fetchTodayAgenda(); 
+                            // GÜNCELLEME: Yeni 'triggerAgendaMode' fonksiyonunu çağır
+                            triggerAgendaMode('today');
                         } else {
                             state.isAgendaMode = false;
                             state.selectedCategoryId = item.id;
@@ -1162,7 +1199,10 @@ function renderList(listId, data) {
                         break;
                 }
                 
-                renderBreadcrumb();
+                // GÜNCELLEME: Planlama moduna geçildiğinde breadcrumb'ı yeniden çiz
+                if (listType !== '1' || item.id !== 'TODAY') {
+                    renderBreadcrumb();
+                }
             });
 
             if (editBtn) {
@@ -1243,7 +1283,7 @@ function renderList(listId, data) {
         }
     }
 
-  function closeModal(modalId) {
+    function closeModal(modalId) {
         const modal = document.getElementById(modalId);
         if (modal) {
             modal.classList.add('hidden');
@@ -1258,7 +1298,6 @@ function renderList(listId, data) {
             
             if (modalId === 'task-modal') {
                 document.getElementById('task-category-selector').classList.add('hidden');
-                // GÜNCELLEME: Hata mesajını temizle
                 document.getElementById('task-modal-error').classList.add('hidden');
             }
         }
@@ -1283,7 +1322,7 @@ function renderList(listId, data) {
     }
 
 
-function setupModal(modalId, openBtnId, closeBtnId, formId) {
+    function setupModal(modalId, openBtnId, closeBtnId, formId) {
         const modal = document.getElementById(modalId);
         const openBtn = document.getElementById(openBtnId);
         const closeBtn = document.getElementById(closeBtnId);
@@ -1298,14 +1337,15 @@ function setupModal(modalId, openBtnId, closeBtnId, formId) {
             if (modalId === 'daily-goal-modal' && !state.selectedWeeklyId) { showError("Lütfen önce bir haftalık hedef (Sütun 4) seçin."); return; }
             
             if (modalId === 'task-modal') {
-                // GÜNCELLEME: Hata mesajını temizle
                 document.getElementById('task-modal-error').classList.add('hidden');
 
                 if (state.isAgendaMode) {
                     const categorySelector = document.getElementById('task-goal-category');
                     populateCategorySelector(categorySelector);
                     document.getElementById('task-category-selector').classList.remove('hidden');
-                    document.getElementById('task-goal-date').value = new Date().toISOString().split('T')[0];
+                    // GÜNCELLEME: 'Bugün' yerine seçili tarihi (picker'dan) al
+                    const selectedDate = document.getElementById('agenda-date-picker').value;
+                    document.getElementById('task-goal-date').value = selectedDate || new Date().toISOString().split('T')[0];
                     
                 } else {
                     if (!state.selectedDailyId) { showError("Lütfen önce bir gün seçin."); return; }
@@ -1330,6 +1370,7 @@ function setupModal(modalId, openBtnId, closeBtnId, formId) {
         else if (formId === 'daily-goal-form') form.addEventListener('submit', addNewDailyGoal);
     }
     
+    // GÜNCELLEME: initApp, tarih seçiciyi dinler
     async function initApp() {
         console.log('Uygulama başlıyor (initApp)...');
 
@@ -1353,6 +1394,13 @@ function setupModal(modalId, openBtnId, closeBtnId, formId) {
         document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
         document.getElementById('cancel-delete-btn').addEventListener('click', () => { closeModal('delete-confirm-modal'); state.itemToDelete = null; });
         
+        // YENİ: Tarih seçici (date picker) event listener'ı
+        document.getElementById('agenda-date-picker').addEventListener('change', (e) => {
+            if (e.target.value) {
+                triggerAgendaMode(e.target.value); // '2025-11-13'
+            }
+        });
+        
         document.getElementById('back-to-col-1').addEventListener('click', () => {
             state.breadcrumb = []; 
             renderBreadcrumb();
@@ -1374,10 +1422,12 @@ function setupModal(modalId, openBtnId, closeBtnId, formId) {
             showColumn(4);
         });
         
+        // GÜNCELLEME: Geri butonu, tarih seçiciyi de temizler
         document.getElementById('back-btn-col-6').addEventListener('click', () => {
             if (state.isAgendaMode) {
                 state.isAgendaMode = false; 
                 state.breadcrumb = [];
+                document.getElementById('agenda-date-picker').value = ''; // Tarih seçiciyi sıfırla
                 renderBreadcrumb();
                 showColumn(1);
             } else {

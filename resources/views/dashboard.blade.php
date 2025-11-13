@@ -41,7 +41,8 @@
     <div class="flex-1 grid grid-cols-1 lg:grid-cols-6 min-h-0 min-w-0 px-4 sm:px-6 lg:px-8">         
             
             <div id="col-1" class="column flex flex-col border-r border-gray-700">
-                <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
+            <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700">
+                <div class="flex justify-between items-center">
                     <div>
                         <h2 class="text-lg font-semibold text-white">5 Yıllık Hedefler</h2>
                         <p class="text-sm text-gray-400">Ana Kategoriler</p>
@@ -52,10 +53,17 @@
                         </button>
                     </div>
                 </div>
-                <div id="list-col-1" class="flex-1 overflow-y-auto p-2 space-y-1">
-                    <div class="p-4 text-center text-gray-500">Yükleniyor...</div>
+                <div class="mt-3">
+                    <label for="agenda-date-picker" class="block text-xs font-medium text-gray-400 mb-1">Ajanda Tarihi Seç:</label>
+                    <input type="date" id="agenda-date-picker" 
+                           class="block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500 text-sm"
+                           style="color-scheme: dark; padding-top: 6px; padding-bottom: 6px;"> 
                 </div>
             </div>
+            <div id="list-col-1" class="flex-1 overflow-y-auto p-2 space-y-1">
+                <div class="p-4 text-center text-gray-500">Yükleniyor...</div>
+            </div>
+        </div>
 
             <div id="col-2" class="column hidden lg:flex flex-col border-r border-gray-700">
                 <div class="sticky top-0 z-10 bg-gray-800 flex-shrink-0 p-4 border-b border-gray-700 flex justify-between items-center">
