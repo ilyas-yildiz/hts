@@ -475,7 +475,7 @@ async function fetchAgendaForDate(dateString) {
             
             data.forEach(task => {
                 const item = document.createElement('div');
-                item.className = `task-item flex items-center justify-between p-0 rounded-md bg-gray-700 shadow ${task.is_completed ? 'completed' : ''}`;
+                item.className = `task-item flex items-start justify-between p-0 rounded-md bg-gray-700 shadow mb-2 ${task.is_completed ? 'completed' : ''}`;
                 item.dataset.id = task.id;
                 
                 let timeDisplay = '';
@@ -486,30 +486,43 @@ async function fetchAgendaForDate(dateString) {
                     timeDisplay = 'Tüm Gün';
                 }
 
-                // GÜNCELLEME: Hiyerarşik Yol (Breadcrumb) Oluşturma
-                let path = [];
+                // --- TEK SATIRLIK + ETİKETLİ HİYERARŞİ ---
                 
-                // 1. Kategori (Her zaman vardır)
-                if (task.goal_category) path.push(task.goal_category.name);
-                
-                // 2. Yıllık (Varsa)
-                if (task.annual_goal) path.push(task.annual_goal.title);
-                
-                // 3. Aylık (Varsa)
-                if (task.monthly_goal) path.push(task.monthly_goal.title);
-                
-                // 4. Haftalık (Varsa)
-                if (task.weekly_goal) path.push(task.weekly_goal.title);
-                
-                // 5. Günlük (Varsa)
-                if (task.daily_goal) path.push(task.daily_goal.title || task.daily_goal.day_label);
+                // Yardımcı: Etiket ve Değeri HTML olarak formatla
+                const makeLabel = (label, value) => {
+                    return `<span class="text-gray-500 font-bold text-[9px] tracking-wide uppercase mr-0.5">${label}:</span><span class="text-blue-300">${escapeHTML(value)}</span>`;
+                };
 
-                // Hepsini " > " ile birleştir
-                const fullPathString = path.join(' > ');
-                // ---------------------------------------------------
+                let hierarchyParts = [];
                 
+                // Kısaltılmış etiketler kullanıyoruz ki tek satıra sığsın
+                if (task.goal_category) hierarchyParts.push(makeLabel('5Y', task.goal_category.name));
+                if (task.annual_goal)   hierarchyParts.push(makeLabel('Yıl', task.annual_goal.title));
+                if (task.monthly_goal)  hierarchyParts.push(makeLabel('Ay', task.monthly_goal.title));
+                if (task.weekly_goal)   hierarchyParts.push(makeLabel('Hft', task.weekly_goal.title));
+                // Günlük hedefte title yoksa day_label (Pazartesi vb.) kullan
+                if (task.daily_goal)    hierarchyParts.push(makeLabel('Gün', task.daily_goal.title || task.daily_goal.day_label));
+
+                // Parçaları ok işaretiyle birleştir
+                const hierarchyHtml = hierarchyParts.length > 0 
+                    ? `<div class="text-[10px] truncate mb-1 opacity-90 flex items-center">` + 
+                      hierarchyParts.join('<span class="text-gray-600 mx-1.5 text-[9px]">&rsaquo;</span>') + 
+                      `</div>`
+                    : '';
+                
+                // Tooltip için düz metin versiyonu (title attribute için)
+                // Sadece değerleri birleştiriyoruz
+                let plainTextParts = [];
+                if (task.goal_category) plainTextParts.push(task.goal_category.name);
+                if (task.annual_goal) plainTextParts.push(task.annual_goal.title);
+                if (task.monthly_goal) plainTextParts.push(task.monthly_goal.title);
+                if (task.weekly_goal) plainTextParts.push(task.weekly_goal.title);
+                if (task.daily_goal) plainTextParts.push(task.daily_goal.title || task.daily_goal.day_label);
+                const fullPathString = plainTextParts.join(' > ');
+                // ----------------------------------------
+
                 item.innerHTML = `
-                    <div class="drag-handle block lg:hidden p-3 text-gray-500" title="Sıralamak için sürükle">
+                    <div class="drag-handle block lg:hidden p-3 pt-4 text-gray-500" title="Sıralamak için sürükle">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <circle cx="4" cy="4" r="1.1"/>
                             <circle cx="8" cy="4" r="1.1"/>
@@ -522,22 +535,26 @@ async function fetchAgendaForDate(dateString) {
                             <circle cx="12" cy="12" r="1.1"/>
                         </svg>
                     </div>
-                    <div class="item-content flex-1 flex items-center min-w-0 p-3">
-                        <input type="checkbox" class="action-checkbox" 
-                               title="Tamamlandı olarak işaretle"
-                               ${task.is_completed ? 'checked' : ''}>
-                        <div class="ml-2">
-                            <div class="text-xs font-semibold text-blue-400 truncate" title="${escapeHTML(fullPathString)}">
-                                ${escapeHTML(fullPathString)}
-                            </div>
+                    
+                    <div class="item-content flex-1 min-w-0 p-2 sm:p-3">
+                        
+                        ${hierarchyHtml}
+
+                        <div class="flex items-start">
+                            <input type="checkbox" class="action-checkbox mt-1 shrink-0" 
+                                   title="Tamamlandı olarak işaretle"
+                                   ${task.is_completed ? 'checked' : ''}>
                             
-                            <div class="text-xs font-semibold text-gray-400">${timeDisplay}</div>
-                            <div class="text-sm text-white task-desc">
-                                ${task.task_description}
+                            <div class="ml-2 w-full min-w-0">
+                                <div class="text-xs font-bold text-gray-300 mb-0.5">${timeDisplay}</div>
+                                <div class="text-sm text-white task-desc leading-snug break-words">
+                                    ${task.task_description}
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="item-actions pr-3">
+
+                    <div class="item-actions pr-2 pt-4 sm:pr-3">
                         <button class="action-edit" title="Düzenle">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
@@ -561,6 +578,7 @@ async function fetchAgendaForDate(dateString) {
                 checkbox.addEventListener('change', async (e) => { const isCompleted = e.target.checked; await toggleTaskStatus(task.id, isCompleted); item.classList.toggle('completed', isCompleted); });
                 editBtn.addEventListener('click', (e) => { e.stopPropagation(); openEditModal('task', task); });
                 deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); handleDelete('task', task.id, item); });
+                
                 content.addEventListener('click', (e) => {
                     if (e.target.tagName.toLowerCase() === 'input') return;
                     e.currentTarget.closest('.flex-1.overflow-y-auto').querySelectorAll('.task-item').forEach(el => el.classList.remove('selected'));
@@ -571,15 +589,19 @@ async function fetchAgendaForDate(dateString) {
 
                 setTimeout(() => {
                     const taskDesc = item.querySelector('.task-desc');
+                    // Hiyerarşi alanına da tooltip ekle (Mobilde truncate olduğu için okumak gerekebilir)
+                    const hierarchyDiv = item.querySelector('.truncate');
+                    if(hierarchyDiv) {
+                        hierarchyDiv.setAttribute('data-tooltip', escapeHTML(fullPathString));
+                        hierarchyDiv.addEventListener('mouseenter', showTooltip);
+                        hierarchyDiv.addEventListener('mouseleave', hideTooltip);
+                    }
+
                     if (!taskDesc) return;
                     const isOverflowing = taskDesc.scrollHeight > taskDesc.clientHeight;
                     if (isOverflowing) {
-                        const tooltipContainer = item.querySelector('.ml-2');
+                        const tooltipContainer = taskDesc; 
                         tooltipContainer.setAttribute('data-tooltip', escapeHTML(task.task_description));
-                        const rect = tooltipContainer.getBoundingClientRect();
-                        if (rect.right + 300 > window.innerWidth) {
-                            tooltipContainer.classList.add('tooltip-align-left');
-                        }
                         tooltipContainer.addEventListener('mouseenter', showTooltip);
                         tooltipContainer.addEventListener('mouseleave', hideTooltip);
                     } else {
