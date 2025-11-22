@@ -290,14 +290,46 @@
                     </div>
                 <div class="space-y-4">
                     
-                    <div id="task-category-selector" class="hidden">
-                        <label for="task-goal-category" class="block text-sm font-medium text-gray-300">Hangi 5 Yıllık Hedef (Kategori)?</label>
-                        <select id="task-goal-category" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
-                            <option value="">Lütfen bir kategori seçin...</option>
-                        </select>
+                   <div id="task-category-selector" class="hidden space-y-3 p-3 bg-gray-700 rounded-md border border-gray-600">
+                        <h4 class="text-sm font-semibold text-gray-300 mb-2">Hedef Bağlantıları (Opsiyonel)</h4>
+                        
+                        <div>
+                            <label for="task-goal-category" class="block text-xs font-medium text-gray-400">5 Yıllık Hedef (Kategori)</label>
+                            <select id="task-goal-category" class="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm p-2 text-white text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Seçiniz...</option>
+                            </select>
+                        </div>
+
+                        <div id="wrapper-task-annual" class="hidden">
+                            <label for="task-annual-goal" class="block text-xs font-medium text-gray-400">Yıllık Hedef</label>
+                            <select id="task-annual-goal" class="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm p-2 text-white text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Seçiniz (Opsiyonel)...</option>
+                            </select>
+                        </div>
+
+                        <div id="wrapper-task-monthly" class="hidden">
+                            <label for="task-monthly-goal" class="block text-xs font-medium text-gray-400">Aylık Hedef</label>
+                            <select id="task-monthly-goal" class="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm p-2 text-white text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Seçiniz (Opsiyonel)...</option>
+                            </select>
+                        </div>
+
+                        <div id="wrapper-task-weekly" class="hidden">
+                            <label for="task-weekly-goal" class="block text-xs font-medium text-gray-400">Haftalık Hedef</label>
+                            <select id="task-weekly-goal" class="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm p-2 text-white text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Seçiniz (Opsiyonel)...</option>
+                            </select>
+                        </div>
+
+                        <div id="wrapper-task-daily" class="hidden">
+                            <label for="task-daily-goal" class="block text-xs font-medium text-gray-400">Günlük Hedef</label>
+                            <select id="task-daily-goal" class="mt-1 block w-full bg-gray-800 border-gray-600 rounded-md shadow-sm p-2 text-white text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <option value="">Seçiniz (Opsiyonel)...</option>
+                            </select>
+                        </div>
                     </div>
 
-                    <div>
+                   <div id="task-date-wrapper">
                         <label for="task-goal-date" class="block text-sm font-medium text-gray-300">Görevin Tarihi</label>
                         <input type="date" id="task-goal-date" class="mt-1 block w-full bg-gray-700 border-gray-600 rounded-md shadow-sm p-2 text-white focus:border-blue-500 focus:ring-blue-500">
                     </div>

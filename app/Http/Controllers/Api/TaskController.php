@@ -19,6 +19,10 @@ class TaskController extends Controller
         // 1. Gelen veriyi doğrula
         $validated = $request->validate([
             'goal_category_id' => 'required|exists:goal_categories,id',
+            'annual_goal_id'   => 'nullable|exists:annual_goals,id',
+            'monthly_goal_id'  => 'nullable|exists:monthly_goals,id',
+            'weekly_goal_id'   => 'nullable|exists:weekly_goals,id',
+            'daily_goal_id'    => 'nullable|exists:daily_goals,id',
             'goal_date'        => 'required|date_format:Y-m-d', 
             'start_time'       => 'nullable|date_format:H:i',
             'end_time'         => 'nullable|date_format:H:i|after:start_time',

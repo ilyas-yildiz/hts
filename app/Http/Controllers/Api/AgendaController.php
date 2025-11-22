@@ -15,18 +15,22 @@ class AgendaController extends Controller
      * Belirli bir tarihin ajandasını getirir.
      * @param string $date ('YYYY-MM-DD' formatında gelir)
      */
-    public function getAgendaForDate(string $date): JsonResponse
+ public function getAgendaForDate(string $date): JsonResponse
     {
         $user = Auth::user();
-
-        // 1. Kullanıcının sahip olduğu tüm Kategori ID'lerini al
         $userCategoryIds = $user->goalCategories()->pluck('id');
 
-        // 2. Görevleri (Tasks) bul:
-        //    Tarihi = Parametreden Gelen Tarih ($date) OLAN
         $tasks = Task::where('goal_date', $date) 
                      ->whereIn('goal_category_id', $userCategoryIds)
-                     ->with('goalCategory:id,name') 
+                     // GÜNCELLEME: Tüm üst hedefleri de getir
+                     ->with([
+                         'goalCategory:id,name',
+                         'annualGoal:id,title',
+                         'monthlyGoal:id,title',
+                         'weeklyGoal:id,title',
+                         'dailyGoal:id,title,day_label'
+                     ])
+                     // ------------------------------------
                      ->orderBy('is_completed', 'asc')
                      ->orderBy('start_time', 'asc') 
                      ->orderBy('order_index', 'asc')

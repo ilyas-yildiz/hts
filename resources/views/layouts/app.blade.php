@@ -464,11 +464,9 @@
     }
 
 
-    // GÜNCELLEME: 'fetchTodayAgenda' fonksiyonu, 'fetchAgendaForDate' olarak yeniden adlandırıldı ve dinamik hale getirildi.
-    async function fetchAgendaForDate(dateString) { // '2025-11-12' formatında
+async function fetchAgendaForDate(dateString) {
         console.log(`fetchAgendaForDate çağrıldı (Tarih: ${dateString})`);
         
-        // YENİ: Dinamik endpoint
         const data = await fetchData(`/api/agenda/${dateString}`);
         const listElement = document.getElementById('list-col-6');
 
@@ -488,7 +486,27 @@
                     timeDisplay = 'Tüm Gün';
                 }
 
-                const categoryName = task.goal_category ? task.goal_category.name : 'Kategori Yok';
+                // GÜNCELLEME: Hiyerarşik Yol (Breadcrumb) Oluşturma
+                let path = [];
+                
+                // 1. Kategori (Her zaman vardır)
+                if (task.goal_category) path.push(task.goal_category.name);
+                
+                // 2. Yıllık (Varsa)
+                if (task.annual_goal) path.push(task.annual_goal.title);
+                
+                // 3. Aylık (Varsa)
+                if (task.monthly_goal) path.push(task.monthly_goal.title);
+                
+                // 4. Haftalık (Varsa)
+                if (task.weekly_goal) path.push(task.weekly_goal.title);
+                
+                // 5. Günlük (Varsa)
+                if (task.daily_goal) path.push(task.daily_goal.title || task.daily_goal.day_label);
+
+                // Hepsini " > " ile birleştir
+                const fullPathString = path.join(' > ');
+                // ---------------------------------------------------
                 
                 item.innerHTML = `
                     <div class="drag-handle block lg:hidden p-3 text-gray-500" title="Sıralamak için sürükle">
@@ -509,7 +527,9 @@
                                title="Tamamlandı olarak işaretle"
                                ${task.is_completed ? 'checked' : ''}>
                         <div class="ml-2">
-                            <div class="text-xs font-semibold text-blue-400">${escapeHTML(categoryName)}</div>
+                            <div class="text-xs font-semibold text-blue-400 truncate" title="${escapeHTML(fullPathString)}">
+                                ${escapeHTML(fullPathString)}
+                            </div>
                             
                             <div class="text-xs font-semibold text-gray-400">${timeDisplay}</div>
                             <div class="text-sm text-white task-desc">
@@ -571,7 +591,6 @@
             initSortable('list-col-6', 'Task');
 
         } else {
-            // GÜNCELLEME: Tarih seçildiğinde "görev yok" mesajı
             const formattedDate = formatDateTR(dateString);
             listElement.innerHTML = `<div class="p-4 text-center text-gray-500">${formattedDate} tarihi için planlanmış görev yok.</div>`;
         }
@@ -794,7 +813,7 @@
         else { btn.disabled = false; btn.textContent = 'Kaydet'; }
     }
 
-    async function addNewTask(e) {
+ async function addNewTask(e) {
         e.preventDefault(); 
         if (state.editingItem) { await handleUpdate(e); return; }
         
@@ -806,8 +825,16 @@
         const endTime = document.getElementById('task-end-time').value;
 
         let categoryId;
+        // Dropdown değerlerini al
+        let annualId = null, monthlyId = null, weeklyId = null, dailyId = null;
+
         if (state.isAgendaMode) {
             categoryId = document.getElementById('task-goal-category').value;
+            // Ajanda modundaysak dropdown değerlerini al
+            annualId = document.getElementById('task-annual-goal').value || null;
+            monthlyId = document.getElementById('task-monthly-goal').value || null;
+            weeklyId = document.getElementById('task-weekly-goal').value || null;
+            dailyId = document.getElementById('task-daily-goal').value || null;
         } else {
             categoryId = state.selectedCategoryId;
         }
@@ -817,9 +844,16 @@
             return;
         }
         
+        // DÜZELTME: Buradaki "12:00:00" ekleme kodu SİLİNDİ.
+        // if (goalDate) { goalDate = goalDate + ' 12:00:00'; } <-- BU SATIR ARTIK YOK
+
         const data = {
             goal_category_id: categoryId,
-            goal_date: goalDate,
+            annual_goal_id: annualId,
+            monthly_goal_id: monthlyId,
+            weekly_goal_id: weeklyId,
+            daily_goal_id: dailyId,
+            goal_date: goalDate, // Artık saf tarih gidiyor (YYYY-MM-DD)
             start_time: startTime || null,
             end_time: endTime || null,
             task_description: desc
@@ -831,7 +865,6 @@
             const newTask = await fetchData('/api/tasks', { method: 'POST', body: JSON.stringify(data) });
             if (newTask) {
                 if (state.isAgendaMode) {
-                    // GÜNCELLEME: Ajanda modundaysak, o günün (seçili) ajandasını yenile
                     const selectedDate = document.getElementById('agenda-date-picker').value;
                     fetchAgendaForDate(selectedDate || new Date().toISOString().split('T')[0]);
                 } else {
@@ -857,7 +890,8 @@
         }
     }
 
-    function openEditModal(type, item) {
+// GÜNCELLEME: Fonksiyon 'async' yapıldı
+    async function openEditModal(type, item) {
         state.editingItem = { type, item }; 
         let modalId = '';
         
@@ -867,6 +901,7 @@
         };
 
         switch (type) {
+            // ... (Case 1, 2, 3, 4, 5 AYNI KALACAK - Değişiklik Yok) ...
             case '1':
                 modalId = 'category-modal';
                 document.getElementById('category-name').value = item.name;
@@ -894,10 +929,13 @@
                 document.getElementById('daily-goal-title').value = item.title;
                 document.getElementById('daily-goal-date').value = item.goal_date; 
                 break;
+
+            // GÜNCELLEME: Task Düzenleme Mantığı
             case 'task':
                 modalId = 'task-modal';
                 document.getElementById('task-modal-error').classList.add('hidden');
                 
+                // Tarih/Saat Ayarları
                 document.getElementById('task-goal-date').value = item.goal_date; 
                 document.getElementById('task-start-time').value = formatTime(item.start_time);
                 document.getElementById('task-end-time').value = formatTime(item.end_time);
@@ -905,8 +943,58 @@
                 
                 const categorySelector = document.getElementById('task-goal-category');
                 populateCategorySelector(categorySelector, item.goal_category_id);
-                document.getElementById('task-category-selector').classList.remove('hidden');
+                
+                // Ajanda Modu veya Planlama Modu Kontrolü
+                if (state.isAgendaMode) {
+                    document.getElementById('task-category-selector').classList.remove('hidden');
+                    document.getElementById('task-date-wrapper').classList.add('hidden'); // Tarihi gizle
+
+                    // --- ZİNCİRLEME VERİ DOLDURMA (Cascading Populate) ---
+                    
+                    // 1. Yıllıkları Getir ve Seç
+                    const annualSelect = document.getElementById('task-annual-goal');
+                    resetSelect('wrapper-task-annual', annualSelect);
+                    if (item.goal_category_id) {
+                        const annuals = await fetchData(`/api/annual-goals/${item.goal_category_id}`);
+                        fillSelect('wrapper-task-annual', annualSelect, annuals, 'title');
+                        if (item.annual_goal_id) annualSelect.value = item.annual_goal_id;
+                    }
+
+                    // 2. Aylıkları Getir ve Seç (Eğer yıllık seçiliyse)
+                    const monthlySelect = document.getElementById('task-monthly-goal');
+                    resetSelect('wrapper-task-monthly', monthlySelect);
+                    if (item.annual_goal_id) {
+                        const monthlies = await fetchData(`/api/monthly-goals/${item.annual_goal_id}`);
+                        fillSelect('wrapper-task-monthly', monthlySelect, monthlies, 'title');
+                        if (item.monthly_goal_id) monthlySelect.value = item.monthly_goal_id;
+                    }
+
+                    // 3. Haftalıkları Getir ve Seç (Eğer aylık seçiliyse)
+                    const weeklySelect = document.getElementById('task-weekly-goal');
+                    resetSelect('wrapper-task-weekly', weeklySelect);
+                    if (item.monthly_goal_id) {
+                        const weeklies = await fetchData(`/api/weekly-goals/${item.monthly_goal_id}`);
+                        fillSelect('wrapper-task-weekly', weeklySelect, weeklies, 'title');
+                        if (item.weekly_goal_id) weeklySelect.value = item.weekly_goal_id;
+                    }
+
+                    // 4. Günlükleri Getir ve Seç (Eğer haftalık seçiliyse)
+                    const dailySelect = document.getElementById('task-daily-goal');
+                    resetSelect('wrapper-task-daily', dailySelect);
+                    if (item.weekly_goal_id) {
+                        const dailies = await fetchData(`/api/daily-goals/${item.weekly_goal_id}`);
+                        fillSelect('wrapper-task-daily', dailySelect, dailies, 'day_label');
+                        if (item.daily_goal_id) dailySelect.value = item.daily_goal_id;
+                    }
+                    // -----------------------------------------------------
+
+                } else {
+                    // Planlama Modu
+                    document.getElementById('task-category-selector').classList.add('hidden');
+                    document.getElementById('task-date-wrapper').classList.remove('hidden'); // Tarihi göster
+                }
                 break;
+
             default:
                 console.error('Bilinmeyen düzenleme tipi:', type);
                 return;
@@ -931,12 +1019,14 @@
         let data = {}; let endpoint = ''; let btnId = '';
         try {
             switch (type) {
+                // ... (Case 1, 2, 3, 4, 5 aynı kalacak) ...
                 case '1': data = { name: document.getElementById('category-name').value }; endpoint = `/api/goal-categories/${item.id}`; btnId = 'save-category-btn'; break;
                 case '2': data = { title: document.getElementById('annual-goal-title').value, year: document.getElementById('annual-goal-year').value, period_label: document.getElementById('annual-goal-period').value }; endpoint = `/api/annual-goals/${item.id}`; btnId = 'save-annual-goal-btn'; break;
                 case '3': data = { title: document.getElementById('monthly-goal-title').value, month_label: document.getElementById('monthly-goal-label').value }; endpoint = `/api/monthly-goals/${item.id}`; btnId = 'save-monthly-goal-btn'; break;
                 
                 case '4': 
                     let startDate = document.getElementById('weekly-goal-start-date').value;
+                    // DÜZELTME: 12:00:00 SİLİNDİ
                     data = { 
                         title: document.getElementById('weekly-goal-title').value, 
                         week_label: document.getElementById('weekly-goal-label').value,
@@ -948,6 +1038,7 @@
                 
                 case '5':
                     let goalDate = document.getElementById('daily-goal-date').value;
+                    // DÜZELTME: 12:00:00 SİLİNDİ
                     data = { 
                         day_label: document.getElementById('daily-goal-label').value, 
                         title: document.getElementById('daily-goal-title').value || null,
@@ -959,9 +1050,10 @@
                 
                 case 'task':
                     let taskGoalDate = document.getElementById('task-goal-date').value;
+                    // DÜZELTME: 12:00:00 SİLİNDİ
                     data = {
                         goal_category_id: document.getElementById('task-goal-category').value,
-                        goal_date: taskGoalDate,
+                        goal_date: taskGoalDate, // Saf tarih (YYYY-MM-DD)
                         start_time: document.getElementById('task-start-time').value || null,
                         end_time: document.getElementById('task-end-time').value || null,
                         task_description: document.getElementById('task-desc').value
@@ -981,7 +1073,6 @@
                 console.log('Öğe güncellendi:', updatedItem);
                 
                 if (state.isAgendaMode) {
-                    // GÜNCELLEME: Ajanda modundaysak, o günün (seçili) ajandasını yenile
                     const selectedDate = document.getElementById('agenda-date-picker').value;
                     fetchAgendaForDate(selectedDate || new Date().toISOString().split('T')[0]);
                 } else if (type === 'task') { fetchTasks(state.selectedDailyId); }
@@ -1321,8 +1412,109 @@
         }
     }
 
+// --- GLOBAL UI YARDIMCILARI (Dropdownlar için) ---
+    
+    // Select kutusunu temizle ve gizle
+    function resetSelect(wrapperId, selectElement) {
+        const wrapper = document.getElementById(wrapperId);
+        if (wrapper) wrapper.classList.add('hidden');
+        selectElement.innerHTML = '<option value="">Seçiniz (Opsiyonel)...</option>';
+        selectElement.value = "";
+    }
 
-    function setupModal(modalId, openBtnId, closeBtnId, formId) {
+    // Select kutusunu doldur ve göster
+    function fillSelect(wrapperId, selectElement, data, textField = 'title') {
+        if (data && data.length > 0) {
+            // Önce temizle
+            selectElement.innerHTML = '<option value="">Seçiniz (Opsiyonel)...</option>';
+            data.forEach(item => {
+                const option = document.createElement('option');
+                option.value = item.id;
+                // Günlük hedefte title yoksa day_label kullan, o da yoksa 'Başlıksız'
+                let text = item[textField] || item.name || item.month_label || item.week_label || item.day_label;
+                if (textField === 'day_label' && item.title) { text += ` (${item.title})`; } // Günlükte detay
+                
+                option.textContent = text;
+                selectElement.appendChild(option);
+            });
+            document.getElementById(wrapperId).classList.remove('hidden');
+        } else {
+            resetSelect(wrapperId, selectElement);
+        }
+    }
+
+    function setupTaskDropdownListeners() {
+        const categorySelect = document.getElementById('task-goal-category');
+        const annualSelect = document.getElementById('task-annual-goal');
+        const monthlySelect = document.getElementById('task-monthly-goal');
+        const weeklySelect = document.getElementById('task-weekly-goal');
+        const dailySelect = document.getElementById('task-daily-goal');
+
+        // 1. Kategori Değişince -> Yıllık Getir
+        categorySelect.addEventListener('change', async (e) => {
+            const id = e.target.value;
+            resetSelect('wrapper-task-annual', annualSelect);
+            resetSelect('wrapper-task-monthly', monthlySelect);
+            resetSelect('wrapper-task-weekly', weeklySelect);
+            resetSelect('wrapper-task-daily', dailySelect);
+
+            if (id) {
+                const data = await fetchData(`/api/annual-goals/${id}`);
+                fillSelect('wrapper-task-annual', annualSelect, data, 'title');
+            }
+        });
+
+        // 2. Yıllık Değişince -> Aylık Getir
+        annualSelect.addEventListener('change', async (e) => {
+            const id = e.target.value;
+            resetSelect('wrapper-task-monthly', monthlySelect);
+            resetSelect('wrapper-task-weekly', weeklySelect);
+            resetSelect('wrapper-task-daily', dailySelect);
+
+            if (id) {
+                const data = await fetchData(`/api/monthly-goals/${id}`);
+                fillSelect('wrapper-task-monthly', monthlySelect, data, 'title');
+            }
+        });
+
+        // 3. Aylık Değişince -> Haftalık Getir
+        monthlySelect.addEventListener('change', async (e) => {
+            const id = e.target.value;
+            resetSelect('wrapper-task-weekly', weeklySelect);
+            resetSelect('wrapper-task-daily', dailySelect);
+
+            if (id) {
+                const data = await fetchData(`/api/weekly-goals/${id}`);
+                fillSelect('wrapper-task-weekly', weeklySelect, data, 'title');
+            }
+        });
+
+        // 4. Haftalık Değişince -> Günlük Getir
+        weeklySelect.addEventListener('change', async (e) => {
+            const id = e.target.value;
+            resetSelect('wrapper-task-daily', dailySelect);
+
+            if (id) {
+                const data = await fetchData(`/api/daily-goals/${id}`);
+                fillSelect('wrapper-task-daily', dailySelect, data, 'day_label');
+
+                // OTOMATİK GÜN SEÇİMİ (Ajanda Modunda)
+                if (state.isAgendaMode) {
+                    let selectedDate = document.getElementById('agenda-date-picker').value;
+                    if (!selectedDate) selectedDate = new Date().toISOString().split('T')[0];
+
+                    const matchingDailyGoal = data.find(goal => 
+                        goal.goal_date && goal.goal_date.startsWith(selectedDate)
+                    );
+                    if (matchingDailyGoal) {
+                        dailySelect.value = matchingDailyGoal.id;
+                    }
+                }
+            }
+        });
+    }
+
+function setupModal(modalId, openBtnId, closeBtnId, formId) {
         const modal = document.getElementById(modalId);
         const openBtn = document.getElementById(openBtnId);
         const closeBtn = document.getElementById(closeBtnId);
@@ -1331,6 +1523,7 @@
         
         openBtn.addEventListener('click', () => {
             
+            // Hiyerarşik kontroller (Değişiklik yok)
             if (modalId === 'annual-goal-modal' && !state.selectedCategoryId) { showError("Lütfen önce bir ana kategori (Sütun 1) seçin."); return; }
             if (modalId === 'monthly-goal-modal' && !state.selectedAnnualId) { showError("Lütfen önce bir yıllık hedef (Sütun 2) seçin."); return; }
             if (modalId === 'weekly-goal-modal' && !state.selectedMonthlyId) { showError("Lütfen önce bir aylık hedef (Sütun 3) seçin."); return; }
@@ -1340,17 +1533,31 @@
                 document.getElementById('task-modal-error').classList.add('hidden');
 
                 if (state.isAgendaMode) {
+                    // --- 1. AJANDA MODU ---
                     const categorySelector = document.getElementById('task-goal-category');
                     populateCategorySelector(categorySelector);
+                    
+                    // Dropdown alanını göster
                     document.getElementById('task-category-selector').classList.remove('hidden');
-                    // GÜNCELLEME: 'Bugün' yerine seçili tarihi (picker'dan) al
+                    
+                    // GÜNCELLEME: Tarih giriş alanını (Wrapper) GİZLE
+                    document.getElementById('task-date-wrapper').classList.add('hidden');
+
+                    // Arka planda tarihi otomatik ayarla (Seçili ajanda tarihi veya bugün)
                     const selectedDate = document.getElementById('agenda-date-picker').value;
                     document.getElementById('task-goal-date').value = selectedDate || new Date().toISOString().split('T')[0];
                     
                 } else {
+                    // --- 2. PLANLAMA MODU ---
                     if (!state.selectedDailyId) { showError("Lütfen önce bir gün seçin."); return; }
+                    
+                    // Dropdown alanını gizle
                     document.getElementById('task-category-selector').classList.add('hidden');
                     
+                    // GÜNCELLEME: Tarih giriş alanını GÖSTER (Planlama modunda lazım olabilir)
+                    document.getElementById('task-date-wrapper').classList.remove('hidden');
+                    
+                    // Tarihi ayarla
                     const goalDate = state.selectedGoalDate ? state.selectedGoalDate.split('T')[0] : '';
                     document.getElementById('task-goal-date').value = goalDate;
                 }
@@ -1391,6 +1598,8 @@
         setupModal('weekly-goal-modal', 'open-weekly-goal-modal-btn', 'close-weekly-goal-modal-btn', 'weekly-goal-form');
         setupModal('daily-goal-modal', 'open-daily-goal-modal-btn', 'close-daily-goal-modal-btn', 'daily-goal-form');
         
+        setupTaskDropdownListeners();
+
         document.getElementById('confirm-delete-btn').addEventListener('click', confirmDelete);
         document.getElementById('cancel-delete-btn').addEventListener('click', () => { closeModal('delete-confirm-modal'); state.itemToDelete = null; });
         
